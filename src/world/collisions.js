@@ -7,23 +7,21 @@ export function createCollisionWorld(scene) {
   const loader = new GLTFLoader();
   loader.load("/models/WM_err.glb", (gltf) => {
     const WM = gltf.scene;
-
     WM.position.set(0, 0, -10);
     WM.scale.set(5, 5, 5);
-
     scene.add(WM);
 
-    // посчитать AABB по модели
-    washingMachine.updateWorldMatrix(true, true);
-    const aabb = new THREE.Box3().setFromObject(washingMachine);
+    WM.updateWorldMatrix(true, true);
+    const center = new THREE.Vector3();
+    new THREE.Box3().setFromObject(WM).getCenter(center);
+    const halfW = 3.85;
+    const halfD = 2.8;
 
-    // превратить Box3 в "плоский" бокс для твоей 2D-коллизии (XZ)
-    boxes.push({
-      minX: aabb.min.x,
-      maxX: aabb.max.x,
-      minZ: aabb.min.z,
-      maxZ: aabb.max.z,
-    });
+    const aabb = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+    );
+    obstacles.push({ mesh: WM, box: aabb });
   });
 
   function addBoxObstacle({ x, z, w, d, h = 2 }) {

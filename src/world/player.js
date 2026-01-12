@@ -38,8 +38,8 @@ export function createPlayer(scene) {
     activeAction = next;
   }
 
-  // === Загрузка модели ===
   const loader = new GLTFLoader();
+
   loader.load(
     "/models/player.glb",
     (gltf) => {

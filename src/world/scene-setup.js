@@ -38,6 +38,7 @@ export function createGameScene(mountEl) {
   dir.shadow.camera.bottom = -20;
   scene.add(dir);
 
+  //ПОЛ
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
     new THREE.MeshStandardMaterial({
@@ -49,8 +50,7 @@ export function createGameScene(mountEl) {
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
-
-  const grid = new THREE.GridHelper(200, 200, 0x2a2a2a, 0x1a1a1a);
+  const grid = new THREE.GridHelper(500, 500, 0x2a2a2a, 0x1a1a1a);
   grid.position.y = 0.001;
   scene.add(grid);
 
@@ -78,16 +78,18 @@ export function createGameScene(mountEl) {
   function render() {
     renderer.render(scene, camera);
   }
+
+  let WM = null;
+
   const loader = new GLTFLoader();
-  let washingMachine = null;
 
   loader.load(
-    "/models/WM_err.glb", // проверь имя файла
+    "/models/WM_err.glb",
     (gltf) => {
-      washingMachine = gltf.scene;
-      washingMachine.position.set(0, 0, -10);
-      washingMachine.scale.set(5, 5, 5);
-      scene.add(washingMachine);
+      WM = gltf.scene;
+      WM.position.set(0, 0, -10);
+      WM.scale.set(5, 5, 5);
+      scene.add(WM);
     },
     undefined,
     (error) => console.error("Ошибка загрузки washing_machine:", error)
