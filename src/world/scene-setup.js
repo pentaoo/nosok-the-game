@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export function createGameScene(mountEl) {
   const scene = new THREE.Scene();
@@ -13,7 +14,7 @@ export function createGameScene(mountEl) {
   mountEl.appendChild(renderer.domElement);
 
   const camera = new THREE.PerspectiveCamera(
-    55,
+    80,
     window.innerWidth / window.innerHeight,
     0.1,
     200
@@ -40,9 +41,9 @@ export function createGameScene(mountEl) {
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
     new THREE.MeshStandardMaterial({
-      color: 0x121212,
+      color: 0xfdfffd,
       roughness: 0.95,
-      metalness: 0.0,
+      metalness: 0.5,
     })
   );
   floor.rotation.x = -Math.PI / 2;
@@ -77,6 +78,20 @@ export function createGameScene(mountEl) {
   function render() {
     renderer.render(scene, camera);
   }
+  const loader = new GLTFLoader();
+  let washingMachine = null;
+
+  loader.load(
+    "/models/WM_err.glb", // проверь имя файла
+    (gltf) => {
+      washingMachine = gltf.scene;
+      washingMachine.position.set(0, 0, -10);
+      washingMachine.scale.set(5, 5, 5);
+      scene.add(washingMachine);
+    },
+    undefined,
+    (error) => console.error("Ошибка загрузки washing_machine:", error)
+  );
 
   return { scene, camera, renderer, followCamera, render };
 }

@@ -1,40 +1,27 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-/**
- * Player:
- * - root: логическая позиция (камера/коллизии/интерактив берут её)
- * - model: визуал из Blockbench (glb)
- * - mixer/actions: анимации
- */
 export function createPlayer(scene) {
   // === Root (логическая сущность игрока) ===
   const root = new THREE.Group();
   root.position.set(0, 0, 0);
   scene.add(root);
 
-  // === Невидимый коллайдер (только для ориентира/отладки) ===
-  // В коллизиях мы всё равно считаем игрока "кругом" в XZ.
+  // КОЛИЗИЯ ЧЕЛА
   const collider = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.35, 0.7, 8, 16),
     new THREE.MeshStandardMaterial({ visible: false })
   );
+
   collider.position.set(0, 0.85, 0);
   root.add(collider);
-
-  // === Параметры коллизий и движения ===
   const radius = 0.45;
-
   const WALK_SPEED = 4.0;
   const RUN_SPEED = 6.5;
-
   const TURN_SPEED = 12.0;
   let facing = 0;
-
   const move = new THREE.Vector3();
   const desiredPos = new THREE.Vector3();
-
-  // === Анимации ===
   let mixer = null;
   let activeAction = null;
   const actions = { idle: null, walk: null, run: null };
@@ -94,10 +81,6 @@ export function createPlayer(scene) {
   );
 
   function update({ dt, input, collisionWorld }) {
-    const prevPos = new THREE.Vector3();
-    prevPos.copy(root.position);
-    const moved = root.position.distanceToSquared(prevPos) > 1e-8;
-
     const forward = input.isDown("KeyW") ? 1 : 0;
     const back = input.isDown("KeyS") ? 1 : 0;
     const left = input.isDown("KeyA") ? 1 : 0;

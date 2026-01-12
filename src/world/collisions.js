@@ -1,7 +1,30 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export function createCollisionWorld(scene) {
   const obstacles = [];
+
+  const loader = new GLTFLoader();
+  loader.load("/models/WM_err.glb", (gltf) => {
+    const WM = gltf.scene;
+
+    WM.position.set(0, 0, -10);
+    WM.scale.set(5, 5, 5);
+
+    scene.add(WM);
+
+    // посчитать AABB по модели
+    washingMachine.updateWorldMatrix(true, true);
+    const aabb = new THREE.Box3().setFromObject(washingMachine);
+
+    // превратить Box3 в "плоский" бокс для твоей 2D-коллизии (XZ)
+    boxes.push({
+      minX: aabb.min.x,
+      maxX: aabb.max.x,
+      minZ: aabb.min.z,
+      maxZ: aabb.max.z,
+    });
+  });
 
   function addBoxObstacle({ x, z, w, d, h = 2 }) {
     const geo = new THREE.BoxGeometry(w, h, d);
@@ -18,14 +41,6 @@ export function createCollisionWorld(scene) {
     const box = new THREE.Box3().setFromObject(mesh);
     obstacles.push({ mesh, box });
   }
-
-  addBoxObstacle({ x: 0, z: -8, w: 18, d: 1, h: 2.5 });
-  addBoxObstacle({ x: 0, z: 8, w: 18, d: 1, h: 2.5 });
-  addBoxObstacle({ x: -9, z: 0, w: 1, d: 16, h: 2.5 });
-  addBoxObstacle({ x: 9, z: 0, w: 1, d: 16, h: 2.5 });
-
-  addBoxObstacle({ x: -3, z: 0, w: 3, d: 2, h: 1.2 });
-  addBoxObstacle({ x: 4, z: -2, w: 2, d: 2, h: 1.6 });
 
   function resolveCircleVsBoxes(position, radius) {
     const pos = position.clone();
