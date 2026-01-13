@@ -6,14 +6,14 @@ export function createCollisionWorld(scene) {
 
   const loader = new GLTFLoader();
   loader.load("models/WM_err.glb", (gltf) => {
-    const WM = gltf.scene;
-    WM.position.set(0, 0, -10);
-    WM.scale.set(5, 5, 5);
-    scene.add(WM);
+    const WM_err = gltf.scene;
+    WM_err.position.set(0, 0, -10);
+    WM_err.scale.set(5, 5, 5);
+    scene.add(WM_err);
 
-    WM.updateWorldMatrix(true, true);
+    WM_err.updateWorldMatrix(true, true);
     const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(WM).getCenter(center);
+    new THREE.Box3().setFromObject(WM_err).getCenter(center);
     const halfW = 3.85;
     const halfD = 2.8;
 
@@ -21,7 +21,25 @@ export function createCollisionWorld(scene) {
       new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
       new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
     );
-    obstacles.push({ mesh: WM, box: aabb });
+    obstacles.push({ mesh: WM_err, box: aabb });
+  });
+  loader.load("models/WM_1.glb", (gltf) => {
+    const WM_1 = gltf.scene;
+    WM_1.position.set(0, 0, -10);
+    WM_1.scale.set(5, 5, 5);
+    scene.add(WM_1);
+
+    WM_1.updateWorldMatrix(true, true);
+    const center = new THREE.Vector3();
+    new THREE.Box3().setFromObject(WM_1).getCenter(center);
+    const halfW = 3.85;
+    const halfD = 2.8;
+
+    const aabb = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+    );
+    obstacles.push({ mesh: WM_1, box: aabb });
   });
 
   function addBoxObstacle({ x, z, w, d, h = 2 }) {

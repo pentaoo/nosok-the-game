@@ -95,5 +95,18 @@ export function createGameScene(mountEl) {
     (error) => console.error("Ошибка загрузки washing_machine:", error)
   );
 
+  let WM_1 = null;
+  loader.load(
+    "models/WM_1.glb",
+    (gltf) => {
+      WM = gltf.scene;
+      WM.position.set(9, 0, -10);
+      WM.scale.set(5, 5, 5);
+      scene.add(WM);
+    },
+    undefined,
+    (error) => console.error("Ошибка загрузки washing_machine:", error)
+  );
+
   return { scene, camera, renderer, followCamera, render };
 }
