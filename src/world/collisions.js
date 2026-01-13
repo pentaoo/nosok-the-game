@@ -5,7 +5,7 @@ export function createCollisionWorld(scene) {
   const obstacles = [];
 
   const loader = new GLTFLoader();
-  loader.load("/models/WM_err.glb", (gltf) => {
+  loader.load("models/WM_err.glb", (gltf) => {
     const WM = gltf.scene;
     WM.position.set(0, 0, -10);
     WM.scale.set(5, 5, 5);

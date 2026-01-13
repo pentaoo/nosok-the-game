@@ -84,7 +84,7 @@ export function createGameScene(mountEl) {
   const loader = new GLTFLoader();
 
   loader.load(
-    "/models/WM_err.glb",
+    "models/WM_err.glb",
     (gltf) => {
       WM = gltf.scene;
       WM.position.set(0, 0, -10);
