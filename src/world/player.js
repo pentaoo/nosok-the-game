@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export function createPlayer(scene) {
-  // === Root (логическая сущность игрока) ===
   const root = new THREE.Group();
   root.position.set(0, 0, 0);
   scene.add(root);
@@ -29,11 +28,9 @@ export function createPlayer(scene) {
   function playAction(name, fade = 0.15) {
     const next = actions[name];
     if (!next || next === activeAction) return;
-
     next.reset();
     next.fadeIn(fade);
     next.play();
-
     if (activeAction) activeAction.fadeOut(fade);
     activeAction = next;
   }
@@ -45,13 +42,7 @@ export function createPlayer(scene) {
     (gltf) => {
       const model = gltf.scene;
       root.add(model);
-
-      model.scale.setScalar(0.05);
-
-      // 1) Mixer
-      mixer = new THREE.AnimationMixer(model);
-
-      // 2) Ищем клипы по подстроке (это устойчивее, чем точное имя)
+      model.scale.setScalar(0.05), (mixer = new THREE.AnimationMixer(model));
       const findClip = (needle) =>
         gltf.animations.find((c) => c.name.toLowerCase().includes(needle)) ||
         null;
@@ -60,12 +51,10 @@ export function createPlayer(scene) {
       const walkClip = findClip("walk");
       const runClip = findClip("run");
 
-      // 3) Создаём actions
       actions.idle = idleClip ? mixer.clipAction(idleClip) : null;
       actions.walk = walkClip ? mixer.clipAction(walkClip) : null;
       actions.run = runClip ? mixer.clipAction(runClip) : null;
 
-      // (Опционально) скорость клипов
       if (actions.walk) actions.walk.timeScale = 1.0;
       if (actions.run) actions.run.timeScale = 4;
 
@@ -131,9 +120,6 @@ export function createPlayer(scene) {
   };
 }
 
-/**
- * Плавное приближение угла к цели (коротким путём)
- */
 function dampAngle(current, target, lambda, dt) {
   let delta = target - current;
   delta = ((delta + Math.PI) % (2 * Math.PI)) - Math.PI;

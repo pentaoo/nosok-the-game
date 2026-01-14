@@ -25,7 +25,7 @@ export function createCollisionWorld(scene) {
   });
   loader.load("models/WM_1.glb", (gltf) => {
     const WM_1 = gltf.scene;
-    WM_1.position.set(0, 0, -10);
+    WM_1.position.set(9, 0, -10);
     WM_1.scale.set(5, 5, 5);
     scene.add(WM_1);
 

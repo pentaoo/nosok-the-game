@@ -21,9 +21,10 @@ async function main() {
 
   const loop = createLoop((dt) => {
     time.update(dt);
-
     player.update({ dt, input, collisionWorld });
     game.followCamera(player.position, dt);
+
+    game.world.WM_1?.userData?.drum?.userData?.updateFlipbook?.(dt);
 
     const interaction = interactables.getBestInteraction(player.position);
     if (interaction) {
