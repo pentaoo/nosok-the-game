@@ -24,7 +24,9 @@ async function main() {
     player.update({ dt, input, collisionWorld });
     game.followCamera(player.position, dt);
 
-    game.world.WM_1?.userData?.drum?.userData?.updateFlipbook?.(dt);
+    game.world.WM_1?.userData?.FBA_WM_1?.userData?.updateFlipbook?.(dt);
+
+    game.world.WM_1?.userData?.mixer?.update(dt);
 
     const interaction = interactables.getBestInteraction(player.position);
     if (interaction) {

@@ -108,37 +108,41 @@ export function createGameScene(mountEl) {
       WM_1.scale.set(5, 5, 5);
       scene.add(WM_1);
 
-      WM_1.updateWorldMatrix(true, true);
-
-      const bbox = new THREE.Box3().setFromObject(WM_1);
+      //позиционирование анимки барабабы
+      const WM_center = new THREE.Object3D();
+      WM_1.add(WM_center);
+      const WM_box = new THREE.Box3().setFromObject(WM_1);
       const centerWorld = new THREE.Vector3();
-      bbox.getCenter(centerWorld);
-
-      const frontWorld = new THREE.Vector3(
+      WM_box.getCenter(centerWorld);
+      const WM_front = new THREE.Vector3(
         centerWorld.x,
         centerWorld.y,
-        bbox.max.z + 0.05
+        WM_box.max.z - 0.35
       );
-      WM_1.worldToLocal(frontWorld);
-      FBA_WM_1.position.copy(frontWorld);
-
-      // 3) Создаём flipbook
+      WM_1.worldToLocal(WM_front);
+      WM_center.position.copy(WM_front);
       const FBA_WM_1 = await createFlipbookPlane({
         textureUrl: "./flipbook_animations/FBA_WM_1.png",
         frameCols: 1,
         frameRows: 5,
         fps: 8,
-        size: 1.2, // начни с маленького; потом увеличишь
+        size: 0.75,
         transparent: true,
         emissive: true,
       });
-
-      FBA_WM_1.rotation.y = Math.PI;
-      drumAnchor.add(FBA_WM_1);
-      WM_1.userData.drum = FBA_WM_1;
-
-      // 5) Сохраним ссылку, чтобы обновлять в основном цикле
+      WM_center.add(FBA_WM_1);
       WM_1.userData.FBA_WM_1 = FBA_WM_1;
+
+      const mixer = new THREE.AnimationMixer(WM_1);
+
+      const onClip = gltf.animations.find((a) => a.name === "on");
+      const onAction = mixer.clipAction(onClip);
+      onAction.play();
+
+      WM_1.userData.mixer = mixer;
+      WM_1.userData.actions = {
+        on: onAction,
+      };
     },
     undefined,
     (error) => console.error("Ошибка загрузки washing_machine:", error)

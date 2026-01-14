@@ -24,10 +24,8 @@ export async function createFlipbookPlane({
   const material = emissive
     ? new THREE.MeshStandardMaterial({
         map,
-        transparent,
+        transparent: true,
         depthWrite: false,
-        emissive: new THREE.Color(0xffffff),
-        emissiveIntensity: 1.0,
         side: THREE.DoubleSide,
       })
     : new THREE.MeshBasicMaterial({
