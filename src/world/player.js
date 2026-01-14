@@ -38,7 +38,7 @@ export function createPlayer(scene) {
   const loader = new GLTFLoader();
 
   loader.load(
-    "/models/player.glb",
+    "models/player.glb",
     (gltf) => {
       const model = gltf.scene;
       root.add(model);
