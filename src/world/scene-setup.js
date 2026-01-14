@@ -122,7 +122,7 @@ export function createGameScene(mountEl) {
       WM_1.worldToLocal(WM_front);
       WM_center.position.copy(WM_front);
       const FBA_WM_1 = await createFlipbookPlane({
-        textureUrl: "./flipbook_animations/FBA_WM_1.png",
+        textureUrl: "flipbook_animations/FBA_WM_1.png",
         frameCols: 1,
         frameRows: 5,
         fps: 8,
