@@ -87,7 +87,7 @@ export function createGameScene(mountEl) {
   let WM_err = null;
   const loader = new GLTFLoader();
   loader.load(
-    "/models/WM_err.glb",
+    "models/WM_err.glb",
     (gltf) => {
       WM_err = gltf.scene;
       WM_err.position.set(0, 0, -10);
@@ -100,7 +100,7 @@ export function createGameScene(mountEl) {
 
   let WM_1 = null;
   loader.load(
-    "/models/WM_1.glb",
+    "models/WM_1.glb",
     async (gltf) => {
       WM_1 = gltf.scene;
       world.WM_1 = WM_1;
@@ -122,7 +122,7 @@ export function createGameScene(mountEl) {
       WM_1.worldToLocal(WM_front);
       WM_center.position.copy(WM_front);
       const FBA_WM_1 = await createFlipbookPlane({
-        textureUrl: "/flipbook_animations/FBA_WM_1.png",
+        textureUrl: "flipbook_animations/FBA_WM_1.png",
         frameCols: 1,
         frameRows: 5,
         fps: 8,
