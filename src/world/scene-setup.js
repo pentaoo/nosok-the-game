@@ -8,9 +8,10 @@ export function createGameScene(mountEl) {
     WM_1: null,
     WM_err: null,
   };
+  // ТУМАН ВОКРУГ
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
-
   const renderer = new THREE.WebGLRenderer({ antialias: true });
+
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
@@ -27,7 +28,6 @@ export function createGameScene(mountEl) {
 
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
-
   const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 0.6);
   scene.add(hemi);
 
@@ -99,6 +99,62 @@ export function createGameScene(mountEl) {
   );
 
   let WM_1 = null;
+
+  async function spawnWasherFromGltf(gltf) {
+    const WM_1 = gltf.scene.clone(true);
+    const mixer = new THREE.AnimationMixer(WM_1);
+    const clip =
+      gltf.animations.find((a) => a.name.toLowerCase() === "on") ??
+      gltf.animations[0];
+    const action = clip ? mixer.clipAction(clip) : null;
+
+    if (action) {
+      action.loop = THREE.LoopRepeat;
+      action.clampWhenFinished = false;
+      action.play();
+    }
+
+    WM_1.userData.mixer = mixer;
+    WM_1.userData.playOn = () => action?.reset().play();
+
+    //позиционирование анимки барабабы
+    const WM_center = new THREE.Object3D();
+    WM_1.add(WM_center);
+    const WM_box = new THREE.Box3().setFromObject(WM_1);
+    const centerWorld = new THREE.Vector3();
+    WM_box.getCenter(centerWorld);
+    const WM_front = new THREE.Vector3(
+      centerWorld.x,
+      centerWorld.y,
+      WM_box.max.z - 0.35
+    );
+    WM_1.worldToLocal(WM_front);
+    WM_center.position.copy(WM_front);
+    const FBA_WM_1 = await createFlipbookPlane({
+      textureUrl: "flipbook_animations/FBA_WM_1.png",
+      frameCols: 1,
+      frameRows: 5,
+      fps: 8,
+      size: 0.75,
+      transparent: true,
+      emissive: true,
+    });
+    WM_center.add(FBA_WM_1);
+    WM_1.userData.FBA_WM_1 = FBA_WM_1;
+
+    // АНИМКА СТИРАЛКИ
+    const onClip = gltf.animations.find((a) => a.name === "on");
+    const onAction = mixer.clipAction(onClip);
+    onAction.play();
+
+    WM_1.userData.mixer = mixer;
+    WM_1.userData.actions = {
+      on: onAction,
+    };
+
+    return WM_1;
+  }
+
   loader.load(
     "models/WM_1.glb",
     async (gltf) => {
@@ -106,43 +162,21 @@ export function createGameScene(mountEl) {
       world.WM_1 = WM_1;
       WM_1.position.set(9, 0, -10);
       WM_1.scale.set(5, 5, 5);
-      scene.add(WM_1);
 
-      //позиционирование анимки барабабы
-      const WM_center = new THREE.Object3D();
-      WM_1.add(WM_center);
-      const WM_box = new THREE.Box3().setFromObject(WM_1);
-      const centerWorld = new THREE.Vector3();
-      WM_box.getCenter(centerWorld);
-      const WM_front = new THREE.Vector3(
-        centerWorld.x,
-        centerWorld.y,
-        WM_box.max.z - 0.35
-      );
-      WM_1.worldToLocal(WM_front);
-      WM_center.position.copy(WM_front);
-      const FBA_WM_1 = await createFlipbookPlane({
-        textureUrl: "flipbook_animations/FBA_WM_1.png",
-        frameCols: 1,
-        frameRows: 5,
-        fps: 8,
-        size: 0.75,
-        transparent: true,
-        emissive: true,
-      });
-      WM_center.add(FBA_WM_1);
-      WM_1.userData.FBA_WM_1 = FBA_WM_1;
+      const WM_A = await spawnWasherFromGltf(gltf);
+      WM_A.position.set(-9, 0, -10);
+      scene.add(WM_A);
 
-      const mixer = new THREE.AnimationMixer(WM_1);
+      const WM_B = await spawnWasherFromGltf(gltf);
+      WM_B.position.set(9, 0, -10);
+      scene.add(WM_B);
 
-      const onClip = gltf.animations.find((a) => a.name === "on");
-      const onAction = mixer.clipAction(onClip);
-      onAction.play();
+      const WM_C = await spawnWasherFromGltf(gltf);
+      WM_C.position.set(18, 0, -10);
+      scene.add(WM_C);
 
-      WM_1.userData.mixer = mixer;
-      WM_1.userData.actions = {
-        on: onAction,
-      };
+      world.washers = [WM_A, WM_B, WM_C];
+      world.assets = world.assets || {};
     },
     undefined,
     (error) => console.error("Ошибка загрузки washing_machine:", error)

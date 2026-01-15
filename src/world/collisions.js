@@ -9,7 +9,6 @@ export function createCollisionWorld(scene) {
     const WM_err = gltf.scene;
     WM_err.position.set(0, 0, -10);
     WM_err.scale.set(5, 5, 5);
-    scene.add(WM_err);
 
     WM_err.updateWorldMatrix(true, true);
     const center = new THREE.Vector3();
@@ -27,7 +26,6 @@ export function createCollisionWorld(scene) {
     const WM_1 = gltf.scene;
     WM_1.position.set(9, 0, -10);
     WM_1.scale.set(5, 5, 5);
-    scene.add(WM_1);
 
     WM_1.updateWorldMatrix(true, true);
     const center = new THREE.Vector3();
@@ -56,6 +54,23 @@ export function createCollisionWorld(scene) {
 
     const box = new THREE.Box3().setFromObject(mesh);
     obstacles.push({ mesh, box });
+  }
+
+  function addWasherObstacle(mesh) {
+    mesh.updateWorldMatrix(true, true);
+
+    const center = new THREE.Vector3();
+    new THREE.Box3().setFromObject(mesh).getCenter(center);
+
+    const halfW = 3.85;
+    const halfD = 2.8;
+
+    const aabb = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+    );
+
+    obstacles.push({ mesh, box: aabb });
   }
 
   function resolveCircleVsBoxes(position, radius) {
@@ -88,7 +103,7 @@ export function createCollisionWorld(scene) {
     return pos;
   }
 
-  return { resolveCircleVsBoxes };
+  return { resolveCircleVsBoxes, addWasherObstacle };
 }
 
 function clamp(v, min, max) {

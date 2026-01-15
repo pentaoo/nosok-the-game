@@ -24,9 +24,11 @@ async function main() {
     player.update({ dt, input, collisionWorld });
     game.followCamera(player.position, dt);
 
-    game.world.WM_1?.userData?.FBA_WM_1?.userData?.updateFlipbook?.(dt);
-
-    game.world.WM_1?.userData?.mixer?.update(dt);
+    for (const w of game.world.washers ?? []) {
+      collisionWorld.addWasherObstacle(w);
+      w.userData.mixer?.update(dt);
+      w.userData.FBA_WM_1?.userData?.updateFlipbook?.(dt);
+    }
 
     const interaction = interactables.getBestInteraction(player.position);
     if (interaction) {
