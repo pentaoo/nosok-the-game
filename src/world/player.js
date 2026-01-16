@@ -18,6 +18,11 @@ export function createPlayer(scene) {
   const WALK_SPEED = 4.0;
   const RUN_SPEED = 6.5;
   const TURN_SPEED = 12.0;
+  const GRAVITY = 22;
+  const JUMP_SPEED = 22;
+  const GROUND_Y = 0;
+  let vy = 0;
+  let isGrounded = true;
   let facing = 0;
   const move = new THREE.Vector3();
   const desiredPos = new THREE.Vector3();
@@ -74,6 +79,34 @@ export function createPlayer(scene) {
     const back = input.isDown("KeyS") ? 1 : 0;
     const left = input.isDown("KeyA") ? 1 : 0;
     const right = input.isDown("KeyD") ? 1 : 0;
+    const up = input.isDown("Space") ? 1 : 0;
+
+    if (up && isGrounded) {
+      vy = JUMP_SPEED;
+      isGrounded = false;
+    }
+    vy -= GRAVITY * dt;
+    root.position.y += vy * dt;
+
+    if (root.position.y <= GROUND_Y) {
+      root.position.y = 0;
+      vy = 0;
+      isGrounded = true;
+    }
+    const groundY = collisionWorld.getGroundYAt(
+      root.position.x,
+      root.position.z,
+      0
+    );
+
+    // приземляемся на "самый высокий пол под ногами"
+    if (vy <= 0 && root.position.y <= groundY) {
+      root.position.y = groundY;
+      vy = 0;
+      isGrounded = true;
+    } else {
+      isGrounded = false;
+    }
 
     const inputX = right - left;
     const inputZ = back - forward;
@@ -105,12 +138,15 @@ export function createPlayer(scene) {
 
     const isRunning = input.isDown("ShiftLeft") || input.isDown("ShiftRight");
     const speed = isRunning ? RUN_SPEED : WALK_SPEED;
-
     desiredPos.copy(root.position);
     desiredPos.x += move.x * speed * dt;
     desiredPos.z += move.z * speed * dt;
 
-    const resolved = collisionWorld.resolveCircleVsBoxes(desiredPos, radius);
+    const resolved = collisionWorld.resolveCircleVsBoxes(
+      desiredPos,
+      radius,
+      root.position.y
+    );
     root.position.x = resolved.x;
     root.position.z = resolved.z;
 
@@ -124,11 +160,6 @@ export function createPlayer(scene) {
 
     const isMoving = move.lengthSq() > 0.001;
     if (isMoving) move.normalize();
-
-    desiredPos.copy(root.position);
-    desiredPos.x += move.x * speed * dt;
-    desiredPos.z += move.z * speed * dt;
-
     if (mixer) {
       if (!isMoving) {
         playAction("idle");

@@ -17,8 +17,8 @@ export function createCollisionWorld(scene) {
     const halfD = 2.8;
 
     const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
     );
     obstacles.push({ mesh: WM_err, box: aabb });
   });
@@ -34,8 +34,8 @@ export function createCollisionWorld(scene) {
     const halfD = 2.8;
 
     const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
     );
     obstacles.push({ mesh: WM_1, box: aabb });
   });
@@ -66,8 +66,8 @@ export function createCollisionWorld(scene) {
     const halfD = 2.8;
 
     const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, -Infinity, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, Infinity, center.z + halfD)
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
     );
 
     obstacles.push({ mesh, box: aabb });
@@ -78,6 +78,8 @@ export function createCollisionWorld(scene) {
 
     for (const obs of obstacles) {
       const b = obs.box;
+
+      if (pos.y >= b.max.y) continue;
 
       const closestX = clamp(pos.x, b.min.x, b.max.x);
       const closestZ = clamp(pos.z, b.min.z, b.max.z);
@@ -102,8 +104,27 @@ export function createCollisionWorld(scene) {
 
     return pos;
   }
+  function getGroundYAt(x, z, baseGroundY = 0) {
+    let y = baseGroundY;
 
-  return { resolveCircleVsBoxes, addWasherObstacle };
+    for (const obs of obstacles) {
+      const b = obs.box;
+
+      const insideXZ =
+        x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z;
+
+      if (!insideXZ) continue;
+
+      // верхняя грань препятствия = потенциальный "пол"
+      if (b.max.y > y && Number.isFinite(b.max.y)) {
+        y = b.max.y;
+      }
+    }
+
+    return y;
+  }
+
+  return { resolveCircleVsBoxes, addWasherObstacle, getGroundYAt };
 }
 
 function clamp(v, min, max) {
