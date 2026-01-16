@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createFlipbookPlane } from "./flipbook_animations.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 export function createGameScene(mountEl) {
   const scene = new THREE.Scene();
@@ -25,9 +26,51 @@ export function createGameScene(mountEl) {
     0.1,
     200
   );
-
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
+  let yaw = 0;
+  const sensitiviy = 0.002;
+  let isDrugging = false;
+
+  renderer.domElement.addEventListener("pointerdown", () => {
+    isDrugging = true;
+    renderer.domElement.setPointerCapture?.(event.pointerId);
+  });
+
+  window.addEventListener("pointerup", () => {
+    isDrugging = false;
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if (!isDrugging) return;
+    yaw -= e.movementX * sensitiviy;
+  });
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  const cameraTarget = new THREE.Vector3(0, 0, 0);
+
+  function followCamera(playerPos, dt) {
+    cameraTarget.lerp(playerPos, 1 - Math.pow(0.001, dt));
+
+    const height = 10;
+    const radius = 10;
+
+    const desired = new THREE.Vector3(
+      cameraTarget.x + Math.sin(yaw) * radius,
+      cameraTarget.y + height,
+      cameraTarget.z + Math.cos(yaw) * radius
+    );
+
+    camera.position.lerp(desired, 1 - Math.pow(0.001, dt));
+
+    camera.lookAt(cameraTarget.x, cameraTarget.y + 0.8, cameraTarget.z);
+  }
+
   const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 0.6);
   scene.add(hemi);
 
@@ -58,27 +101,6 @@ export function createGameScene(mountEl) {
   const grid = new THREE.GridHelper(500, 500, 0x2a2a2a, 0x1a1a1a);
   grid.position.y = 0.001;
   scene.add(grid);
-
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  const cameraTarget = new THREE.Vector3(0, 0, 0);
-
-  function followCamera(playerPos, dt) {
-    cameraTarget.lerp(playerPos, 1 - Math.pow(0.001, dt));
-
-    const desired = new THREE.Vector3(
-      cameraTarget.x,
-      cameraTarget.y + 10,
-      cameraTarget.z + 10
-    );
-
-    camera.position.lerp(desired, 1 - Math.pow(0.001, dt));
-    camera.lookAt(cameraTarget.x, cameraTarget.y + 0.8, cameraTarget.z);
-  }
 
   function render() {
     renderer.render(scene, camera);
@@ -182,5 +204,13 @@ export function createGameScene(mountEl) {
     (error) => console.error("Ошибка загрузки washing_machine:", error)
   );
 
-  return { scene, camera, renderer, followCamera, render, world };
+  return {
+    scene,
+    camera,
+    renderer,
+    followCamera,
+    render,
+    world,
+    getCameraYaw: () => yaw,
+  };
 }

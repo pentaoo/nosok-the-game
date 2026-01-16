@@ -10,10 +10,8 @@ import { createInteractables } from "./world/interactables.js";
 async function main() {
   const appEl = document.querySelector("#app");
   const hud = createHUD();
-
   const input = createInput(window);
   const time = createTime();
-
   const game = createGameScene(appEl);
   const collisionWorld = createCollisionWorld(game.scene);
   const player = createPlayer(game.scene);
@@ -21,7 +19,12 @@ async function main() {
 
   const loop = createLoop((dt) => {
     time.update(dt);
-    player.update({ dt, input, collisionWorld });
+    player.update({
+      dt,
+      input,
+      collisionWorld,
+      cameraYaw: game.getCameraYaw(),
+    });
     game.followCamera(player.position, dt);
 
     for (const w of game.world.washers ?? []) {

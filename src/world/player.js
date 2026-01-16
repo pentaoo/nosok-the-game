@@ -69,16 +69,39 @@ export function createPlayer(scene) {
     }
   );
 
-  function update({ dt, input, collisionWorld }) {
+  function update({ dt, input, collisionWorld, cameraYaw }) {
     const forward = input.isDown("KeyW") ? 1 : 0;
     const back = input.isDown("KeyS") ? 1 : 0;
     const left = input.isDown("KeyA") ? 1 : 0;
     const right = input.isDown("KeyD") ? 1 : 0;
 
-    move.set(right - left, 0, back - forward);
+    const inputX = right - left;
+    const inputZ = back - forward;
 
-    const isMoving = move.lengthSq() > 0.001;
-    if (isMoving) move.normalize();
+    const isInput = inputX ** 2 + inputZ ** 2 > 0.001;
+
+    const camForward = new THREE.Vector3(
+      Math.sin(cameraYaw),
+      0,
+      Math.cos(cameraYaw)
+    );
+
+    camForward.y = 0;
+    camForward.normalize();
+
+    const camRight = new THREE.Vector3(
+      Math.cos(cameraYaw),
+      0,
+      -Math.sin(cameraYaw)
+    );
+
+    move.set(0, 0, 0);
+    if (isInput) {
+      move
+        .addScaledVector(camForward, inputZ)
+        .addScaledVector(camRight, inputX)
+        .normalize();
+    }
 
     const isRunning = input.isDown("ShiftLeft") || input.isDown("ShiftRight");
     const speed = isRunning ? RUN_SPEED : WALK_SPEED;
@@ -91,11 +114,20 @@ export function createPlayer(scene) {
     root.position.x = resolved.x;
     root.position.z = resolved.z;
 
-    if (isMoving) {
+    if (isInput) {
       const targetAngle = Math.atan2(move.x, move.z);
       facing = dampAngle(facing, targetAngle, TURN_SPEED, dt);
       root.rotation.y = facing;
     }
+
+    move.set(right - left, 0, back - forward);
+
+    const isMoving = move.lengthSq() > 0.001;
+    if (isMoving) move.normalize();
+
+    desiredPos.copy(root.position);
+    desiredPos.x += move.x * speed * dt;
+    desiredPos.z += move.z * speed * dt;
 
     if (mixer) {
       if (!isMoving) {
