@@ -18,9 +18,11 @@ export function createPlayer(scene) {
   const WALK_SPEED = 4.0;
   const RUN_SPEED = 6.5;
   const TURN_SPEED = 12.0;
-  const GRAVITY = 22;
-  const JUMP_SPEED = 22;
+  const GRAVITY = 20;
+  const JUMP_SPEED = 25;
   const GROUND_Y = 0;
+  const FALL_MULT = 1.6;
+  const LOW_JUMP_MULT = 4;
   let vy = 0;
   let isGrounded = true;
   let facing = 0;
@@ -80,12 +82,26 @@ export function createPlayer(scene) {
     const left = input.isDown("KeyA") ? 1 : 0;
     const right = input.isDown("KeyD") ? 1 : 0;
     const up = input.isDown("Space") ? 1 : 0;
+    const jumpPressed = input.wasPressed
+      ? input.wasPressed("Space")
+      : input.isDown("Space");
 
-    if (up && isGrounded) {
+    const jumpHeld = input.isDown("Space");
+
+    if (jumpPressed && isGrounded) {
       vy = JUMP_SPEED;
       isGrounded = false;
     }
-    vy -= GRAVITY * dt;
+
+    let gravityThisFrame = GRAVITY;
+
+    if (vy < 0) {
+      gravityThisFrame *= FALL_MULT;
+    } else if (vy > 0 && !jumpHeld) {
+      gravityThisFrame *= LOW_JUMP_MULT;
+    }
+
+    vy -= gravityThisFrame * dt;
     root.position.y += vy * dt;
 
     if (root.position.y <= GROUND_Y) {
@@ -99,7 +115,6 @@ export function createPlayer(scene) {
       0
     );
 
-    // приземляемся на "самый высокий пол под ногами"
     if (vy <= 0 && root.position.y <= groundY) {
       root.position.y = groundY;
       vy = 0;
