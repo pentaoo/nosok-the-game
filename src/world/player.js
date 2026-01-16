@@ -9,7 +9,7 @@ export function createPlayer(scene) {
   // КОЛИЗИЯ ЧЕЛА
   const collider = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.35, 0.7, 8, 16),
-    new THREE.MeshStandardMaterial({ visible: false })
+    new THREE.MeshStandardMaterial({ visible: false }),
   );
 
   collider.position.set(0, 0.85, 0);
@@ -18,8 +18,8 @@ export function createPlayer(scene) {
   const WALK_SPEED = 4.0;
   const RUN_SPEED = 6.5;
   const TURN_SPEED = 12.0;
-  const GRAVITY = 20;
-  const JUMP_SPEED = 25;
+  const GRAVITY = 40;
+  const JUMP_SPEED = 35;
   const GROUND_Y = 0;
   const FALL_MULT = 1.6;
   const LOW_JUMP_MULT = 4;
@@ -49,7 +49,7 @@ export function createPlayer(scene) {
     (gltf) => {
       const model = gltf.scene;
       root.add(model);
-      model.scale.setScalar(0.05), (mixer = new THREE.AnimationMixer(model));
+      (model.scale.setScalar(0.05), (mixer = new THREE.AnimationMixer(model)));
       const findClip = (needle) =>
         gltf.animations.find((c) => c.name.toLowerCase().includes(needle)) ||
         null;
@@ -73,7 +73,7 @@ export function createPlayer(scene) {
     undefined,
     (err) => {
       console.error("Failed to load /models/player.glb", err);
-    }
+    },
   );
 
   function update({ dt, input, collisionWorld, cameraYaw }) {
@@ -112,7 +112,7 @@ export function createPlayer(scene) {
     const groundY = collisionWorld.getGroundYAt(
       root.position.x,
       root.position.z,
-      0
+      0,
     );
 
     if (vy <= 0 && root.position.y <= groundY) {
@@ -131,7 +131,7 @@ export function createPlayer(scene) {
     const camForward = new THREE.Vector3(
       Math.sin(cameraYaw),
       0,
-      Math.cos(cameraYaw)
+      Math.cos(cameraYaw),
     );
 
     camForward.y = 0;
@@ -140,7 +140,7 @@ export function createPlayer(scene) {
     const camRight = new THREE.Vector3(
       Math.cos(cameraYaw),
       0,
-      -Math.sin(cameraYaw)
+      -Math.sin(cameraYaw),
     );
 
     move.set(0, 0, 0);
@@ -160,7 +160,7 @@ export function createPlayer(scene) {
     const resolved = collisionWorld.resolveCircleVsBoxes(
       desiredPos,
       radius,
-      root.position.y
+      root.position.y,
     );
     root.position.x = resolved.x;
     root.position.z = resolved.z;
