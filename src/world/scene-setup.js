@@ -24,7 +24,7 @@ export function createGameScene(mountEl) {
     80,
     window.innerWidth / window.innerHeight,
     0.1,
-    200
+    200,
   );
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
@@ -63,7 +63,7 @@ export function createGameScene(mountEl) {
     const desired = new THREE.Vector3(
       cameraTarget.x + Math.sin(yaw) * radius,
       cameraTarget.y + height,
-      cameraTarget.z + Math.cos(yaw) * radius
+      cameraTarget.z + Math.cos(yaw) * radius,
     );
 
     camera.position.lerp(desired, 1 - Math.pow(0.001, dt));
@@ -93,7 +93,7 @@ export function createGameScene(mountEl) {
       color: 0xfdfffd,
       roughness: 0.95,
       metalness: 0.5,
-    })
+    }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
@@ -108,17 +108,12 @@ export function createGameScene(mountEl) {
 
   let WM_err = null;
   const loader = new GLTFLoader();
-  loader.load(
-    "models/WM_err.glb",
-    (gltf) => {
-      WM_err = gltf.scene;
-      WM_err.position.set(0, 0, -10);
-      WM_err.scale.set(5, 5, 5);
-      scene.add(WM_err);
-    },
-    undefined,
-    (error) => console.error("Ошибка загрузки WM_err:", error)
-  );
+  loader.load("models/WM_err.glb", (gltf) => {
+    WM_err = gltf.scene;
+    WM_err.position.set(0, 0, -10);
+    WM_err.scale.set(5, 5, 5);
+    scene.add(WM_err);
+  });
 
   let WM_1 = null;
 
@@ -129,13 +124,11 @@ export function createGameScene(mountEl) {
       gltf.animations.find((a) => a.name.toLowerCase() === "on") ??
       gltf.animations[0];
     const action = clip ? mixer.clipAction(clip) : null;
-
     if (action) {
       action.loop = THREE.LoopRepeat;
       action.clampWhenFinished = false;
       action.play();
     }
-
     WM_1.userData.mixer = mixer;
     WM_1.userData.playOn = () => action?.reset().play();
 
@@ -148,7 +141,7 @@ export function createGameScene(mountEl) {
     const WM_front = new THREE.Vector3(
       centerWorld.x,
       centerWorld.y,
-      WM_box.max.z - 0.35
+      WM_box.max.z - 0.35,
     );
     WM_1.worldToLocal(WM_front);
     WM_center.position.copy(WM_front);
@@ -177,32 +170,32 @@ export function createGameScene(mountEl) {
     return WM_1;
   }
 
-  loader.load(
-    "models/WM_1.glb",
-    async (gltf) => {
-      WM_1 = gltf.scene;
-      world.WM_1 = WM_1;
-      WM_1.position.set(9, 0, -10);
-      WM_1.scale.set(5, 5, 5);
+  loader.load("models/WM_1.glb", async (gltf) => {
+    WM_1 = gltf.scene;
+    world.WM_1 = WM_1;
+    WM_1.position.set(9, 0, -10);
+    WM_1.scale.set(5, 5, 5);
 
-      const WM_A = await spawnWasherFromGltf(gltf);
-      WM_A.position.set(-9, 0, -10);
-      scene.add(WM_A);
+    const WM_A = await spawnWasherFromGltf(gltf);
+    WM_A.position.set(-9, 0, -10);
+    scene.add(WM_A);
 
-      const WM_B = await spawnWasherFromGltf(gltf);
-      WM_B.position.set(9, 0, -10);
-      scene.add(WM_B);
+    const WM_B = await spawnWasherFromGltf(gltf);
+    WM_B.position.set(18, 0, -10);
+    scene.add(WM_B);
 
-      const WM_C = await spawnWasherFromGltf(gltf);
-      WM_C.position.set(18, 0, -10);
-      scene.add(WM_C);
+    world.washers = [WM_A, WM_B];
+    world.assets = world.assets || {};
+  });
 
-      world.washers = [WM_A, WM_B, WM_C];
-      world.assets = world.assets || {};
-    },
-    undefined,
-    (error) => console.error("Ошибка загрузки washing_machine:", error)
-  );
+  let WM_off = null;
+  loader.load("models/WM_off.glb", async (gltf) => {
+    WM_off = gltf.scene;
+    world.WM_off = WM_off;
+    WM_off.position.set(9, 0, -10);
+    WM_off.scale.set(5, 5, 5);
+    scene.add(WM_off);
+  });
 
   return {
     scene,

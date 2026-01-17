@@ -15,11 +15,11 @@ export function createPlayer(scene) {
   collider.position.set(0, 0.85, 0);
   root.add(collider);
   const radius = 0.45;
-  const WALK_SPEED = 4.0;
-  const RUN_SPEED = 6.5;
-  const TURN_SPEED = 12.0;
-  const GRAVITY = 40;
-  const JUMP_SPEED = 35;
+  const WALK_SPEED = 6;
+  const RUN_SPEED = 9;
+  const TURN_SPEED = 12;
+  const GRAVITY = 30;
+  const JUMP_SPEED = 25;
   const GROUND_Y = 0;
   const FALL_MULT = 1.6;
   const LOW_JUMP_MULT = 4;
@@ -62,8 +62,8 @@ export function createPlayer(scene) {
       actions.walk = walkClip ? mixer.clipAction(walkClip) : null;
       actions.run = runClip ? mixer.clipAction(runClip) : null;
 
-      if (actions.walk) actions.walk.timeScale = 1.0;
-      if (actions.run) actions.run.timeScale = 4;
+      if (actions.walk) actions.walk.timeScale = 3;
+      if (actions.run) actions.run.timeScale = 5;
 
       if (actions.idle) {
         activeAction = actions.idle;
@@ -82,10 +82,10 @@ export function createPlayer(scene) {
     const left = input.isDown("KeyA") ? 1 : 0;
     const right = input.isDown("KeyD") ? 1 : 0;
     const up = input.isDown("Space") ? 1 : 0;
+
     const jumpPressed = input.wasPressed
       ? input.wasPressed("Space")
       : input.isDown("Space");
-
     const jumpHeld = input.isDown("Space");
 
     if (jumpPressed && isGrounded) {

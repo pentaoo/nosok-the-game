@@ -18,7 +18,7 @@ export function createCollisionWorld(scene) {
 
     const aabb = new THREE.Box3(
       new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
     );
     obstacles.push({ mesh: WM_err, box: aabb });
   });
@@ -35,7 +35,7 @@ export function createCollisionWorld(scene) {
 
     const aabb = new THREE.Box3(
       new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
     );
     obstacles.push({ mesh: WM_1, box: aabb });
   });
@@ -67,7 +67,7 @@ export function createCollisionWorld(scene) {
 
     const aabb = new THREE.Box3(
       new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD)
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
     );
 
     obstacles.push({ mesh, box: aabb });
