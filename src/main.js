@@ -15,7 +15,7 @@ async function main() {
   const game = createGameScene(appEl);
   const collisionWorld = createCollisionWorld(game.scene);
   const player = createPlayer(game.scene);
-  const interactables = createInteractables(game.scene);
+  const interactables = game.interactables;
 
   const loop = createLoop((dt) => {
     time.update(dt);
@@ -37,7 +37,7 @@ async function main() {
     if (interaction) {
       hud.show(
         `Нажмите E — ${interaction.label}`,
-        `Прототип. Дальше подключим квесты/истории предметов.`
+        `Прототип. Дальше подключим квесты/истории предметов.`,
       );
 
       if (input.wasPressed("KeyE")) interaction.onInteract();

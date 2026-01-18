@@ -3,18 +3,9 @@ import * as THREE from "three";
 export function createInteractables(scene) {
   const items = [];
 
-  const sock = createItem({
-    position: new THREE.Vector3(2.5, 0, 3),
-    label: "осмотреть вещь (история)",
-    onInteract: () => {
-      alert(
-        "История: этот носок был перешит из старого свитера. Ценность — в следах времени, а не в ценнике."
-      );
-    },
-  });
-
-  scene.add(sock.mesh);
-  items.push(sock);
+  function register({ mesh, label, onInteract, radius = 1.5 }) {
+    items.push({ mesh, label, onInteract, radius });
+  }
 
   function getBestInteraction(playerPos) {
     let best = null;
@@ -22,10 +13,12 @@ export function createInteractables(scene) {
 
     for (const it of items) {
       const dist = it.mesh.position.distanceTo(playerPos);
-      if (dist < it.interactRadius && dist < bestDist) {
+      if (dist < it.radius && dist < bestDist) {
         best = it;
         bestDist = dist;
       }
+      const worldPos = new THREE.Vector3();
+      it.mesh.getWorldPosition(worldPos);
     }
 
     if (!best) return null;
@@ -36,7 +29,7 @@ export function createInteractables(scene) {
     };
   }
 
-  return { getBestInteraction };
+  return { getBestInteraction, register };
 }
 
 function createItem({ position, label, onInteract }) {

@@ -2,13 +2,17 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createFlipbookPlane } from "./flipbook_animations.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createInteractables } from "./interactables.js";
 
 export function createGameScene(mountEl) {
   const scene = new THREE.Scene();
   const world = {
     WM_1: null,
     WM_err: null,
+    DOC: null,
   };
+  const interactables = createInteractables(scene);
+
   // ТУМАН ВОКРУГ
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -196,6 +200,21 @@ export function createGameScene(mountEl) {
     WM_off.scale.set(5, 5, 5);
     scene.add(WM_off);
   });
+  let DOC = null;
+  loader.load("models/DOC.glb", async (gltf) => {
+    DOC = gltf.scene;
+    world.DOC = DOC;
+    DOC.position.set(0, 0.01, 0);
+    DOC.scale.set(2, 2, 2);
+    scene.add(DOC);
+
+    interactables.register({
+      mesh: DOC,
+      label: "прочитать документ",
+      onInteract: () => alert("Ну играть надо типа"),
+      radius: 1.6,
+    });
+  });
 
   return {
     scene,
@@ -205,5 +224,6 @@ export function createGameScene(mountEl) {
     render,
     world,
     getCameraYaw: () => yaw,
+    interactables,
   };
 }
