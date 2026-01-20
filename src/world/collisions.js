@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { createInteractables } from "./interactables.js";
+import { createGameScene } from "./scene-setup.js";
 
 export function createCollisionWorld(scene) {
   const obstacles = [];
@@ -13,14 +15,14 @@ export function createCollisionWorld(scene) {
     WM_err.updateWorldMatrix(true, true);
     const center = new THREE.Vector3();
     new THREE.Box3().setFromObject(WM_err).getCenter(center);
-    const halfW = 3.85;
+    const halfW = 4;
     const halfD = 2.8;
 
-    const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
+    const WM_err_box = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
       new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
     );
-    obstacles.push({ mesh: WM_err, box: aabb });
+    obstacles.push({ mesh: WM_err, box: WM_err_box });
   });
   loader.load("models/WM_1.glb", (gltf) => {
     const WM_1 = gltf.scene;
@@ -30,32 +32,36 @@ export function createCollisionWorld(scene) {
     WM_1.updateWorldMatrix(true, true);
     const center = new THREE.Vector3();
     new THREE.Box3().setFromObject(WM_1).getCenter(center);
-    const halfW = 3.85;
+    const halfW = 4;
     const halfD = 2.8;
 
-    const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
+    const WM_1_box = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
       new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
     );
-    obstacles.push({ mesh: WM_1, box: aabb });
+    obstacles.push({ mesh: WM_1, box: WM_1_box });
   });
 
-  function addBoxObstacle({ x, z, w, d, h = 2 }) {
-    const geo = new THREE.BoxGeometry(w, h, d);
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x2b2b2b,
-      roughness: 0.9,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(x, h / 2, z);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
+  loader.load("models/USHANKA.glb", async (gltf) => {
+    USHANKA = gltf.scene;
+    world.USHANKA = USHANKA;
+    USHANKA.position.set(0, 0, 0);
+    USHANKA.scale.set(2, 2, 2);
+    USHANKA.rotateY(-3);
+    scene.add(USHANKA);
 
-    const box = new THREE.Box3().setFromObject(mesh);
-    obstacles.push({ mesh, box });
-  }
+    WM_1.updateWorldMatrix(true, true);
+    const center = new THREE.Vector3();
+    new THREE.Box3().setFromObject(WM_1).getCenter(center);
+    const halfW = 4;
+    const halfD = 2.8;
 
+    const WM_1_box = new THREE.Box3(
+      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
+      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
+    );
+    obstacles.push({ mesh: WM_1, box: WM_1_box });
+  });
   function addWasherObstacle(mesh) {
     mesh.updateWorldMatrix(true, true);
 

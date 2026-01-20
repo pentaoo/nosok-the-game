@@ -10,8 +10,10 @@ export function createGameScene(mountEl) {
     WM_1: null,
     WM_err: null,
     DOC: null,
+    USHANKA: null,
   };
   const interactables = createInteractables(scene);
+  const centers = [];
 
   // ТУМАН ВОКРУГ
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
@@ -199,6 +201,11 @@ export function createGameScene(mountEl) {
     WM_off.position.set(9, 0, -10);
     WM_off.scale.set(5, 5, 5);
     scene.add(WM_off);
+    WM_off.updateMatrixWorld(true);
+    const center = new THREE.Vector3();
+    new THREE.Box3().setFromObject(WM_off).getCenter(center);
+    WM_off.userData.center = center;
+    centers.push(WM_off.center);
   });
   let DOC = null;
   loader.load("models/DOC.glb", async (gltf) => {
@@ -206,6 +213,7 @@ export function createGameScene(mountEl) {
     world.DOC = DOC;
     DOC.position.set(0, 0.01, 0);
     DOC.scale.set(2, 2, 2);
+    DOC.rotateY(-4);
     scene.add(DOC);
 
     interactables.register({
@@ -214,6 +222,15 @@ export function createGameScene(mountEl) {
       onInteract: () => alert("Ну играть надо типа"),
       radius: 1.6,
     });
+  });
+  let USHANKA = null;
+  loader.load("models/USHANKA.glb", async (gltf) => {
+    USHANKA = gltf.scene;
+    world.USHANKA = USHANKA;
+    USHANKA.position.set(0, 0, 0);
+    USHANKA.scale.set(2, 2, 2);
+    USHANKA.rotateY(46);
+    scene.add(USHANKA);
   });
 
   return {
@@ -225,5 +242,6 @@ export function createGameScene(mountEl) {
     world,
     getCameraYaw: () => yaw,
     interactables,
+    centers,
   };
 }
