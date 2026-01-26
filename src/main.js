@@ -5,9 +5,10 @@ import { createLoop } from "./core/loop.js";
 import { createHUD } from "./ui/hud.js";
 import { createPlayer } from "./world/player.js";
 import { createCollisionWorld } from "./world/collisions.js";
-import { createInteractables } from "./world/interactables.js";
+import { initDOCControls } from "./ui/doc.js";
 
 async function main() {
+  initDOCControls();
   const appEl = document.querySelector("#app");
   const hud = createHUD();
   const input = createInput(window);
@@ -37,7 +38,7 @@ async function main() {
     if (interaction) {
       hud.show(
         `Нажмите E — ${interaction.label}`,
-        `Прототип. Дальше подключим квесты/истории предметов.`,
+        `${interaction.description}`,
       );
 
       if (input.wasPressed("KeyE")) interaction.onInteract();

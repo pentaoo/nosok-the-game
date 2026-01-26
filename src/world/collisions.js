@@ -1,67 +1,61 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { createInteractables } from "./interactables.js";
-import { createGameScene } from "./scene-setup.js";
 
 export function createCollisionWorld(scene) {
   const obstacles = [];
 
+  function makeWasherBoxAt(position) {
+    return new THREE.Box3(
+      new THREE.Vector3(position.x - 4, 0, position.z - 3.2),
+      new THREE.Vector3(position.x + 4, 10, position.z + 2.8),
+    );
+  }
+
   const loader = new GLTFLoader();
   loader.load("models/WM_err.glb", (gltf) => {
-    const WM_err = gltf.scene;
+    let WM = gltf.scene;
+    const WM_err = spawnWasher(0);
+    const WM_1 = spawnWasher(-9);
+    const WM_off = spawnWasher(9);
+
+    function spawnWasher(x) {
+      const mesh = WM.clone(true);
+      mesh.position.set(x, 0, -10);
+      mesh.updateWorldMatrix(true, true);
+
+      const box = makeWasherBoxAt(mesh.position);
+      obstacles.push({ mesh, box });
+
+      return mesh;
+    }
     WM_err.position.set(0, 0, -10);
-    WM_err.scale.set(5, 5, 5);
+    let box_err = makeWasherBoxAt(WM_err.position);
 
-    WM_err.updateWorldMatrix(true, true);
-    const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(WM_err).getCenter(center);
-    const halfW = 4;
-    const halfD = 2.8;
-
-    const WM_err_box = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
-    );
-    obstacles.push({ mesh: WM_err, box: WM_err_box });
-  });
-  loader.load("models/WM_1.glb", (gltf) => {
-    const WM_1 = gltf.scene;
-    WM_1.position.set(9, 0, -10);
-    WM_1.scale.set(5, 5, 5);
-
+    WM_1.position.set(-9, 0, -10);
     WM_1.updateWorldMatrix(true, true);
-    const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(WM_1).getCenter(center);
-    const halfW = 4;
-    const halfD = 2.8;
+    let box_1 = makeWasherBoxAt(WM_1.position);
 
-    const WM_1_box = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
+    WM_off.position.set(9, 0, -10);
+    WM_off.updateWorldMatrix(true, true);
+    let box_off = makeWasherBoxAt(WM_off.position);
+
+    obstacles.push(
+      { mesh: WM_err, box: box_err },
+      { mesh: WM_1, box: box_1 },
+      { mesh: WM_off, box: box_off },
     );
-    obstacles.push({ mesh: WM_1, box: WM_1_box });
   });
 
+  let USHANKA = null;
   loader.load("models/USHANKA.glb", async (gltf) => {
     USHANKA = gltf.scene;
-    world.USHANKA = USHANKA;
-    USHANKA.position.set(0, 0, 0);
+    USHANKA.position.set(10, 0, 0);
     USHANKA.scale.set(2, 2, 2);
-    USHANKA.rotateY(-3);
-    scene.add(USHANKA);
-
-    WM_1.updateWorldMatrix(true, true);
-    const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(WM_1).getCenter(center);
-    const halfW = 4;
-    const halfD = 2.8;
-
-    const WM_1_box = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD - 0.5),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
-    );
-    obstacles.push({ mesh: WM_1, box: WM_1_box });
+    USHANKA.rotateY(-1);
+    let box = new THREE.Box3().setFromObject(USHANKA);
+    obstacles.push({ mesh: USHANKA, box: box });
   });
+
   function addWasherObstacle(mesh) {
     mesh.updateWorldMatrix(true, true);
 
@@ -78,7 +72,6 @@ export function createCollisionWorld(scene) {
 
     obstacles.push({ mesh, box: aabb });
   }
-
   function resolveCircleVsBoxes(position, radius) {
     const pos = position.clone();
 

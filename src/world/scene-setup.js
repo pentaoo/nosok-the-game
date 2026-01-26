@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createFlipbookPlane } from "./flipbook_animations.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createInteractables } from "./interactables.js";
+import { showDOC, initDOCControls } from "../ui/doc.js";
 
 export function createGameScene(mountEl) {
   const scene = new THREE.Scene();
@@ -13,7 +13,6 @@ export function createGameScene(mountEl) {
     USHANKA: null,
   };
   const interactables = createInteractables(scene);
-  const centers = [];
 
   // ТУМАН ВОКРУГ
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
@@ -23,9 +22,7 @@ export function createGameScene(mountEl) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
   mountEl.appendChild(renderer.domElement);
-
   const camera = new THREE.PerspectiveCamera(
     80,
     window.innerWidth / window.innerHeight,
@@ -36,8 +33,8 @@ export function createGameScene(mountEl) {
   camera.lookAt(0, 0, 0);
   let yaw = 0;
   const sensitiviy = 0.002;
-  let isDrugging = false;
 
+  let isDrugging = false;
   renderer.domElement.addEventListener("pointerdown", () => {
     isDrugging = true;
     renderer.domElement.setPointerCapture?.(event.pointerId);
@@ -118,7 +115,9 @@ export function createGameScene(mountEl) {
     WM_err = gltf.scene;
     WM_err.position.set(0, 0, -10);
     WM_err.scale.set(5, 5, 5);
+    WM_err.updateWorldMatrix(true, true);
     scene.add(WM_err);
+    world.WM_err = WM_err;
   });
 
   let WM_1 = null;
@@ -167,7 +166,6 @@ export function createGameScene(mountEl) {
     const onClip = gltf.animations.find((a) => a.name === "on");
     const onAction = mixer.clipAction(onClip);
     onAction.play();
-
     WM_1.userData.mixer = mixer;
     WM_1.userData.actions = {
       on: onAction,
@@ -201,11 +199,6 @@ export function createGameScene(mountEl) {
     WM_off.position.set(9, 0, -10);
     WM_off.scale.set(5, 5, 5);
     scene.add(WM_off);
-    WM_off.updateMatrixWorld(true);
-    const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(WM_off).getCenter(center);
-    WM_off.userData.center = center;
-    centers.push(WM_off.center);
   });
   let DOC = null;
   loader.load("models/DOC.glb", async (gltf) => {
@@ -219,7 +212,10 @@ export function createGameScene(mountEl) {
     interactables.register({
       mesh: DOC,
       label: "прочитать документ",
-      onInteract: () => alert("Ну играть надо типа"),
+      description: "В этом документе точно что-то важное",
+      onInteract: () => {
+        showDOC();
+      },
       radius: 1.6,
     });
   });
@@ -227,9 +223,9 @@ export function createGameScene(mountEl) {
   loader.load("models/USHANKA.glb", async (gltf) => {
     USHANKA = gltf.scene;
     world.USHANKA = USHANKA;
-    USHANKA.position.set(0, 0, 0);
+    USHANKA.position.set(10, 0, 0);
     USHANKA.scale.set(2, 2, 2);
-    USHANKA.rotateY(46);
+    USHANKA.rotateY(-1);
     scene.add(USHANKA);
   });
 
@@ -242,6 +238,5 @@ export function createGameScene(mountEl) {
     world,
     getCameraYaw: () => yaw,
     interactables,
-    centers,
   };
 }
