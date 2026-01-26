@@ -1,6 +1,6 @@
 import { createInput } from "../core/input";
 let docVisible = false;
-let escBound = false;
+let Bound = false;
 
 export function getDocEl() {
   return document.getElementById("DOC");
@@ -25,12 +25,15 @@ export function isDOCVisible() {
 }
 
 export function initDOCControls() {
-  if (escBound) return;
-  escBound = true;
+  if (Bound) return;
+  Bound = true;
 
   document.addEventListener("keydown", (e) => {
-    if ((e.key === "Escape" && docVisible) || (e.key === "e" && docVisible)) {
+    if (docVisible && e.code === "Escape") {
       hideDOC();
     }
+    document.addEventListener("keydown", (e) => {
+      console.log(e.code);
+    });
   });
 }

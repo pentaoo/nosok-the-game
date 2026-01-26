@@ -77,10 +77,10 @@ export function createPlayer(scene) {
   );
 
   function update({ dt, input, collisionWorld, cameraYaw }) {
-    const forward = input.isDown("KeyW") ? 1 : 0;
-    const back = input.isDown("KeyS") ? 1 : 0;
-    const left = input.isDown("KeyA") ? 1 : 0;
-    const right = input.isDown("KeyD") ? 1 : 0;
+    const forward = input.isDown("KeyW") || input.isDown("ArrowUp") ? 1 : 0;
+    const back = input.isDown("KeyS") || input.isDown("ArrowDown") ? 1 : 0;
+    const left = input.isDown("KeyA") || input.isDown("ArrowLeft") ? 1 : 0;
+    const right = input.isDown("KeyD") || input.isDown("ArrowRight") ? 1 : 0;
     const up = input.isDown("Space") ? 1 : 0;
 
     const jumpPressed = input.wasPressed

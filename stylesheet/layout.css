@@ -4,11 +4,22 @@ body {
   height: 100%;
   overflow: hidden;
   background: #0b0b0b;
+  grid-template-columns: repeat(12, 1fr);
+  display: grid;
+  width: 100vw;
 }
 #app {
-  height: 100%;
+  grid-column: 2/ 12;
+  height: 90vw;
+  overflow: hidden;
+  position: relative;
 }
-
+#game {
+  grid-column: 1/ 13;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+}
 .hud {
   display: none;
   position: fixed;
@@ -40,6 +51,7 @@ body {
 #DOC {
   position: absolute;
   display: none;
+  align-items: center;
   height: 80vw;
   width: 40vw;
   background-color: black;

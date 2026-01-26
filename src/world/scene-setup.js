@@ -18,6 +18,15 @@ export function createGameScene(mountEl) {
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
 
+  const container = document.querySelector("#app");
+  function resizeRenderer() {
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    renderer.setSize(width, height, false);
+  }
+
+  resizeRenderer();
+  window.addEventListener("resize", resizeRenderer);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
@@ -37,7 +46,7 @@ export function createGameScene(mountEl) {
   let isDrugging = false;
   renderer.domElement.addEventListener("pointerdown", () => {
     isDrugging = true;
-    renderer.domElement.setPointerCapture?.(event.pointerId);
+    renderer.domElement.setPointerCapture?.(pointerId);
   });
 
   window.addEventListener("pointerup", () => {

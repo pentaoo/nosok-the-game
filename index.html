@@ -5,22 +5,24 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>nosok — the game</title>
     <link rel="stylesheet" href="/stylesheet/layout.css" />
-    <script type="module" src="/src/main.js"></script>
-    <script type="module" src="/src/core/input.js"></script>
-    <script type="module" src="/src/core/loop.js"></script>
-    <script type="module" src="/src/core/time.js"></script>
-    <script type="module" src="/src/ui/hud.js"></script>
-    <script type="module" src="/src/world/collisions.js"></script>
-    <script type="module" src="/src/world/interactables.js"></script>
-    <script type="module" src="/src/world/player.js"></script>
-    <script type="module" src="/src/world/scene-setup.js"></script>
+    <script type="module" defer src="/src/main.js"></script>
+    <script type="module" defer src="/src/core/input.js"></script>
+    <script type="module" defer src="/src/core/loop.js"></script>
+    <script type="module" defer src="/src/core/time.js"></script>
+    <script type="module" defer src="/src/ui/hud.js"></script>
+    <script type="module" defer src="/src/world/collisions.js"></script>
+    <script type="module" defer src="/src/world/interactables.js"></script>
+    <script type="module" defer src="/src/world/player.js"></script>
+    <script type="module" defer src="/src/world/scene-setup.js"></script>
   </head>
   <body>
-    <div id="DOC"></div>
-    <section id="app"></section>
-    <div class="hud" id="hud">
-      <div id="hint"></div>
-      <div class="small" id="subhint"></div>
-    </div>
+    <section id="app">
+      <div id="DOC"></div>
+      <section id="game"></section>
+      <div class="hud" id="hud">
+        <div id="hint"></div>
+        <div class="small" id="subhint"></div>
+      </div>
+    </section>
   </body>
 </html>
