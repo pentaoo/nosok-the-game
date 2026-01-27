@@ -1,0 +1,23 @@
+.rect {
+  width: 200px;
+  height: 40px;
+  background: black;
+  position: relative;
+
+  transform-origin: left center;
+  animation: stretch 2s ease-in-out infinite;
+}
+
+@keyframes stretch {
+  0% {
+    transform: scaleX(1);
+  }
+
+  50% {
+    transform: scaleX(2);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
