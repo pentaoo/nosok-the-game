@@ -9,7 +9,7 @@ import { initDOCControls } from "./ui/doc.js";
 
 async function main() {
   initDOCControls();
-  const appEl = document.querySelector("#app");
+  const appEl = document.querySelector("#game");
   const hud = createHUD();
   const input = createInput(window);
   const time = createTime();

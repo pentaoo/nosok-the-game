@@ -1,8 +1,9 @@
 .rect {
   width: 200px;
   height: 40px;
-  background: black;
-  position: relative;
+  background: #ffd519;
+  position: absolute;
+  display: block;
 
   transform-origin: left center;
   animation: stretch 2s ease-in-out infinite;

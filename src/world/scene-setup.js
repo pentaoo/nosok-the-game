@@ -18,7 +18,7 @@ export function createGameScene(mountEl) {
   scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-  const container = document.querySelector("#app");
+  const container = document.querySelector("#game");
   function resizeRenderer() {
     const width = container.clientWidth;
     const height = container.clientHeight;
