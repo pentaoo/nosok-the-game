@@ -9,7 +9,7 @@ export function getDocEl() {
 export function showDOC() {
   const el = getDocEl();
   if (!el) return;
-  el.style.display = "block";
+  el.style.display = "grid";
   docVisible = true;
 }
 

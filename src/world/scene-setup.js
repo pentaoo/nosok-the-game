@@ -14,39 +14,45 @@ export function createGameScene(mountEl) {
   };
   const interactables = createInteractables(scene);
 
-  // ТУМАН ВОКРУГ
-  scene.fog = new THREE.Fog(0x0b0b0b, 12, 40);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-
-  const container = document.querySelector("#game");
-  function resizeRenderer() {
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    renderer.setSize(width, height, false);
-  }
-
-  resizeRenderer();
-  window.addEventListener("resize", resizeRenderer);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: "high-performance",
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
   mountEl.appendChild(renderer.domElement);
-  const camera = new THREE.PerspectiveCamera(
-    80,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    200,
-  );
+  const camera = new THREE.PerspectiveCamera(80, 1, 0.1, 200);
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
   let yaw = 0;
   const sensitiviy = 0.002;
 
+  function resizeToContainer() {
+    const w = mountEl.clientWidth;
+    const h = mountEl.clientHeight;
+
+    if (!w || !h) return;
+
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resizeToContainer();
+
+  const ro = new ResizeObserver(() => {
+    const w = game.clientWidth;
+    const h = game.clientHeight;
+
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  });
+
+  ro.observe(game);
+
   let isDrugging = false;
-  renderer.domElement.addEventListener("pointerdown", () => {
+  renderer.domElement.addEventListener("pointerdown", (e) => {
     isDrugging = true;
-    renderer.domElement.setPointerCapture?.(pointerId);
+    renderer.domElement.setPointerCapture?.(e.pointerId);
   });
 
   window.addEventListener("pointerup", () => {
@@ -56,12 +62,6 @@ export function createGameScene(mountEl) {
   window.addEventListener("pointermove", (e) => {
     if (!isDrugging) return;
     yaw -= e.movementX * sensitiviy;
-  });
-
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
   const cameraTarget = new THREE.Vector3(0, 0, 0);

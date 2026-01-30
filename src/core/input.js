@@ -2,6 +2,12 @@ export function createInput(target = window) {
   const down = new Set();
   const pressedThisFrame = new Set();
 
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+      e.preventDefault();
+    }
+  });
+
   function onKeyDown(e) {
     if (!down.has(e.code)) pressedThisFrame.add(e.code);
     down.add(e.code);

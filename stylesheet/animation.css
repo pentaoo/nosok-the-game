@@ -1,24 +1,22 @@
-.rect {
-  width: 200px;
-  height: 40px;
-  background: #ffd519;
-  position: absolute;
-  display: block;
-
-  transform-origin: left center;
-  animation: stretch 2s ease-in-out infinite;
-}
-
-@keyframes stretch {
+@keyframes roll {
   0% {
-    transform: scaleX(1);
+    opacity: 0;
+    transform: translateX(0) scaleX(0);
   }
-
-  50% {
-    transform: scaleX(2);
+  8% {
+    opacity: 1;
+    transform: translateX(0) scaleX(0.05);
   }
-
+  55% {
+    opacity: 1;
+    transform: translateX(var(--shift)) scaleX(1);
+  }
+  70% {
+    opacity: 0;
+    transform: translateX(var(--shift)) scaleX(1);
+  }
   100% {
-    transform: scaleX(1);
+    opacity: 0;
+    transform: translateX(var(--shift)) scaleX(0);
   }
 }
