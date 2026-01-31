@@ -11,6 +11,7 @@ export function createGameScene(mountEl) {
     WM_err: null,
     DOC: null,
     USHANKA: null,
+    vans: null,
   };
   const interactables = createInteractables(scene);
 
@@ -208,6 +209,14 @@ export function createGameScene(mountEl) {
     WM_off.position.set(9, 0, -10);
     WM_off.scale.set(5, 5, 5);
     scene.add(WM_off);
+  });
+  let vans = null;
+  loader.load("models/vans.glb", async (gltf) => {
+    vans = gltf.scene;
+    world.vans = vans;
+    vans.position.set(-10, 0, 0);
+    vans.scale.set(3, 3, 3);
+    scene.add(vans);
   });
   let DOC = null;
   loader.load("models/DOC.glb", async (gltf) => {
