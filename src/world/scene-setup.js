@@ -25,7 +25,12 @@ export function createGameScene(mountEl) {
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
   let yaw = 0;
-  const sensitiviy = 0.002;
+  const mouseSensitivity = 0.002;
+  const touchSensitivity = 0.006;
+  let isDragging = false;
+  let activePointerId = null;
+  let lastPointerX = 0;
+  let manualCooldown = 0;
 
   function resizeToContainer() {
     const w = mountEl.clientWidth;
@@ -50,28 +55,55 @@ export function createGameScene(mountEl) {
 
   ro.observe(game);
 
-  let isDrugging = false;
   renderer.domElement.addEventListener("pointerdown", (e) => {
-    isDrugging = true;
+    if (activePointerId !== null) return;
+    isDragging = true;
+    activePointerId = e.pointerId;
+    lastPointerX = e.clientX;
+    manualCooldown = 0.45;
     renderer.domElement.setPointerCapture?.(e.pointerId);
   });
 
-  window.addEventListener("pointerup", () => {
-    isDrugging = false;
-  });
+  function endDrag(e) {
+    if (e && activePointerId !== e.pointerId) return;
+    isDragging = false;
+    activePointerId = null;
+  }
+
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
 
   window.addEventListener("pointermove", (e) => {
-    if (!isDrugging) return;
-    yaw -= e.movementX * sensitiviy;
+    if (!isDragging || activePointerId !== e.pointerId) return;
+    const dx = e.clientX - lastPointerX;
+    lastPointerX = e.clientX;
+    const sens = e.pointerType === "touch" ? touchSensitivity : mouseSensitivity;
+    yaw -= dx * sens;
+    manualCooldown = 0.45;
   });
 
   const cameraTarget = new THREE.Vector3(0, 0, 0);
 
-  function followCamera(playerPos, dt) {
+  function followCamera(playerPos, dt, playerFacing = null, playerSpeed = 0) {
     cameraTarget.lerp(playerPos, 1 - Math.pow(0.001, dt));
 
     const height = 10;
     const radius = 10;
+
+    const isTouchUI = document.body.classList.contains("touch-ui");
+    if (isTouchUI) {
+      manualCooldown = Math.max(0, manualCooldown - dt);
+      if (!isDragging && manualCooldown <= 0 && typeof playerFacing === "number") {
+        const desiredYaw = normalizeAngle(playerFacing + Math.PI);
+        const delta = shortestAngleDelta(yaw, desiredYaw);
+        let follow = 2.4;
+        if (playerSpeed > 0.2) follow = 3.4;
+        if (playerSpeed > 0.2 && Math.abs(delta) > Math.PI * 0.6) {
+          follow = 5.0;
+        }
+        yaw = dampAngle(yaw, desiredYaw, follow, dt);
+      }
+    }
 
     const desired = new THREE.Vector3(
       cameraTarget.x + Math.sin(yaw) * radius,
@@ -257,4 +289,20 @@ export function createGameScene(mountEl) {
     getCameraYaw: () => yaw,
     interactables,
   };
+}
+
+function normalizeAngle(angle) {
+  let a = (angle + Math.PI) % (2 * Math.PI);
+  if (a < 0) a += 2 * Math.PI;
+  return a - Math.PI;
+}
+
+function shortestAngleDelta(current, target) {
+  return normalizeAngle(target - current);
+}
+
+function dampAngle(current, target, lambda, dt) {
+  const delta = shortestAngleDelta(current, target);
+  const t = 1 - Math.exp(-lambda * dt);
+  return current + delta * t;
 }

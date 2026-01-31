@@ -39,6 +39,7 @@ export function createPlayer(scene) {
   const velocity = new THREE.Vector3();
   const desiredVel = new THREE.Vector3();
   const desiredPos = new THREE.Vector3();
+  let moveSpeed = 0;
   let mixer = null;
   let activeAction = null;
   const actions = { idle: null, walk: null, run: null };
@@ -204,6 +205,7 @@ export function createPlayer(scene) {
     desiredVel.copy(move).multiplyScalar(speed);
     velocity.x = damp(velocity.x, desiredVel.x, accel, dt);
     velocity.z = damp(velocity.z, desiredVel.z, accel, dt);
+    moveSpeed = Math.hypot(velocity.x, velocity.z);
 
     desiredPos.copy(root.position);
     desiredPos.x += velocity.x * dt;
@@ -250,6 +252,12 @@ export function createPlayer(scene) {
     update,
     get position() {
       return root.position;
+    },
+    get facing() {
+      return facing;
+    },
+    get moveSpeed() {
+      return moveSpeed;
     },
   };
 }

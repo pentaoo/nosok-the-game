@@ -35,15 +35,33 @@
         <div id="hint"></div>
         <div class="small" id="subhint"></div>
       </div>
-      <section id="game">
+      <div id="game-wrap">
+        <section id="game"></section>
         <div id="touch-controls" aria-hidden="true">
-          <div id="stick-zone" class="stick-zone">
-            <div class="stick-base"></div>
-            <div class="stick-handle" id="stick-handle"></div>
+          <div class="touch-pad">
+            <button class="touch-btn dpad up" data-code="KeyW" type="button">
+              W
+            </button>
+            <button class="touch-btn dpad left" data-code="KeyA" type="button">
+              A
+            </button>
+            <button class="touch-btn dpad down" data-code="KeyS" type="button">
+              S
+            </button>
+            <button class="touch-btn dpad right" data-code="KeyD" type="button">
+              D
+            </button>
           </div>
-          <button id="jump-btn" class="touch-btn" type="button">A</button>
+          <div class="touch-actions">
+            <button class="touch-btn action" data-code="KeyE" type="button">
+              E
+            </button>
+            <button class="touch-btn jump" data-code="Space" type="button">
+              A
+            </button>
+          </div>
         </div>
-      </section>
+      </div>
     </section>
     <div class="content">
       <div class="card">

@@ -6,7 +6,7 @@ import { createHUD } from "./ui/hud.js";
 import { createTouchControls } from "./ui/touch-controls.js";
 import { createPlayer } from "./world/player.js";
 import { createCollisionWorld } from "./world/collisions.js";
-import { initDOCControls } from "./ui/doc.js";
+import { initDOCControls, hideDOC } from "./ui/doc.js";
 
 async function main() {
   initDOCControls();
@@ -28,7 +28,7 @@ async function main() {
       collisionWorld,
       cameraYaw: game.getCameraYaw(),
     });
-    game.followCamera(player.position, dt);
+    game.followCamera(player.position, dt, player.facing, player.moveSpeed);
 
     for (const w of game.world.washers ?? []) {
       collisionWorld.addWasherObstacle(w);
@@ -37,14 +37,24 @@ async function main() {
     }
 
     const interaction = interactables.getBestInteraction(player.position);
+    const isTouchUI = document.body.classList.contains("touch-ui");
     if (interaction) {
-      hud.show(
-        `Нажмите E — ${interaction.label}`,
-        `${interaction.description}`,
-      );
+      const hintText = isTouchUI
+        ? `Удерживайте E — ${interaction.label}`
+        : `Нажмите E — ${interaction.label}`;
+      hud.show(hintText, `${interaction.description}`);
 
-      if (input.wasPressed("KeyE")) interaction.onInteract();
+      if (isTouchUI) {
+        if (input.isDown("KeyE")) {
+          interaction.onInteract();
+        } else {
+          hideDOC();
+        }
+      } else if (input.wasPressed("KeyE")) {
+        interaction.onInteract();
+      }
     } else {
+      if (isTouchUI) hideDOC();
       hud.hide();
     }
 

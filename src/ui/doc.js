@@ -1,4 +1,3 @@
-import { createInput } from "../core/input";
 let docVisible = false;
 let Bound = false;
 
@@ -9,14 +8,18 @@ export function getDocEl() {
 export function showDOC() {
   const el = getDocEl();
   if (!el) return;
-  el.style.display = "grid";
+  const isTouch = document.body.classList.contains("touch-ui");
+  el.classList.add("doc-open");
+  el.style.display = isTouch ? "block" : "grid";
   docVisible = true;
 }
 
 export function hideDOC() {
   const el = getDocEl();
   if (!el) return;
-  el.style.display = "none";
+  const isTouch = document.body.classList.contains("touch-ui");
+  el.classList.remove("doc-open");
+  if (!isTouch) el.style.display = "none";
   docVisible = false;
 }
 
@@ -32,8 +35,5 @@ export function initDOCControls() {
     if (docVisible && e.code === "Escape") {
       hideDOC();
     }
-    document.addEventListener("keydown", (e) => {
-      console.log(e.code);
-    });
   });
 }

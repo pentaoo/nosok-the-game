@@ -1,12 +1,9 @@
 export function createTouchControls({ container, input }) {
   const root = document.getElementById("touch-controls");
-  const stickZone = document.getElementById("stick-zone");
-  const stickHandle = document.getElementById("stick-handle");
-  const jumpBtn = document.getElementById("jump-btn");
+  if (!root) return { destroy() {} };
 
-  if (!root || !stickZone || !stickHandle || !jumpBtn) {
-    return { destroy() {} };
-  }
+  const buttons = Array.from(root.querySelectorAll("[data-code]"));
+  if (buttons.length === 0) return { destroy() {} };
 
   const isTouch =
     "ontouchstart" in window ||
@@ -20,95 +17,41 @@ export function createTouchControls({ container, input }) {
 
   document.body.classList.add("touch-ui");
 
-  const maxRadius = 52;
-  let activePointerId = null;
-  let centerX = 0;
-  let centerY = 0;
-
-  function setStick(dx, dy) {
-    const dist = Math.hypot(dx, dy);
-    const clamped = Math.min(dist, maxRadius);
-    const nx = dist > 0 ? dx / dist : 0;
-    const ny = dist > 0 ? dy / dist : 0;
-
-    const handleX = nx * clamped;
-    const handleY = ny * clamped;
-    stickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
-
-    let axisX = handleX / maxRadius;
-    let axisZ = -handleY / maxRadius;
-    let magnitude = Math.min(1, Math.hypot(axisX, axisZ));
-    const deadzone = 0.12;
-    if (magnitude < deadzone) {
-      axisX = 0;
-      axisZ = 0;
-      magnitude = 0;
-    }
-    const run = magnitude > 0.7;
-    input.setAxis(axisX, axisZ, magnitude > 0, run);
-    input.setVirtualButton("ShiftLeft", run);
-  }
-
-  function resetStick() {
-    stickHandle.style.transform = "translate(0px, 0px)";
-    input.setAxis(0, 0, false, false);
-    input.setVirtualButton("ShiftLeft", false);
+  function setButton(code, isPressed) {
+    input.setVirtualButton(code, isPressed);
   }
 
   function onPointerDown(e) {
-    if (activePointerId !== null) return;
-    activePointerId = e.pointerId;
-    stickZone.setPointerCapture?.(e.pointerId);
-
-    const rect = stickZone.getBoundingClientRect();
-    centerX = rect.left + rect.width / 2;
-    centerY = rect.top + rect.height / 2;
-    setStick(e.clientX - centerX, e.clientY - centerY);
-  }
-
-  function onPointerMove(e) {
-    if (activePointerId !== e.pointerId) return;
-    setStick(e.clientX - centerX, e.clientY - centerY);
+    e.preventDefault();
+    const code = e.currentTarget?.dataset?.code;
+    if (!code) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    setButton(code, true);
   }
 
   function onPointerUp(e) {
-    if (activePointerId !== e.pointerId) return;
-    activePointerId = null;
-    resetStick();
+    const code = e.currentTarget?.dataset?.code;
+    if (!code) return;
+    setButton(code, false);
   }
 
-  stickZone.addEventListener("pointerdown", onPointerDown);
-  stickZone.addEventListener("pointermove", onPointerMove);
-  stickZone.addEventListener("pointerup", onPointerUp);
-  stickZone.addEventListener("pointercancel", onPointerUp);
-  stickZone.addEventListener("pointerleave", onPointerUp);
-
-  function onJumpDown(e) {
-    e.preventDefault();
-    input.setVirtualButton("Space", true);
+  for (const btn of buttons) {
+    btn.addEventListener("pointerdown", onPointerDown);
+    btn.addEventListener("pointerup", onPointerUp);
+    btn.addEventListener("pointercancel", onPointerUp);
+    btn.addEventListener("pointerleave", onPointerUp);
   }
-  function onJumpUp() {
-    input.setVirtualButton("Space", false);
-  }
-
-  jumpBtn.addEventListener("pointerdown", onJumpDown);
-  jumpBtn.addEventListener("pointerup", onJumpUp);
-  jumpBtn.addEventListener("pointercancel", onJumpUp);
-  jumpBtn.addEventListener("pointerleave", onJumpUp);
 
   return {
     destroy() {
-      stickZone.removeEventListener("pointerdown", onPointerDown);
-      stickZone.removeEventListener("pointermove", onPointerMove);
-      stickZone.removeEventListener("pointerup", onPointerUp);
-      stickZone.removeEventListener("pointercancel", onPointerUp);
-      stickZone.removeEventListener("pointerleave", onPointerUp);
-      jumpBtn.removeEventListener("pointerdown", onJumpDown);
-      jumpBtn.removeEventListener("pointerup", onJumpUp);
-      jumpBtn.removeEventListener("pointercancel", onJumpUp);
-      jumpBtn.removeEventListener("pointerleave", onJumpUp);
-      resetStick();
-      input.setVirtualButton("Space", false);
+      for (const btn of buttons) {
+        btn.removeEventListener("pointerdown", onPointerDown);
+        btn.removeEventListener("pointerup", onPointerUp);
+        btn.removeEventListener("pointercancel", onPointerUp);
+        btn.removeEventListener("pointerleave", onPointerUp);
+        const code = btn.dataset?.code;
+        if (code) setButton(code, false);
+      }
       document.body.classList.remove("touch-ui");
     },
   };
