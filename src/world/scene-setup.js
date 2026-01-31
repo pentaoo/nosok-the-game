@@ -25,8 +25,10 @@ export function createGameScene(mountEl) {
   camera.position.set(0, 10, 10);
   camera.lookAt(0, 0, 0);
   let yaw = 0;
-  const mouseSensitivity = 0.002;
-  const touchSensitivity = 0.006;
+  let targetYaw = 0;
+  const mouseSensitivity = 0.0016;
+  const touchSensitivity = 0.0045;
+  const yawDamp = 6;
   let isDragging = false;
   let activePointerId = null;
   let lastPointerX = 0;
@@ -78,14 +80,14 @@ export function createGameScene(mountEl) {
     const dx = e.clientX - lastPointerX;
     lastPointerX = e.clientX;
     const sens = e.pointerType === "touch" ? touchSensitivity : mouseSensitivity;
-    yaw -= dx * sens;
+    targetYaw -= dx * sens;
     manualCooldown = 0.45;
   });
 
   const cameraTarget = new THREE.Vector3(0, 0, 0);
 
   function followCamera(playerPos, dt, playerFacing = null, playerSpeed = 0) {
-    cameraTarget.lerp(playerPos, 1 - Math.pow(0.001, dt));
+    cameraTarget.lerp(playerPos, 1 - Math.pow(0.01, dt));
 
     const height = 10;
     const radius = 10;
@@ -96,14 +98,16 @@ export function createGameScene(mountEl) {
       if (!isDragging && manualCooldown <= 0 && typeof playerFacing === "number") {
         const desiredYaw = normalizeAngle(playerFacing + Math.PI);
         const delta = shortestAngleDelta(yaw, desiredYaw);
-        let follow = 2.4;
-        if (playerSpeed > 0.2) follow = 3.4;
+        let follow = 1.8;
+        if (playerSpeed > 0.2) follow = 2.4;
         if (playerSpeed > 0.2 && Math.abs(delta) > Math.PI * 0.6) {
-          follow = 5.0;
+          follow = 3.2;
         }
-        yaw = dampAngle(yaw, desiredYaw, follow, dt);
+        targetYaw = dampAngle(targetYaw, desiredYaw, follow, dt);
       }
     }
+
+    yaw = dampAngle(yaw, targetYaw, yawDamp, dt);
 
     const desired = new THREE.Vector3(
       cameraTarget.x + Math.sin(yaw) * radius,
@@ -111,7 +115,7 @@ export function createGameScene(mountEl) {
       cameraTarget.z + Math.cos(yaw) * radius,
     );
 
-    camera.position.lerp(desired, 1 - Math.pow(0.001, dt));
+    camera.position.lerp(desired, 1 - Math.pow(0.01, dt));
 
     camera.lookAt(cameraTarget.x, cameraTarget.y + 0.8, cameraTarget.z);
   }
