@@ -3,6 +3,7 @@ import { createInput } from "./core/input.js";
 import { createTime } from "./core/time.js";
 import { createLoop } from "./core/loop.js";
 import { createHUD } from "./ui/hud.js";
+import { createTouchControls } from "./ui/touch-controls.js";
 import { createPlayer } from "./world/player.js";
 import { createCollisionWorld } from "./world/collisions.js";
 import { initDOCControls } from "./ui/doc.js";
@@ -14,6 +15,7 @@ async function main() {
   const input = createInput(window);
   const time = createTime();
   const game = createGameScene(appEl);
+  createTouchControls({ container: appEl, input });
   const collisionWorld = createCollisionWorld(game.scene);
   const player = createPlayer(game.scene);
   const interactables = game.interactables;

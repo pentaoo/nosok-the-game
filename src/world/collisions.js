@@ -3,6 +3,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export function createCollisionWorld(scene) {
   const obstacles = [];
+  const obstacleById = new Map();
+  const tmpCenter = new THREE.Vector3();
 
   function makeWasherBoxAt(position) {
     return new THREE.Box3(
@@ -59,18 +61,22 @@ export function createCollisionWorld(scene) {
   function addWasherObstacle(mesh) {
     mesh.updateWorldMatrix(true, true);
 
-    const center = new THREE.Vector3();
-    new THREE.Box3().setFromObject(mesh).getCenter(center);
+    new THREE.Box3().setFromObject(mesh).getCenter(tmpCenter);
 
     const halfW = 3.85;
     const halfD = 2.8;
 
-    const aabb = new THREE.Box3(
-      new THREE.Vector3(center.x - halfW, 0, center.z - halfD),
-      new THREE.Vector3(center.x + halfW, 10, center.z + halfD),
-    );
+    let obs = obstacleById.get(mesh.uuid);
+    if (!obs) {
+      obs = { mesh, box: new THREE.Box3() };
+      obstacles.push(obs);
+      obstacleById.set(mesh.uuid, obs);
+    }
 
-    obstacles.push({ mesh, box: aabb });
+    obs.box.set(
+      new THREE.Vector3(tmpCenter.x - halfW, 0, tmpCenter.z - halfD),
+      new THREE.Vector3(tmpCenter.x + halfW, 10, tmpCenter.z + halfD),
+    );
   }
   function resolveCircleVsBoxes(position, radius) {
     const pos = position.clone();
