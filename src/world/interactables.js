@@ -1,11 +1,15 @@
-import * as THREE from "three";
-import { showDOC } from "../ui/doc.js";
-
 export function createInteractables(scene) {
   const items = [];
 
-  function register({ mesh, label, description, onInteract, radius = 1.5 }) {
-    items.push({ mesh, label, description, onInteract, radius });
+  function register({
+    mesh,
+    label,
+    description,
+    onInteract,
+    radius = 1.5,
+    isActive = null,
+  }) {
+    items.push({ mesh, label, description, onInteract, radius, isActive });
   }
 
   function getBestInteraction(playerPos) {
@@ -13,13 +17,13 @@ export function createInteractables(scene) {
     let bestDist = Infinity;
 
     for (const it of items) {
+      if (typeof it.isActive === "function" && !it.isActive()) continue;
+      if (it.mesh?.visible === false) continue;
       const dist = it.mesh.position.distanceTo(playerPos);
       if (dist < it.radius && dist < bestDist) {
         best = it;
         bestDist = dist;
       }
-      const worldPos = new THREE.Vector3();
-      it.mesh.getWorldPosition(worldPos);
     }
 
     if (!best) return null;

@@ -6,7 +6,7 @@ export function createInput(target = window) {
   const axis = {
     x: 0,
     z: 0,
-    m9agnitude: 0,
+    magnitude: 0,
     active: false,
     run: false,
   };

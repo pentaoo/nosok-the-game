@@ -1,0 +1,3 @@
+function findDocumet() {
+    let allTexts = document.querySelectorAll('p');
+    }

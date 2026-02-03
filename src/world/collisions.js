@@ -1,82 +1,63 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-export function createCollisionWorld(scene) {
+export function createCollisionWorld() {
   const obstacles = [];
   const obstacleById = new Map();
-  const tmpCenter = new THREE.Vector3();
 
-  function makeWasherBoxAt(position) {
-    return new THREE.Box3(
-      new THREE.Vector3(position.x - 4, 0, position.z - 3.2),
-      new THREE.Vector3(position.x + 4, 10, position.z + 2.8),
-    );
-  }
-
-  const loader = new GLTFLoader();
-  loader.load("models/WM_err.glb", (gltf) => {
-    let WM = gltf.scene;
-    const WM_err = spawnWasher(0);
-    const WM_1 = spawnWasher(-9);
-    const WM_off = spawnWasher(9);
-
-    function spawnWasher(x) {
-      const mesh = WM.clone(true);
-      mesh.position.set(x, 0, -10);
-      mesh.updateWorldMatrix(true, true);
-
-      const box = makeWasherBoxAt(mesh.position);
-      obstacles.push({ mesh, box });
-
-      return mesh;
-    }
-    WM_err.position.set(0, 0, -10);
-    let box_err = makeWasherBoxAt(WM_err.position);
-
-    WM_1.position.set(-9, 0, -10);
-    WM_1.updateWorldMatrix(true, true);
-    let box_1 = makeWasherBoxAt(WM_1.position);
-
-    WM_off.position.set(9, 0, -10);
-    WM_off.updateWorldMatrix(true, true);
-    let box_off = makeWasherBoxAt(WM_off.position);
-
-    obstacles.push(
-      { mesh: WM_err, box: box_err },
-      { mesh: WM_1, box: box_1 },
-      { mesh: WM_off, box: box_off },
-    );
-  });
-
-  let USHANKA = null;
-  loader.load("models/USHANKA.glb", async (gltf) => {
-    USHANKA = gltf.scene;
-    USHANKA.position.set(10, 0, 0);
-    USHANKA.scale.set(2, 2, 2);
-    USHANKA.rotateY(-1);
-    let box = new THREE.Box3().setFromObject(USHANKA);
-    obstacles.push({ mesh: USHANKA, box: box });
-  });
-
-  function addWasherObstacle(mesh) {
-    mesh.updateWorldMatrix(true, true);
-
-    new THREE.Box3().setFromObject(mesh).getCenter(tmpCenter);
-
-    const halfW = 3.85;
-    const halfD = 2.8;
-
+  function upsertObstacle(mesh) {
     let obs = obstacleById.get(mesh.uuid);
     if (!obs) {
       obs = { mesh, box: new THREE.Box3() };
       obstacles.push(obs);
       obstacleById.set(mesh.uuid, obs);
     }
+    return obs;
+  }
 
-    obs.box.set(
-      new THREE.Vector3(tmpCenter.x - halfW, 0, tmpCenter.z - halfD),
-      new THREE.Vector3(tmpCenter.x + halfW, 10, tmpCenter.z + halfD),
-    );
+  function removeObstacle(mesh) {
+    const obs = obstacleById.get(mesh.uuid);
+    if (!obs) return;
+    obstacleById.delete(mesh.uuid);
+    const idx = obstacles.indexOf(obs);
+    if (idx >= 0) obstacles.splice(idx, 1);
+  }
+
+  function addWasherObstacle(mesh) {
+    if (!mesh || mesh.visible === false) return;
+    mesh.updateWorldMatrix(true, true);
+    const obs = upsertObstacle(mesh);
+    obs.box.setFromObject(mesh);
+    obs.box.min.y = 0;
+    obs.box.max.y = Math.max(10, obs.box.max.y);
+    obs.box.min.x -= 0.3;
+    obs.box.max.x += 0.3;
+    obs.box.min.z -= 0.2;
+    obs.box.max.z += 0.2;
+  }
+
+  function addItemObstacle(mesh, { pad = -0.08, maxY = 2 } = {}) {
+    if (!mesh) return;
+    if (mesh.visible === false) {
+      removeObstacle(mesh);
+      return;
+    }
+    mesh.updateWorldMatrix(true, true);
+    const obs = upsertObstacle(mesh);
+    const padValue =
+      typeof mesh.userData?.collisionPad === "number"
+        ? mesh.userData.collisionPad
+        : pad;
+    const maxYValue =
+      typeof mesh.userData?.collisionMaxY === "number"
+        ? mesh.userData.collisionMaxY
+        : maxY;
+    obs.box.setFromObject(mesh);
+    obs.box.min.y = 0;
+    obs.box.max.y = Math.max(maxYValue, obs.box.max.y);
+    obs.box.min.x -= padValue;
+    obs.box.max.x += padValue;
+    obs.box.min.z -= padValue;
+    obs.box.max.z += padValue;
   }
   function resolveCircleVsBoxes(position, radius) {
     const pos = position.clone();
@@ -129,7 +110,12 @@ export function createCollisionWorld(scene) {
     return y;
   }
 
-  return { resolveCircleVsBoxes, addWasherObstacle, getGroundYAt };
+  return {
+    resolveCircleVsBoxes,
+    addWasherObstacle,
+    addItemObstacle,
+    getGroundYAt,
+  };
 }
 
 function clamp(v, min, max) {

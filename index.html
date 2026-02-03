@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -16,81 +16,290 @@
     <script type="module" defer src="/src/world/scene-setup.js"></script>
   </head>
   <body>
-    <div id="main">
-      <div class="stage">
-        <div class="stripe s1"></div>
-        <div class="stripe s2"></div>
-        <div class="stripe s3"></div>
-        <div class="stripe s4"></div>
-      </div>
-    </div>
-    <section id="app">
-      <div id="DOC">
-        <p>
-          Это крутой документ, а крутой ты будешь находить похожие по всей
-          прачечной! Там написано всякое интересное :)
-        </p>
-      </div>
-      <div class="hud" id="hud">
-        <div id="hint"></div>
-        <div class="small" id="subhint"></div>
-      </div>
-      <div id="game-wrap">
-        <section id="game"></section>
-        <div id="touch-controls" aria-hidden="true">
-          <div class="touch-pad">
-            <button class="touch-btn dpad up" data-code="KeyW" type="button">
-              W
-            </button>
-            <button class="touch-btn dpad left" data-code="KeyA" type="button">
-              A
-            </button>
-            <button class="touch-btn dpad down" data-code="KeyS" type="button">
-              S
-            </button>
-            <button class="touch-btn dpad right" data-code="KeyD" type="button">
-              D
-            </button>
+    <main class="home">
+      <section class="home-hero" id="home-hero">
+        <div class="hero-logo-stream" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <span class="badgeSmall">NOSOK LAB</span>
+            <h1>Прачечная, где вещи становятся легендами</h1>
+            <p>
+              Мы превращаем заботу о вещах в игру: немного шума, немного памяти
+              и много характера.
+            </p>
+            <a class="button" href="#home-game">Перейти к игре</a>
           </div>
-          <div class="touch-actions">
-            <button class="touch-btn action" data-code="KeyE" type="button">
-              E
-            </button>
-            <button class="touch-btn jump" data-code="Space" type="button">
-              A
+          <div class="hero-logo-panel">
+            <button class="hero-logo-button" type="button" aria-label="Нажать логотип">
+              <img
+                src="/src/img/logo_pink.svg"
+                id="hero-logo"
+                data-logo="pink"
+                class="hero-logo-img"
+                alt="Nosok"
+              />
             </button>
           </div>
         </div>
-      </div>
-    </section>
-    <div class="content">
-      <div class="card">
-        <div class="upper">
-          <img class="img" src="/src/img/image 20.png" alt="" />
+        <div class="hero-footer">
+          <span>Скролл ниже</span>
+          <span>Там игра, задачи и найденные документы</span>
         </div>
-        <div class="bottom">
-          <h1>Шапка-ушанка</h1>
-          <h2>-></h2>
+        <svg class="hero-filters" aria-hidden="true" width="0" height="0">
+          <defs>
+            <filter id="hero-water">
+              <feTurbulence
+                id="hero-water-turbulence"
+                type="fractalNoise"
+                baseFrequency="0.001 0.002"
+                numOctaves="2"
+                seed="2"
+                result="noise"
+              />
+              <feDisplacementMap
+                id="hero-water-displacement"
+                in="SourceGraphic"
+                in2="noise"
+                scale="0"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+        </svg>
+      </section>
+
+      <section class="home-game" id="home-game">
+        <header class="section-header">
+          <h2>Игра</h2>
+          <p>Исследуй прачечную, собирай сигналы и открывай документы.</p>
+        </header>
+        <div class="game-grid">
+          <div class="game-panel game-panel--play">
+            <div class="panel-header">
+              <h3>Прачечная</h3>
+              <span class="panel-tag">live</span>
+            </div>
+            <div id="app" class="game-shell">
+              <div class="hud" id="hud">
+                <div id="hint"></div>
+                <div class="small" id="subhint"></div>
+              </div>
+              <div id="game-wrap">
+                <section id="game"></section>
+                <div id="touch-controls" aria-hidden="true">
+                  <div class="touch-pad">
+                    <button
+                      class="touch-btn dpad up"
+                      data-code="KeyW"
+                      type="button"
+                    >
+                      W
+                    </button>
+                    <button
+                      class="touch-btn dpad left"
+                      data-code="KeyA"
+                      type="button"
+                    >
+                      A
+                    </button>
+                    <button
+                      class="touch-btn dpad down"
+                      data-code="KeyS"
+                      type="button"
+                    >
+                      S
+                    </button>
+                    <button
+                      class="touch-btn dpad right"
+                      data-code="KeyD"
+                      type="button"
+                    >
+                      D
+                    </button>
+                  </div>
+                  <div class="touch-actions">
+                    <button
+                      class="touch-btn action"
+                      data-code="KeyE"
+                      type="button"
+                    >
+                      E
+                    </button>
+                    <button
+                      class="touch-btn jump"
+                      data-code="Space"
+                      type="button"
+                    >
+                      A
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="game-panel game-panel--tasks">
+            <div class="panel-header">
+              <h3>Квесты</h3>
+              <span class="panel-tag" id="tasks-tag">3 активных</span>
+            </div>
+            <div class="task-list" id="task-list">
+              <article class="task-card">
+                <h4>Почините стиралку</h4>
+                <p>Найдите сломанную машину и решите задачу.</p>
+              </article>
+              <article class="task-card">
+                <h4>Соберите нитки</h4>
+                <p>Отыщите спрятанные катушки на складе.</p>
+              </article>
+              <article class="task-card">
+                <h4>Верните бирку</h4>
+                <p>Передайте найденный предмет администратору.</p>
+              </article>
+              <article class="task-card">
+                <h4>Освободите шкафчик</h4>
+                <p>Проверьте камеры хранения возле входа.</p>
+              </article>
+              <article class="task-card">
+                <h4>Соберите артефакт</h4>
+                <p>Исследуйте дальний ряд и найдите редкую вещь.</p>
+              </article>
+            </div>
+            <div
+              id="DOC"
+              class="doc-panel"
+              aria-labelledby="doc-title"
+              aria-hidden="true"
+            >
+              <div class="doc-shell">
+                <header class="doc-header">
+                  <div class="doc-header-row">
+                    <span class="doc-tag" id="doc-type">DOC</span>
+                    <button class="doc-close" type="button">Закрыть</button>
+                  </div>
+                  <h1 id="doc-title" class="doc-title">Документ NOSOK</h1>
+                  <p id="doc-lead" class="doc-lead">
+                    Подойдите к листовке в игре и нажмите E, чтобы открыть её.
+                  </p>
+                </header>
+                <div id="doc-sections" class="doc-sections"></div>
+                <footer class="doc-footer">
+                  <span id="doc-footer-build">NOSOK LAB • DOC BUILD 004</span>
+                  <span class="doc-footer-hint">ESC — закрыть</span>
+                </footer>
+              </div>
+            </div>
+          </div>
+          <div class="game-panel game-panel--docs">
+            <div class="panel-header">
+              <h3>Последние документы</h3>
+              <span class="panel-tag" id="docs-count-tag">найдено 0 / 5</span>
+            </div>
+            <ul class="doc-list" id="docs-list"></ul>
+          </div>
+          <div class="game-panel game-panel--open">
+            <div class="panel-header">
+              <h3>Прогресс</h3>
+              <span class="panel-tag" id="progress-tag">0%</span>
+            </div>
+            <div class="progress-list">
+              <div class="progress-item">
+                <span>Документы</span>
+                <span id="docs-progress">0 / 5</span>
+              </div>
+              <div class="progress-item">
+                <span>Вещи</span>
+                <span id="items-progress">0 / 3</span>
+              </div>
+            </div>
+            <div class="panel-placeholder panel-placeholder--compact">
+              <p>Найдите все вещи и документы, чтобы заполнить архив.</p>
+              <p class="muted">В игре есть подсказки.</p>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="upper">
-          <img class="img" src="/src/img/image 20.png" alt="" />
+      </section>
+
+      <section class="home-cards" id="home-cards">
+        <header class="section-header section-header--wide">
+          <h2>Найденные предметы</h2>
+          <p>Коллекция вещей, которые можно встретить в прачечной NOSOK.</p>
+        </header>
+        <div class="cards-grid">
+          <div class="card card--yellow">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--pink">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--green">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--red">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--cyan">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--yellow">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--green">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
+          <div class="card card--pink">
+            <div class="upper">
+              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+            </div>
+            <div class="bottom">
+              <h1>Шапка-ушанка</h1>
+              <h2>-></h2>
+            </div>
+          </div>
         </div>
-        <div class="bottom">
-          <h1>Шапка-ушанка</h1>
-          <h2>-></h2>
-        </div>
-      </div>
-      <div class="card">
-        <div class="upper">
-          <img class="img" src="/src/img/image 20.png" alt="" />
-        </div>
-        <div class="bottom">
-          <h1>Шапка-ушанка</h1>
-          <h2>-></h2>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   </body>
 </html>

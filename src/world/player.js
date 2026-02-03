@@ -64,6 +64,11 @@ export function createPlayer(scene) {
       const model = gltf.scene;
       root.add(model);
       (model.scale.setScalar(0.05), (mixer = new THREE.AnimationMixer(model)));
+      model.traverse((child) => {
+        if (!child.isMesh || !child.material) return;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      });
       const findClip = (needle) =>
         gltf.animations.find((c) => c.name.toLowerCase().includes(needle)) ||
         null;
