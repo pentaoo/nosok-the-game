@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -6,14 +6,6 @@
     <title>nosok — the game</title>
     <link rel="stylesheet" href="/stylesheet/layout.css" />
     <script type="module" defer src="/src/main.js"></script>
-    <script type="module" defer src="/src/core/input.js"></script>
-    <script type="module" defer src="/src/core/loop.js"></script>
-    <script type="module" defer src="/src/core/time.js"></script>
-    <script type="module" defer src="/src/ui/hud.js"></script>
-    <script type="module" defer src="/src/world/collisions.js"></script>
-    <script type="module" defer src="/src/world/interactables.js"></script>
-    <script type="module" defer src="/src/world/player.js"></script>
-    <script type="module" defer src="/src/world/scene-setup.js"></script>
   </head>
   <body>
     <main class="home">
@@ -21,7 +13,7 @@
         <div class="hero-logo-stream" aria-hidden="true"></div>
         <div class="hero-inner">
           <div class="hero-copy">
-            <span class="badgeSmall">NOSOK LAB</span>
+            <span class="badge">NOSOK LAB</span>
             <h1>Прачечная, где вещи становятся легендами</h1>
             <p>
               Мы превращаем заботу о вещах в игру: немного шума, немного памяти
@@ -30,7 +22,11 @@
             <a class="button" href="#home-game">Перейти к игре</a>
           </div>
           <div class="hero-logo-panel">
-            <button class="hero-logo-button" type="button" aria-label="Нажать логотип">
+            <button
+              class="hero-logo-button"
+              type="button"
+              aria-label="Нажать логотип"
+            >
               <img
                 src="/src/img/logo_pink.svg"
                 id="hero-logo"
@@ -45,41 +41,16 @@
           <span>Скролл ниже</span>
           <span>Там игра, задачи и найденные документы</span>
         </div>
-        <svg class="hero-filters" aria-hidden="true" width="0" height="0">
-          <defs>
-            <filter id="hero-water">
-              <feTurbulence
-                id="hero-water-turbulence"
-                type="fractalNoise"
-                baseFrequency="0.001 0.002"
-                numOctaves="2"
-                seed="2"
-                result="noise"
-              />
-              <feDisplacementMap
-                id="hero-water-displacement"
-                in="SourceGraphic"
-                in2="noise"
-                scale="0"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-          </defs>
-        </svg>
+        <!-- water filter removed for perf -->
       </section>
 
       <section class="home-game" id="home-game">
-        <header class="section-header">
-          <h2>Игра</h2>
-          <p>Исследуй прачечную, собирай сигналы и открывай документы.</p>
-        </header>
         <div class="game-grid">
           <div class="game-panel game-panel--play">
-            <div class="panel-header">
-              <h3>Прачечная</h3>
-              <span class="panel-tag">live</span>
-            </div>
+            <header class="header">
+              <h2>Игра</h2>
+              <div style="display: none" class="badge"></div>
+            </header>
             <div id="app" class="game-shell">
               <div class="hud" id="hud">
                 <div id="hint"></div>
@@ -139,163 +110,193 @@
             </div>
           </div>
           <div class="game-panel game-panel--tasks">
-            <div class="panel-header">
-              <h3>Квесты</h3>
-              <span class="panel-tag" id="tasks-tag">3 активных</span>
+            <div class="header">
+              <h2>Квесты</h2>
+              <span class="badge">3/5</span>
             </div>
-            <div class="task-list" id="task-list">
-              <article class="task-card">
-                <h4>Почините стиралку</h4>
-                <p>Найдите сломанную машину и решите задачу.</p>
-              </article>
-              <article class="task-card">
-                <h4>Соберите нитки</h4>
-                <p>Отыщите спрятанные катушки на складе.</p>
-              </article>
-              <article class="task-card">
-                <h4>Верните бирку</h4>
-                <p>Передайте найденный предмет администратору.</p>
-              </article>
-              <article class="task-card">
-                <h4>Освободите шкафчик</h4>
-                <p>Проверьте камеры хранения возле входа.</p>
-              </article>
-              <article class="task-card">
-                <h4>Соберите артефакт</h4>
-                <p>Исследуйте дальний ряд и найдите редкую вещь.</p>
-              </article>
-            </div>
-            <div
-              id="DOC"
-              class="doc-panel"
-              aria-labelledby="doc-title"
-              aria-hidden="true"
-            >
-              <div class="doc-shell">
-                <header class="doc-header">
-                  <div class="doc-header-row">
-                    <span class="doc-tag" id="doc-type">DOC</span>
-                    <button class="doc-close" type="button">Закрыть</button>
-                  </div>
-                  <h1 id="doc-title" class="doc-title">Документ NOSOK</h1>
-                  <p id="doc-lead" class="doc-lead">
-                    Подойдите к листовке в игре и нажмите E, чтобы открыть её.
-                  </p>
-                </header>
-                <div id="doc-sections" class="doc-sections"></div>
-                <footer class="doc-footer">
-                  <span id="doc-footer-build">NOSOK LAB • DOC BUILD 004</span>
-                  <span class="doc-footer-hint">ESC — закрыть</span>
-                </footer>
+            <div class="task-list">
+              <div class="quests">
+                <article class="task_card">
+                  <h4>Почините стиралку</h4>
+                  <p>Найдите сломанную машину и решите задачу.</p>
+                </article>
+                <article class="task_card">
+                  <h4>Соберите нитки</h4>
+                  <p>Отыщите спрятанные катушки на складе.</p>
+                </article>
+                <article class="task_card">
+                  <h4>Верните бирку</h4>
+                  <p>Передайте найденный предмет администратору.</p>
+                </article>
+                <article class="task_card">
+                  <h4>Соберите артефакт</h4>
+                  <p>Исследуйте дальний ряд и найдите редкую вещь.</p>
+                </article>
+              </div>
+              <div class="quests_done">
+                <article class="task_card">
+                  <h4>Освободите шкафчик</h4>
+                  <p>Проверьте камеры хранения возле входа.</p>
+                </article>
               </div>
             </div>
           </div>
+
+          <div class="game-panel game-panel--cards">
+            <div class="header">
+              <h2>Найденные предметы</h2>
+            </div>
+            <div class="cards-grid" id="items-list"></div>
+          </div>
           <div class="game-panel game-panel--docs">
-            <div class="panel-header">
-              <h3>Последние документы</h3>
-              <span class="panel-tag" id="docs-count-tag">найдено 0 / 5</span>
+            <div class="header">
+              <h2>Последние документы</h2>
+              <span class="badge" id="docs-count-tag">найдено 0 / 5</span>
             </div>
             <ul class="doc-list" id="docs-list"></ul>
           </div>
-          <div class="game-panel game-panel--open">
-            <div class="panel-header">
-              <h3>Прогресс</h3>
-              <span class="panel-tag" id="progress-tag">0%</span>
+          <div id="DOC" class="doc-panel" aria-hidden="true">
+            <div class="doc-shell">
+              <header class="doc-header">
+                <div class="doc-header-row">
+                  <span class="doc-tag" id="doc-type">DOC</span>
+                  <button class="doc-close" type="button">Закрыть</button>
+                </div>
+                <h1 id="doc-title" class="doc-title">Документ NOSOK</h1>
+                <p id="doc-lead" class="doc-lead">
+                  Подойдите к листовке в игре и нажмите E, чтобы открыть её.
+                </p>
+              </header>
+              <div id="doc-sections" class="doc-sections"></div>
+              <footer class="doc-footer">
+                <span id="doc-footer-build">NOSOK LAB • DOC BUILD 004</span>
+                <span class="doc-footer-hint">ESC — закрыть</span>
+              </footer>
             </div>
-            <div class="progress-list">
-              <div class="progress-item">
-                <span>Документы</span>
-                <span id="docs-progress">0 / 5</span>
+          </div>
+          <div id="ITEM" class="doc-panel" aria-hidden="true" data-type="item">
+            <div class="doc-shell">
+              <header class="doc-header">
+                <div class="doc-header-row">
+                  <span class="doc-tag">Гардероб</span>
+                  <button class="doc-close" id="item-close" type="button">
+                    Закрыть
+                  </button>
+                </div>
+                <h1 id="item-title" class="doc-title">Предмет гардероба</h1>
+                <p id="item-lead" class="doc-lead">
+                  Найдите вещь в игре и откройте карточку, чтобы прочитать
+                  научпоп.
+                </p>
+              </header>
+              <div id="item-sections" class="doc-sections">
+                <section class="doc-section" id="item-facts">
+                  <h2>Научпоп</h2>
+                </section>
               </div>
-              <div class="progress-item">
-                <span>Вещи</span>
-                <span id="items-progress">0 / 3</span>
-              </div>
+              <footer class="doc-footer">
+                <span>NOSOK LAB • ITEM BUILD 001</span>
+                <span class="doc-footer-hint">ESC — закрыть</span>
+              </footer>
             </div>
-            <div class="panel-placeholder panel-placeholder--compact">
-              <p>Найдите все вещи и документы, чтобы заполнить архив.</p>
-              <p class="muted">В игре есть подсказки.</p>
+          </div>
+          <div id="ITEM_MODEL_LAYER" aria-hidden="true">
+            <div id="item-viewer-wrap">
+              <div
+                id="item-viewer"
+                role="img"
+                aria-label="3D-просмотр предмета гардероба"
+              ></div>
+              <p id="item-viewer-tip">Потяните модель, чтобы осмотреть</p>
             </div>
           </div>
         </div>
       </section>
-
-      <section class="home-cards" id="home-cards">
-        <header class="section-header section-header--wide">
-          <h2>Найденные предметы</h2>
-          <p>Коллекция вещей, которые можно встретить в прачечной NOSOK.</p>
+      <section
+        class="home-recycler"
+        id="home-recycler"
+        aria-labelledby="recycler-title"
+      >
+        <header
+          class="section-header section-header--wide section-header--recycler"
+        >
+          <h2 id="recycler-title">Разбери одежду в сырьё</h2>
         </header>
-        <div class="cards-grid">
-          <div class="card card--yellow">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+        <div
+          class="recycler-hp-wall"
+          id="recycler-hp-wall"
+          aria-hidden="true"
+        ></div>
+        <div class="recycler-shell">
+          <div class="recycler-stage" id="recycler-stage">
+            <div class="recycler-grid" aria-hidden="true"></div>
+            <button
+              class="recycler-target garment garment--hoodie"
+              id="recycler-target"
+              type="button"
+              aria-label="Разобрать одежду"
+            ></button>
+            <div class="recycler-life" aria-hidden="true">
+              <span class="recycler-life-bar" id="recycler-life-bar"></span>
             </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
+            <output
+              class="recycler-drop"
+              id="recycler-drop"
+              aria-live="polite"
+            ></output>
+            <span
+              class="recycler-hitline"
+              id="recycler-hitline"
+              aria-hidden="true"
+            ></span>
           </div>
-          <div class="card card--pink">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
+          <div class="recycler-meta">
+            <div class="recycler-resource">
+              <span class="recycler-resource-label">сырьё</span>
+              <strong
+                class="recycler-resource-value"
+                id="recycler-resource-value"
+                >0</strong
+              >
             </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--green">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--red">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--cyan">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--yellow">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--green">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
-            </div>
-          </div>
-          <div class="card card--pink">
-            <div class="upper">
-              <img class="img" src="/src/img/image 20.png" alt="Шапка-ушанка" />
-            </div>
-            <div class="bottom">
-              <h1>Шапка-ушанка</h1>
-              <h2>-></h2>
+            <div
+              class="recycler-tools"
+              id="recycler-tools"
+              aria-label="Инструменты разбора"
+            >
+              <button
+                class="recycler-tool is-unlocked is-selected"
+                type="button"
+                data-tool-index="0"
+                aria-label="Инструмент 1"
+              ></button>
+              <button
+                class="recycler-tool"
+                type="button"
+                data-tool-index="1"
+                data-tool-cost="80"
+                aria-label="Инструмент 2, стоимость 80"
+              >
+                <span>80</span>
+              </button>
+              <button
+                class="recycler-tool"
+                type="button"
+                data-tool-index="2"
+                data-tool-cost="160"
+                aria-label="Инструмент 3, стоимость 160"
+              >
+                <span>160</span>
+              </button>
+              <button
+                class="recycler-tool"
+                type="button"
+                data-tool-index="3"
+                data-tool-cost="260"
+                aria-label="Инструмент 4, стоимость 260"
+              >
+                <span>260</span>
+              </button>
             </div>
           </div>
         </div>

@@ -7,9 +7,7 @@
 
 @font-face {
   font-family: "Mabry Pro";
-  src:
-    url("../fonts/MabryPro-Medium.woff2") format("woff2"),
-    url("../fonts/MabryPro-Medium.woff") format("woff");
+  src: url("../fonts/MabryPro-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
 }

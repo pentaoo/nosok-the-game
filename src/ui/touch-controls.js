@@ -1,4 +1,4 @@
-export function createTouchControls({ container, input }) {
+export function createTouchControls({ input }) {
   const root = document.getElementById("touch-controls");
   if (!root) return { destroy() {} };
 
@@ -9,16 +9,28 @@ export function createTouchControls({ container, input }) {
     "ontouchstart" in window ||
     navigator.maxTouchPoints > 0 ||
     window.matchMedia("(pointer: coarse)").matches;
+  const mobileBreakpoint = window.matchMedia("(max-width: 800px)");
 
   if (!isTouch) {
     root.style.display = "none";
     return { destroy() {} };
   }
 
-  document.body.classList.add("touch-ui");
-
   function setButton(code, isPressed) {
     input.setVirtualButton(code, isPressed);
+  }
+
+  function releaseAllButtons() {
+    for (const btn of buttons) {
+      const code = btn.dataset?.code;
+      if (code) setButton(code, false);
+    }
+  }
+
+  function syncTouchMode() {
+    const shouldShow = mobileBreakpoint.matches;
+    document.body.classList.toggle("touch-ui", shouldShow);
+    if (!shouldShow) releaseAllButtons();
   }
 
   function onPointerDown(e) {
@@ -42,6 +54,13 @@ export function createTouchControls({ container, input }) {
     btn.addEventListener("pointerleave", onPointerUp);
   }
 
+  syncTouchMode();
+  if (typeof mobileBreakpoint.addEventListener === "function") {
+    mobileBreakpoint.addEventListener("change", syncTouchMode);
+  } else if (typeof mobileBreakpoint.addListener === "function") {
+    mobileBreakpoint.addListener(syncTouchMode);
+  }
+
   return {
     destroy() {
       for (const btn of buttons) {
@@ -51,6 +70,11 @@ export function createTouchControls({ container, input }) {
         btn.removeEventListener("pointerleave", onPointerUp);
         const code = btn.dataset?.code;
         if (code) setButton(code, false);
+      }
+      if (typeof mobileBreakpoint.removeEventListener === "function") {
+        mobileBreakpoint.removeEventListener("change", syncTouchMode);
+      } else if (typeof mobileBreakpoint.removeListener === "function") {
+        mobileBreakpoint.removeListener(syncTouchMode);
       }
       document.body.classList.remove("touch-ui");
     },

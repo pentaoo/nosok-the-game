@@ -1,4 +1,4 @@
-export function createInteractables(scene) {
+export function createInteractables() {
   const items = [];
 
   function register({

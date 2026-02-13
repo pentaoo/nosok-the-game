@@ -60,7 +60,7 @@ export function createCollisionWorld() {
     obs.box.max.z += padValue;
   }
   function resolveCircleVsBoxes(position, radius) {
-    const pos = position.clone();
+    const pos = position;
 
     for (const obs of obstacles) {
       const b = obs.box;

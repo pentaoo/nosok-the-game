@@ -12,15 +12,10 @@ export function createGameScene(mountEl) {
   const skyColor = new THREE.Color(0x7fd8ff);
   scene.background = skyColor;
   const world = {
-    WM_1: null,
-    WM_err: null,
-    DOC: null,
-    USHANKA: null,
-    vans: null,
     washerObstacles: [],
     itemMeshes: [],
   };
-  const interactables = createInteractables(scene);
+  const interactables = createInteractables();
 
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -227,12 +222,12 @@ export function createGameScene(mountEl) {
     { x: 0.0, y: 0.05, z: 2.1, rot: Math.PI * 0.05 },
   ];
 
-  let WM_err = null;
   const loader = new GLTFLoader();
+  const WASHER_SCALE = 5;
   loader.load("models/WM_err.glb", (gltf) => {
-    WM_err = gltf.scene;
+    const WM_err = gltf.scene;
     WM_err.position.set(0, 0, -10);
-    WM_err.scale.set(5, 5, 5);
+    WM_err.scale.setScalar(WASHER_SCALE);
     WM_err.updateWorldMatrix(true, true);
     applyToyMaterials(WM_err);
     addHighlight(WM_err, {
@@ -241,14 +236,13 @@ export function createGameScene(mountEl) {
       yOffset: 1.0,
     });
     scene.add(WM_err);
-    world.WM_err = WM_err;
     world.washerObstacles.push(WM_err);
   });
 
-  let WM_1 = null;
-
   async function spawnWasherFromGltf(gltf) {
     const WM_1 = gltf.scene.clone(true);
+    WM_1.scale.setScalar(WASHER_SCALE);
+    WM_1.updateWorldMatrix(true, true);
     const mixer = new THREE.AnimationMixer(WM_1);
     const clip =
       gltf.animations.find((a) => a.name.toLowerCase() === "on") ??
@@ -301,11 +295,6 @@ export function createGameScene(mountEl) {
   }
 
   loader.load("models/WM_1.glb", async (gltf) => {
-    WM_1 = gltf.scene;
-    world.WM_1 = WM_1;
-    WM_1.position.set(9, 0, -10);
-    WM_1.scale.set(5, 5, 5);
-
     const WM_A = await spawnWasherFromGltf(gltf);
     WM_A.position.set(-9, 0, -10);
     scene.add(WM_A);
@@ -314,25 +303,19 @@ export function createGameScene(mountEl) {
     WM_B.position.set(18, 0, -10);
     scene.add(WM_B);
 
-    world.washers = [WM_A, WM_B];
     world.washerObstacles.push(WM_A, WM_B);
-    world.assets = world.assets || {};
   });
 
-  let WM_off = null;
-  loader.load("models/WM_off.glb", async (gltf) => {
-    WM_off = gltf.scene;
-    world.WM_off = WM_off;
+  loader.load("models/WM_off.glb", (gltf) => {
+    const WM_off = gltf.scene;
     WM_off.position.set(9, 0, -10);
-    WM_off.scale.set(5, 5, 5);
+    WM_off.scale.setScalar(WASHER_SCALE);
     applyToyMaterials(WM_off);
     scene.add(WM_off);
     world.washerObstacles.push(WM_off);
   });
-  let vans = null;
-  loader.load("models/vans.glb", async (gltf) => {
-    vans = gltf.scene;
-    world.vans = vans;
+  loader.load("models/vans.glb", (gltf) => {
+    const vans = gltf.scene;
     vans.position.set(-10, 0, 0);
     vans.scale.set(3, 3, 3);
     vans.userData.collisionPad = 0.12;
@@ -358,10 +341,8 @@ export function createGameScene(mountEl) {
       isActive: () => !vans.userData.collected,
     });
   });
-  let DOC = null;
-  loader.load("models/DOC.glb", async (gltf) => {
-    DOC = gltf.scene;
-    world.DOC = DOC;
+  loader.load("models/DOC.glb", (gltf) => {
+    const DOC = gltf.scene;
     DOCS.forEach((doc, index) => {
       const mesh = index === 0 ? DOC : DOC.clone(true);
       const spawn = docSpawnPoints[index] ?? { x: 0, y: 0.05, z: 0, rot: 0 };
@@ -387,10 +368,8 @@ export function createGameScene(mountEl) {
       });
     });
   });
-  let USHANKA = null;
-  loader.load("models/USHANKA.glb", async (gltf) => {
-    USHANKA = gltf.scene;
-    world.USHANKA = USHANKA;
+  loader.load("models/USHANKA.glb", (gltf) => {
+    const USHANKA = gltf.scene;
     USHANKA.position.set(10, 0, 0);
     USHANKA.scale.set(2, 2, 2);
     USHANKA.rotateY(-1);
@@ -415,6 +394,41 @@ export function createGameScene(mountEl) {
       },
       radius: 2.4,
       isActive: () => !USHANKA.userData.collected,
+    });
+  });
+  loader.load("models/trasher_old.glb", (gltf) => {
+    const trasherOld = gltf.scene;
+
+    const trasherBox = new THREE.Box3().setFromObject(trasherOld);
+    const trasherSize = trasherBox.getSize(new THREE.Vector3());
+    const trasherScale = 2.2 / Math.max(trasherSize.x, trasherSize.y, trasherSize.z, 0.001);
+    trasherOld.scale.setScalar(trasherScale);
+    trasherOld.updateWorldMatrix(true, true);
+    const placedTrasherBox = new THREE.Box3().setFromObject(trasherOld);
+    trasherOld.position.set(0, -placedTrasherBox.min.y, 8);
+
+    trasherOld.userData.collisionPad = 0.08;
+    trasherOld.userData.collisionMaxY = 2.2;
+    addHighlight(trasherOld, {
+      intensity: 0.24,
+      distance: 4.2,
+      yOffset: 1.1,
+    });
+    scene.add(trasherOld);
+    world.itemMeshes.push(trasherOld);
+    interactables.register({
+      mesh: trasherOld,
+      label: "подобрать вещь",
+      description:
+        ITEMS.find((item) => item.id === "trasher_old")?.hint ?? "",
+      onInteract: () => {
+        if (trasherOld.userData.collected) return;
+        trasherOld.userData.collected = true;
+        trasherOld.visible = false;
+        markItemFound("trasher_old");
+      },
+      radius: 3.2,
+      isActive: () => !trasherOld.userData.collected,
     });
   });
 

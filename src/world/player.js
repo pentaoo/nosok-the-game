@@ -39,6 +39,8 @@ export function createPlayer(scene) {
   const velocity = new THREE.Vector3();
   const desiredVel = new THREE.Vector3();
   const desiredPos = new THREE.Vector3();
+  const camForward = new THREE.Vector3();
+  const camRight = new THREE.Vector3();
   let moveSpeed = 0;
   let mixer = null;
   let activeAction = null;
@@ -63,7 +65,8 @@ export function createPlayer(scene) {
     (gltf) => {
       const model = gltf.scene;
       root.add(model);
-      (model.scale.setScalar(0.05), (mixer = new THREE.AnimationMixer(model)));
+      model.scale.setScalar(0.05);
+      mixer = new THREE.AnimationMixer(model);
       model.traverse((child) => {
         if (!child.isMesh || !child.material) return;
         child.castShadow = true;
@@ -176,20 +179,9 @@ export function createPlayer(scene) {
 
     const isInput = inputX ** 2 + inputZ ** 2 > 0.001;
 
-    const camForward = new THREE.Vector3(
-      Math.sin(cameraYaw),
-      0,
-      Math.cos(cameraYaw),
-    );
-
-    camForward.y = 0;
+    camForward.set(Math.sin(cameraYaw), 0, Math.cos(cameraYaw));
     camForward.normalize();
-
-    const camRight = new THREE.Vector3(
-      Math.cos(cameraYaw),
-      0,
-      -Math.sin(cameraYaw),
-    );
+    camRight.set(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
 
     move.set(0, 0, 0);
     if (isInput) {
@@ -216,11 +208,7 @@ export function createPlayer(scene) {
     desiredPos.x += velocity.x * dt;
     desiredPos.z += velocity.z * dt;
 
-    const resolved = collisionWorld.resolveCircleVsBoxes(
-      desiredPos,
-      radius,
-      root.position.y,
-    );
+    const resolved = collisionWorld.resolveCircleVsBoxes(desiredPos, radius);
     root.position.x = resolved.x;
     root.position.z = resolved.z;
 

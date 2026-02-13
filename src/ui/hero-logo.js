@@ -63,10 +63,10 @@ function getEdgePoint(logoRect, heroRect) {
   };
 }
 
-function spawnParticle(stream, heroRect, logoRect, color) {
+function spawnParticle(heroRect, logoRect, color, fragment) {
   const particle = document.createElement("span");
-  const size = 6 + Math.random() * 12;
-  const rotation = -80 + Math.random() * 160;
+  const size = 6 + Math.random() * 10;
+  const rotation = -70 + Math.random() * 140;
   const origin = getEdgePoint(logoRect, heroRect);
   const centerX = logoRect.left - heroRect.left + logoRect.width / 2;
   const centerY = logoRect.top - heroRect.top + logoRect.height / 2;
@@ -74,7 +74,7 @@ function spawnParticle(stream, heroRect, logoRect, color) {
   const dirY = origin.y - centerY;
   const length = Math.hypot(dirX, dirY) || 1;
   const distance =
-    Math.max(heroRect.width, heroRect.height) * (0.6 + Math.random() * 0.5);
+    Math.max(heroRect.width, heroRect.height) * (0.42 + Math.random() * 0.35);
 
   particle.className = "hero-logo-particle";
   particle.style.left = `${origin.x}px`;
@@ -82,68 +82,38 @@ function spawnParticle(stream, heroRect, logoRect, color) {
   particle.style.setProperty("--size", `${size}px`);
   particle.style.setProperty("--rot", `${rotation}deg`);
   particle.style.setProperty("--color", color);
-  particle.style.setProperty(
-    "--tx",
-    `${(dirX / length) * distance}px`
-  );
-  particle.style.setProperty(
-    "--ty",
-    `${(dirY / length) * distance}px`
-  );
-  particle.style.setProperty("--dur", `${2.6 + Math.random() * 1.4}s`);
+  particle.style.setProperty("--tx", `${(dirX / length) * distance}px`);
+  particle.style.setProperty("--ty", `${(dirY / length) * distance}px`);
+  particle.style.setProperty("--dur", `${2.3 + Math.random() * 0.9}s`);
 
-  stream.appendChild(particle);
+  fragment.appendChild(particle);
   particle.addEventListener("animationend", () => particle.remove());
-  window.setTimeout(() => particle.remove(), 4200);
+  window.setTimeout(() => particle.remove(), 3600);
 }
 
-function animateWater(turbulence, displacement) {
-  if (!turbulence || !displacement) return;
-
-  const duration = 720;
-  const start = performance.now();
-  const startFreq = 0.02;
-  const endFreq = 0.002;
-  const startScale = 28;
-
-  function step(now) {
-    const t = Math.min(1, (now - start) / duration);
-    const ease = 1 - Math.pow(1 - t, 3);
-    const freq = startFreq + (endFreq - startFreq) * ease;
-    const scale = startScale * (1 - ease);
-
-    turbulence.setAttribute("baseFrequency", `${freq} ${freq * 1.35}`);
-    displacement.setAttribute("scale", scale.toFixed(2));
-
-    if (t < 1) {
-      requestAnimationFrame(step);
-    } else {
-      turbulence.setAttribute("baseFrequency", "0.001 0.001");
-      displacement.setAttribute("scale", "0");
-    }
-  }
-
-  requestAnimationFrame(step);
-}
+// Legacy water animation removed for performance.
 
 export function initHeroLogo() {
   const button = document.querySelector(".hero-logo-button");
   const logo = document.querySelector("#hero-logo");
   const stream = document.querySelector(".hero-logo-stream");
   const hero = document.querySelector(".home-hero");
-  const turbulence = document.querySelector("#hero-water-turbulence");
-  const displacement = document.querySelector("#hero-water-displacement");
 
   if (!button || !logo || !stream || !hero) return;
 
   const initialId = logo.dataset.logo;
   let currentIndex = getLogoIndexById(initialId);
   if (currentIndex < 0) currentIndex = 0;
-  hero.style.setProperty("--logo-accent", logoVariants[currentIndex].color);
+  const setAccent = (color) => {
+    hero.style.setProperty("--logo_accent", color);
+    document.documentElement.style.setProperty("--logo_accent", color);
+  };
 
-  Promise.allSettled(logoVariants.map((variant) => preloadLogo(variant.src)));
+  setAccent(logoVariants[currentIndex].color);
 
-  let rippleTimeout = null;
+  void Promise.allSettled(logoVariants.map((variant) => preloadLogo(variant.src)));
+
+  let burstTimeout = null;
   let streamTimer = null;
   let streamStopTimeout = null;
   let isSwapping = false;
@@ -159,19 +129,27 @@ export function initHeroLogo() {
     if (prefersReducedMotion) return;
 
     stopStream();
+    let framePending = false;
 
     streamTimer = window.setInterval(() => {
-      const heroRect = hero.getBoundingClientRect();
-      const logoRect = logo.getBoundingClientRect();
-      const count = 2 + Math.floor(Math.random() * 2);
-      for (let i = 0; i < count; i += 1) {
-        spawnParticle(stream, heroRect, logoRect, color);
-      }
-    }, 90);
+      if (framePending) return;
+      framePending = true;
+      requestAnimationFrame(() => {
+        framePending = false;
+        const heroRect = hero.getBoundingClientRect();
+        const logoRect = logo.getBoundingClientRect();
+        const count = 1 + Math.floor(Math.random() * 2);
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < count; i += 1) {
+          spawnParticle(heroRect, logoRect, color, fragment);
+        }
+        stream.appendChild(fragment);
+      });
+    }, 100);
 
     streamStopTimeout = window.setTimeout(() => {
       stopStream();
-    }, 3400);
+    }, 2600);
   }
 
   button.addEventListener("click", async () => {
@@ -186,21 +164,19 @@ export function initHeroLogo() {
     const swapPromise = swapLogo(logo, nextVariant);
 
     if (!prefersReducedMotion) {
-      button.classList.remove("is-rippling");
+      button.classList.remove("is-burst");
       void button.offsetWidth;
-      button.classList.add("is-rippling");
+      button.classList.add("is-burst");
 
-      animateWater(turbulence, displacement);
-
-      if (rippleTimeout) window.clearTimeout(rippleTimeout);
-      rippleTimeout = window.setTimeout(() => {
-        button.classList.remove("is-rippling");
-      }, 760);
+      if (burstTimeout) window.clearTimeout(burstTimeout);
+      burstTimeout = window.setTimeout(() => {
+        button.classList.remove("is-burst");
+      }, 560);
     }
 
     await swapPromise;
     logo.dataset.logo = nextVariant.id;
-    hero.style.setProperty("--logo-accent", nextVariant.color);
+    setAccent(nextVariant.color);
     currentIndex = nextIndex;
 
     isSwapping = false;

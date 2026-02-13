@@ -1,6 +1,5 @@
 import { createGameScene } from "./world/scene-setup.js";
 import { createInput } from "./core/input.js";
-import { createTime } from "./core/time.js";
 import { createLoop } from "./core/loop.js";
 import { createHUD } from "./ui/hud.js";
 import { createTouchControls } from "./ui/touch-controls.js";
@@ -8,10 +7,12 @@ import { createPlayer } from "./world/player.js";
 import { createCollisionWorld } from "./world/collisions.js";
 import { initDOCControls } from "./ui/doc.js";
 import { initHeroLogo } from "./ui/hero-logo.js";
+import { initRecyclerBlock } from "./ui/recycler-block.js";
 
 async function main() {
   initDOCControls();
   initHeroLogo();
+  initRecyclerBlock();
   const heroButton = document.querySelector(".button");
   let heroButtonTimeout = null;
   if (heroButton) {
@@ -24,17 +25,18 @@ async function main() {
     });
   }
   const appEl = document.querySelector("#game");
+  if (!(appEl instanceof HTMLElement)) {
+    throw new Error("Game mount element #game not found");
+  }
   const hud = createHUD();
   const input = createInput(window);
-  const time = createTime();
   const game = createGameScene(appEl);
-  createTouchControls({ container: appEl, input });
+  createTouchControls({ input });
   const collisionWorld = createCollisionWorld();
   const player = createPlayer(game.scene);
   const interactables = game.interactables;
 
   const loop = createLoop((dt) => {
-    time.update(dt);
     player.update({
       dt,
       input,
@@ -60,12 +62,7 @@ async function main() {
         ? `Удерживайте E — ${interaction.label}`
         : `Нажмите E — ${interaction.label}`;
       hud.show(hintText, `${interaction.description}`);
-
-      if (isTouchUI) {
-        if (input.wasPressed("KeyE")) {
-          interaction.onInteract();
-        }
-      } else if (input.wasPressed("KeyE")) {
+      if (input.wasPressed("KeyE")) {
         interaction.onInteract();
       }
     } else {
