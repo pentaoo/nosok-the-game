@@ -1,18 +1,14 @@
 export function createLoop(onTick) {
   let running = false;
-  let last = performance.now();
+  let last = 0;
 
-  function frame(now) {
+  const frame = (now) => {
     if (!running) return;
-
     const rawDt = (now - last) / 1000;
     last = now;
-
-    const dt = Math.min(rawDt, 1 / 20);
-    onTick(dt);
-
+    onTick(Math.min(rawDt, 1 / 20));
     requestAnimationFrame(frame);
-  }
+  };
 
   return {
     start() {

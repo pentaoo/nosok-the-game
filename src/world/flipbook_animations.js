@@ -1,4 +1,3 @@
-// flipbook_animations.js
 import * as THREE from "three";
 
 export async function createFlipbookPlane({
@@ -13,51 +12,37 @@ export async function createFlipbookPlane({
   const loader = new THREE.TextureLoader();
   const map = await loader.loadAsync(textureUrl);
 
-  map.magFilter = THREE.NearestFilter;
-  map.minFilter = THREE.NearestFilter;
+  map.magFilter = map.minFilter = THREE.NearestFilter;
   map.generateMipmaps = false;
-
-  map.wrapS = THREE.RepeatWrapping;
-  map.wrapT = THREE.RepeatWrapping;
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
   map.repeat.set(1 / frameCols, 1 / frameRows);
 
+  const materialConfig = {
+    map,
+    transparent: emissive ? true : transparent,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  };
   const material = emissive
-    ? new THREE.MeshStandardMaterial({
-        map,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      })
-    : new THREE.MeshBasicMaterial({
-        map,
-        transparent,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      });
+    ? new THREE.MeshStandardMaterial(materialConfig)
+    : new THREE.MeshBasicMaterial(materialConfig);
 
   const geom = new THREE.PlaneGeometry(size, size);
   const mesh = new THREE.Mesh(geom, material);
 
-  let time = 0;
-  let frame = 0;
+  const step = 1 / fps;
   const totalFrames = frameCols * frameRows;
+  let elapsed = 0;
+  let frame = 0;
 
   mesh.userData.updateFlipbook = (dt) => {
-    time += dt;
-    const step = 1 / fps;
-
-    while (time >= step) {
-      time -= step;
+    elapsed += dt;
+    while (elapsed >= step) {
+      elapsed -= step;
       frame = (frame + 1) % totalFrames;
-
       const col = frame % frameCols;
       const row = Math.floor(frame / frameCols);
-
-      const xOffset = col / frameCols;
-      const yOffset = 1 - (row + 1) / frameRows; // для атласа сверху-вниз
-
-      map.offset.set(xOffset, yOffset);
-      // map.needsUpdate = true; // обычно не нужно, но можно оставить если сомневаешься
+      map.offset.set(col / frameCols, 1 - (row + 1) / frameRows);
     }
   };
 

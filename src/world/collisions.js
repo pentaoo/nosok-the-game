@@ -4,7 +4,7 @@ export function createCollisionWorld() {
   const obstacles = [];
   const obstacleById = new Map();
 
-  function upsertObstacle(mesh) {
+  function getOrCreateObstacle(mesh) {
     let obs = obstacleById.get(mesh.uuid);
     if (!obs) {
       obs = { mesh, box: new THREE.Box3() };
@@ -15,34 +15,34 @@ export function createCollisionWorld() {
   }
 
   function removeObstacle(mesh) {
-    const obs = obstacleById.get(mesh.uuid);
+    const obs = mesh ? obstacleById.get(mesh.uuid) : null;
     if (!obs) return;
     obstacleById.delete(mesh.uuid);
     const idx = obstacles.indexOf(obs);
     if (idx >= 0) obstacles.splice(idx, 1);
   }
 
-  function addWasherObstacle(mesh) {
-    if (!mesh || mesh.visible === false) return;
+  function updateObstacleBox(mesh, { padX = 0, padZ = padX, maxY = 0 } = {}) {
+    if (!mesh) return;
+    if (mesh.visible === false) return removeObstacle(mesh);
+
     mesh.updateWorldMatrix(true, true);
-    const obs = upsertObstacle(mesh);
+    const obs = getOrCreateObstacle(mesh);
     obs.box.setFromObject(mesh);
     obs.box.min.y = 0;
-    obs.box.max.y = Math.max(10, obs.box.max.y);
-    obs.box.min.x -= 0.3;
-    obs.box.max.x += 0.3;
-    obs.box.min.z -= 0.2;
-    obs.box.max.z += 0.2;
+    obs.box.max.y = Math.max(maxY, obs.box.max.y);
+    obs.box.min.x -= padX;
+    obs.box.max.x += padX;
+    obs.box.min.z -= padZ;
+    obs.box.max.z += padZ;
+  }
+
+  function addWasherObstacle(mesh) {
+    updateObstacleBox(mesh, { padX: 0.3, padZ: 0.2, maxY: 10 });
   }
 
   function addItemObstacle(mesh, { pad = -0.08, maxY = 2 } = {}) {
     if (!mesh) return;
-    if (mesh.visible === false) {
-      removeObstacle(mesh);
-      return;
-    }
-    mesh.updateWorldMatrix(true, true);
-    const obs = upsertObstacle(mesh);
     const padValue =
       typeof mesh.userData?.collisionPad === "number"
         ? mesh.userData.collisionPad
@@ -51,63 +51,41 @@ export function createCollisionWorld() {
       typeof mesh.userData?.collisionMaxY === "number"
         ? mesh.userData.collisionMaxY
         : maxY;
-    obs.box.setFromObject(mesh);
-    obs.box.min.y = 0;
-    obs.box.max.y = Math.max(maxYValue, obs.box.max.y);
-    obs.box.min.x -= padValue;
-    obs.box.max.x += padValue;
-    obs.box.min.z -= padValue;
-    obs.box.max.z += padValue;
+    updateObstacleBox(mesh, { padX: padValue, maxY: maxYValue });
   }
+
   function resolveCircleVsBoxes(position, radius) {
-    const pos = position;
-
+    const radiusSq = radius * radius;
     for (const obs of obstacles) {
       const b = obs.box;
+      if (position.y >= b.max.y) continue;
 
-      if (pos.y >= b.max.y) continue;
-
-      const closestX = clamp(pos.x, b.min.x, b.max.x);
-      const closestZ = clamp(pos.z, b.min.z, b.max.z);
-
-      const dx = pos.x - closestX;
-      const dz = pos.z - closestZ;
-
+      const closestX = clamp(position.x, b.min.x, b.max.x);
+      const closestZ = clamp(position.z, b.min.z, b.max.z);
+      const dx = position.x - closestX;
+      const dz = position.z - closestZ;
       const distSq = dx * dx + dz * dz;
-      const rSq = radius * radius;
+      if (distSq >= radiusSq) continue;
 
-      if (distSq < rSq) {
-        const dist = Math.sqrt(distSq) || 0.0001;
-        const overlap = radius - dist;
-
-        const nx = dx / dist;
-        const nz = dz / dist;
-
-        pos.x += nx * overlap;
-        pos.z += nz * overlap;
-      }
+      const dist = Math.sqrt(distSq) || 0.0001;
+      const overlap = radius - dist;
+      position.x += (dx / dist) * overlap;
+      position.z += (dz / dist) * overlap;
     }
 
-    return pos;
+    return position;
   }
-  function getGroundYAt(x, z, baseGroundY = 0) {
-    let y = baseGroundY;
 
+  function getGroundYAt(x, z, baseGroundY = 0) {
+    let groundY = baseGroundY;
     for (const obs of obstacles) {
       const b = obs.box;
-
-      const insideXZ =
-        x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z;
-
-      if (!insideXZ) continue;
-
-      // верхняя грань препятствия = потенциальный "пол"
-      if (b.max.y > y && Number.isFinite(b.max.y)) {
-        y = b.max.y;
+      const insideXZ = x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z;
+      if (insideXZ && Number.isFinite(b.max.y)) {
+        groundY = Math.max(groundY, b.max.y);
       }
     }
-
-    return y;
+    return groundY;
   }
 
   return {

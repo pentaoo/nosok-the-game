@@ -31,9 +31,7 @@ function createSpoolModel() {
     new THREE.CylinderGeometry(0.4, 0.4, 0.08, 24),
     coreMaterial
   );
-  topDisc.position.y = 0.52;
   const bottomDisc = topDisc.clone();
-  bottomDisc.position.y = -0.52;
   const core = new THREE.Mesh(
     new THREE.CylinderGeometry(0.15, 0.15, 0.9, 24),
     coreMaterial
@@ -43,19 +41,19 @@ function createSpoolModel() {
     threadMaterial
   );
 
+  topDisc.position.y = 0.52;
+  bottomDisc.position.y = -0.52;
   group.add(topDisc, bottomDisc, core, thread);
   group.rotation.z = -0.22;
   return group;
 }
 
-function disposeObject(object) {
-  object.traverse((node) => {
+function disposeObject(root) {
+  root.traverse((node) => {
     if (!node.isMesh) return;
     node.geometry?.dispose?.();
     if (Array.isArray(node.material)) {
-      for (const material of node.material) {
-        material?.dispose?.();
-      }
+      node.material.forEach((material) => material?.dispose?.());
       return;
     }
     node.material?.dispose?.();
@@ -66,15 +64,10 @@ function normalizeModel(root) {
   const box = new THREE.Box3().setFromObject(root);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-
-  if (!Number.isFinite(size.x) || !Number.isFinite(size.y) || !Number.isFinite(size.z)) {
-    return;
-  }
+  if (!Number.isFinite(size.x + size.y + size.z)) return;
 
   root.position.sub(center);
-  const maxSize = Math.max(size.x, size.y, size.z, 0.001);
-  const scale = 1.9 / maxSize;
-  root.scale.setScalar(scale);
+  root.scale.setScalar(1.9 / Math.max(size.x, size.y, size.z, 0.001));
 
   const floorBox = new THREE.Box3().setFromObject(root);
   root.position.y -= floorBox.min.y;
@@ -108,6 +101,10 @@ export function createItemViewer({ mountEl }) {
 
   mountEl.innerHTML = "";
   mountEl.appendChild(renderer.domElement);
+  renderer.domElement.style.width = "100%";
+  renderer.domElement.style.height = "100%";
+  renderer.domElement.style.maxWidth = "100%";
+  renderer.domElement.style.display = "block";
   mountEl.dataset.state = "idle";
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -156,57 +153,97 @@ export function createItemViewer({ mountEl }) {
 
   const loader = new GLTFLoader();
   const sourceCache = new Map();
+  const state = {
+    rafId: 0,
+    running: false,
+    loadVersion: 0,
+    activeModel: null,
+  };
 
-  let rafId = 0;
-  let isRunning = false;
-  let loadVersion = 0;
+  const tmpCenter = new THREE.Vector3();
+  const tmpSize = new THREE.Vector3();
+  const tmpDirection = new THREE.Vector3();
 
-  function render() {
+  const render = () => {
     controls.update();
     renderer.render(scene, camera);
-  }
+  };
 
-  function frame() {
-    if (!isRunning) return;
+  const frame = () => {
+    if (!state.running) return;
     render();
-    rafId = window.requestAnimationFrame(frame);
-  }
+    state.rafId = window.requestAnimationFrame(frame);
+  };
 
-  function start() {
-    if (isRunning) return;
-    isRunning = true;
+  const start = () => {
+    if (state.running) return;
+    state.running = true;
     frame();
-  }
+  };
 
-  function stop() {
-    isRunning = false;
-    if (rafId) {
-      window.cancelAnimationFrame(rafId);
-      rafId = 0;
+  const stop = () => {
+    state.running = false;
+    if (!state.rafId) return;
+    window.cancelAnimationFrame(state.rafId);
+    state.rafId = 0;
+  };
+
+  const fitCameraToObject = (object, resetDirection = false) => {
+    const box = new THREE.Box3().setFromObject(object);
+    if (box.isEmpty()) return;
+
+    box.getCenter(tmpCenter);
+    box.getSize(tmpSize);
+    const radius = Math.max(tmpSize.length() * 0.5, 0.6);
+    const fov = THREE.MathUtils.degToRad(camera.fov);
+    const fitHeightDistance = radius / Math.sin(fov * 0.5);
+    const fitWidthDistance = fitHeightDistance / Math.max(camera.aspect, 0.4);
+    const distance = Math.max(fitHeightDistance, fitWidthDistance) * 1.25;
+
+    controls.target.copy(tmpCenter);
+
+    if (resetDirection) {
+      tmpDirection.set(0.46, 0.38, 1).normalize();
+    } else {
+      tmpDirection.copy(camera.position).sub(controls.target).normalize();
+      if (!Number.isFinite(tmpDirection.x) || tmpDirection.lengthSq() < 1e-6) {
+        tmpDirection.set(0.46, 0.38, 1).normalize();
+      }
     }
-  }
 
-  function resize() {
+    camera.position.copy(tmpCenter).addScaledVector(tmpDirection, distance);
+    camera.near = Math.max(distance / 100, 0.01);
+    camera.far = Math.max(distance * 12, 64);
+    camera.updateProjectionMatrix();
+
+    controls.minDistance = Math.max(distance * 0.45, 0.4);
+    controls.maxDistance = Math.max(distance * 4.5, controls.minDistance + 1);
+    controls.update();
+  };
+
+  const resize = () => {
     const width = Math.max(1, mountEl.clientWidth);
     const height = Math.max(1, mountEl.clientHeight);
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    if (state.activeModel) fitCameraToObject(state.activeModel, false);
     render();
-  }
+  };
 
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(mountEl);
 
-  function clearModel() {
+  const clearModel = () => {
     while (modelRoot.children.length) {
-      const child = modelRoot.children.pop();
-      if (!child) continue;
+      const child = modelRoot.children[0];
+      modelRoot.remove(child);
       disposeObject(child);
     }
-  }
+    state.activeModel = null;
+  };
 
-  async function getItemModel(itemId) {
+  const getItemModel = async (itemId) => {
     if (itemId === "spool") return createSpoolModel();
     const modelPath = MODEL_BY_ITEM_ID[itemId];
     if (!modelPath) return createSpoolModel();
@@ -218,15 +255,15 @@ export function createItemViewer({ mountEl }) {
       sourceCache.set(modelPath, sourceScene);
     }
     return sourceScene.clone(true);
-  }
+  };
 
-  async function showItem(itemId) {
-    const version = ++loadVersion;
+  const showItem = async (itemId) => {
+    const version = ++state.loadVersion;
     mountEl.dataset.state = "loading";
 
     try {
       const model = await getItemModel(itemId);
-      if (version !== loadVersion) {
+      if (version !== state.loadVersion) {
         disposeObject(model);
         return;
       }
@@ -234,22 +271,21 @@ export function createItemViewer({ mountEl }) {
       clearModel();
       prepareModel(model);
       modelRoot.add(model);
+      state.activeModel = model;
+      fitCameraToObject(model, true);
       mountEl.dataset.state = "ready";
-      controls.update();
       resize();
       start();
     } catch (error) {
-      if (version !== loadVersion) return;
+      if (version !== state.loadVersion) return;
       mountEl.dataset.state = "error";
       console.error("Не удалось загрузить модель предмета:", error);
     }
-  }
+  };
 
-  function hide() {
-    stop();
-  }
+  const hide = () => stop();
 
-  function dispose() {
+  const dispose = () => {
     stop();
     resizeObserver.disconnect();
     clearModel();
@@ -257,11 +293,7 @@ export function createItemViewer({ mountEl }) {
     renderer.dispose();
     mountEl.innerHTML = "";
     mountEl.dataset.state = "idle";
-  }
-
-  return {
-    showItem,
-    hide,
-    dispose,
   };
+
+  return { showItem, hide, dispose };
 }

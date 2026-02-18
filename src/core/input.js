@@ -1,8 +1,8 @@
 export function createInput(target = window) {
-  const down = new Set();
-  const pressedThisFrame = new Set();
+  const keyboardDown = new Set();
+  const keyboardPressed = new Set();
   const virtualDown = new Set();
-  const virtualPressedThisFrame = new Set();
+  const virtualPressed = new Set();
   const axis = {
     x: 0,
     z: 0,
@@ -11,38 +11,33 @@ export function createInput(target = window) {
     run: false,
   };
 
-  window.addEventListener("keydown", (e) => {
+  const onKeyDown = (e) => {
     if (e.code === "Space") {
       e.preventDefault();
     }
-  });
+    if (!keyboardDown.has(e.code)) keyboardPressed.add(e.code);
+    keyboardDown.add(e.code);
+  };
 
-  function onKeyDown(e) {
-    if (!down.has(e.code)) pressedThisFrame.add(e.code);
-    down.add(e.code);
-  }
-
-  function onKeyUp(e) {
-    down.delete(e.code);
-  }
+  const onKeyUp = (e) => keyboardDown.delete(e.code);
 
   target.addEventListener("keydown", onKeyDown);
   target.addEventListener("keyup", onKeyUp);
 
   return {
     isDown(code) {
-      return down.has(code) || virtualDown.has(code);
+      return keyboardDown.has(code) || virtualDown.has(code);
     },
     wasPressed(code) {
-      return pressedThisFrame.has(code) || virtualPressedThisFrame.has(code);
+      return keyboardPressed.has(code) || virtualPressed.has(code);
     },
     setVirtualButton(code, isPressed) {
       if (isPressed) {
-        if (!virtualDown.has(code)) virtualPressedThisFrame.add(code);
+        if (!virtualDown.has(code)) virtualPressed.add(code);
         virtualDown.add(code);
-      } else {
-        virtualDown.delete(code);
+        return;
       }
+      virtualDown.delete(code);
     },
     setAxis(x, z, active, run = false) {
       axis.x = x;
@@ -55,16 +50,16 @@ export function createInput(target = window) {
       return axis;
     },
     endFrame() {
-      pressedThisFrame.clear();
-      virtualPressedThisFrame.clear();
+      keyboardPressed.clear();
+      virtualPressed.clear();
     },
     destroy() {
       target.removeEventListener("keydown", onKeyDown);
       target.removeEventListener("keyup", onKeyUp);
-      down.clear();
-      pressedThisFrame.clear();
+      keyboardDown.clear();
+      keyboardPressed.clear();
       virtualDown.clear();
-      virtualPressedThisFrame.clear();
+      virtualPressed.clear();
     },
   };
 }

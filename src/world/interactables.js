@@ -1,38 +1,31 @@
 export function createInteractables() {
   const items = [];
 
-  function register({
-    mesh,
-    label,
-    description,
-    onInteract,
-    radius = 1.5,
-    isActive = null,
-  }) {
-    items.push({ mesh, label, description, onInteract, radius, isActive });
-  }
+  const register = (entry) => items.push({ radius: 1.5, isActive: null, ...entry });
+  const readValue = (value) => (typeof value === "function" ? value() : value);
 
   function getBestInteraction(playerPos) {
     let best = null;
-    let bestDist = Infinity;
+    let bestDistSq = Infinity;
 
-    for (const it of items) {
-      if (typeof it.isActive === "function" && !it.isActive()) continue;
-      if (it.mesh?.visible === false) continue;
-      const dist = it.mesh.position.distanceTo(playerPos);
-      if (dist < it.radius && dist < bestDist) {
-        best = it;
-        bestDist = dist;
+    for (const item of items) {
+      if (typeof item.isActive === "function" && !item.isActive()) continue;
+      if (!item.mesh || item.mesh.visible === false) continue;
+      const distSq = item.mesh.position.distanceToSquared(playerPos);
+      const radiusSq = item.radius * item.radius;
+      if (distSq < radiusSq && distSq < bestDistSq) {
+        best = item;
+        bestDistSq = distSq;
       }
     }
 
-    if (!best) return null;
-
-    return {
-      label: best.label,
-      description: best.description,
-      onInteract: best.onInteract,
-    };
+    return best
+      ? {
+          label: readValue(best.label),
+          description: readValue(best.description),
+          onInteract: best.onInteract,
+        }
+      : null;
   }
 
   return { getBestInteraction, register };

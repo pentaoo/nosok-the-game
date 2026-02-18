@@ -5,77 +5,93 @@ export function createTouchControls({ input }) {
   const buttons = Array.from(root.querySelectorAll("[data-code]"));
   if (buttons.length === 0) return { destroy() {} };
 
-  const isTouch =
+  const isTouch = Boolean(
     "ontouchstart" in window ||
-    navigator.maxTouchPoints > 0 ||
-    window.matchMedia("(pointer: coarse)").matches;
-  const mobileBreakpoint = window.matchMedia("(max-width: 800px)");
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(pointer: coarse)").matches
+  );
+  const gamepadBreakpoint = window.matchMedia("(max-width: 980px)");
+  const touchCameraBreakpoint = window.matchMedia("(max-width: 800px)");
 
-  if (!isTouch) {
-    root.style.display = "none";
-    return { destroy() {} };
-  }
+  const setButton = (code, isPressed) => input.setVirtualButton(code, isPressed);
+  const getCode = (node) => node?.dataset?.code || "";
 
-  function setButton(code, isPressed) {
-    input.setVirtualButton(code, isPressed);
-  }
-
-  function releaseAllButtons() {
+  const releaseAllButtons = () => {
     for (const btn of buttons) {
-      const code = btn.dataset?.code;
+      const code = getCode(btn);
       if (code) setButton(code, false);
     }
-  }
+  };
 
-  function syncTouchMode() {
-    const shouldShow = mobileBreakpoint.matches;
-    document.body.classList.toggle("touch-ui", shouldShow);
-    if (!shouldShow) releaseAllButtons();
-  }
+  const syncControlModes = () => {
+    const gamepadMode = gamepadBreakpoint.matches;
+    document.body.classList.toggle("gamepad-ui", gamepadMode);
+    root.setAttribute("aria-hidden", gamepadMode ? "false" : "true");
 
-  function onPointerDown(e) {
+    const touchCameraMode = gamepadMode && isTouch && touchCameraBreakpoint.matches;
+    document.body.classList.toggle("touch-ui", touchCameraMode);
+    if (!gamepadMode || !touchCameraMode) releaseAllButtons();
+  };
+
+  const onPointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     e.preventDefault();
-    const code = e.currentTarget?.dataset?.code;
+    const code = getCode(e.currentTarget);
     if (!code) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     setButton(code, true);
-  }
+  };
 
-  function onPointerUp(e) {
-    const code = e.currentTarget?.dataset?.code;
+  const onPointerUp = (e) => {
+    const code = getCode(e.currentTarget);
     if (!code) return;
     setButton(code, false);
-  }
+  };
 
+  const pointerEvents = ["pointerdown", "pointerup", "pointercancel", "pointerleave"];
   for (const btn of buttons) {
     btn.addEventListener("pointerdown", onPointerDown);
-    btn.addEventListener("pointerup", onPointerUp);
-    btn.addEventListener("pointercancel", onPointerUp);
-    btn.addEventListener("pointerleave", onPointerUp);
+    for (const eventName of pointerEvents.slice(1)) {
+      btn.addEventListener(eventName, onPointerUp);
+    }
   }
 
-  syncTouchMode();
-  if (typeof mobileBreakpoint.addEventListener === "function") {
-    mobileBreakpoint.addEventListener("change", syncTouchMode);
-  } else if (typeof mobileBreakpoint.addListener === "function") {
-    mobileBreakpoint.addListener(syncTouchMode);
+  syncControlModes();
+  if (typeof gamepadBreakpoint.addEventListener === "function") {
+    gamepadBreakpoint.addEventListener("change", syncControlModes);
+  } else if (typeof gamepadBreakpoint.addListener === "function") {
+    gamepadBreakpoint.addListener(syncControlModes);
   }
+  if (typeof touchCameraBreakpoint.addEventListener === "function") {
+    touchCameraBreakpoint.addEventListener("change", syncControlModes);
+  } else if (typeof touchCameraBreakpoint.addListener === "function") {
+    touchCameraBreakpoint.addListener(syncControlModes);
+  }
+  window.addEventListener("blur", releaseAllButtons);
 
   return {
     destroy() {
       for (const btn of buttons) {
         btn.removeEventListener("pointerdown", onPointerDown);
-        btn.removeEventListener("pointerup", onPointerUp);
-        btn.removeEventListener("pointercancel", onPointerUp);
-        btn.removeEventListener("pointerleave", onPointerUp);
-        const code = btn.dataset?.code;
+        for (const eventName of pointerEvents.slice(1)) {
+          btn.removeEventListener(eventName, onPointerUp);
+        }
+        const code = getCode(btn);
         if (code) setButton(code, false);
       }
-      if (typeof mobileBreakpoint.removeEventListener === "function") {
-        mobileBreakpoint.removeEventListener("change", syncTouchMode);
-      } else if (typeof mobileBreakpoint.removeListener === "function") {
-        mobileBreakpoint.removeListener(syncTouchMode);
+      if (typeof touchCameraBreakpoint.removeEventListener === "function") {
+        touchCameraBreakpoint.removeEventListener("change", syncControlModes);
+      } else if (typeof touchCameraBreakpoint.removeListener === "function") {
+        touchCameraBreakpoint.removeListener(syncControlModes);
       }
+      if (typeof gamepadBreakpoint.removeEventListener === "function") {
+        gamepadBreakpoint.removeEventListener("change", syncControlModes);
+      } else if (typeof gamepadBreakpoint.removeListener === "function") {
+        gamepadBreakpoint.removeListener(syncControlModes);
+      }
+      window.removeEventListener("blur", releaseAllButtons);
+      root.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("gamepad-ui");
       document.body.classList.remove("touch-ui");
     },
   };

@@ -5,53 +5,41 @@ import { createItemViewer } from "./item-viewer.js";
 const DOC_BY_ID = new Map(DOCS.map((doc) => [doc.id, doc]));
 const ITEM_BY_ID = new Map(ITEMS.map((item) => [item.id, item]));
 
-let docVisible = false;
-let itemVisible = false;
-let isBound = false;
-const foundDocs = new Set();
-const foundItems = new Set();
-const foundOrder = [];
+const state = {
+  isBound: false,
+  docVisible: false,
+  itemVisible: false,
+  foundDocs: new Set(),
+  foundItems: new Set(),
+  foundOrder: [],
+  revisitFlashTimeout: null,
+  itemViewer: null,
+  onDocFound: null,
+};
 
-let docEl = null;
-let docTypeEl = null;
-let docTitleEl = null;
-let docLeadEl = null;
-let docSectionsEl = null;
-let docCloseBtn = null;
-let itemEl = null;
-let itemTitleEl = null;
-let itemLeadEl = null;
-let itemSectionsEl = null;
-let itemFactsEl = null;
-let itemViewerEl = null;
-let itemModelLayerEl = null;
-let itemCloseBtn = null;
-let itemsListEl = null;
-let docsListEl = null;
-let docsCountTagEl = null;
-let gameGridEl = null;
-let revisitFlashTimeout = null;
-let itemViewer = null;
+const els = {};
 
 function cacheEls() {
-  docEl = document.getElementById("DOC");
-  docTypeEl = document.getElementById("doc-type");
-  docTitleEl = document.getElementById("doc-title");
-  docLeadEl = document.getElementById("doc-lead");
-  docSectionsEl = document.getElementById("doc-sections");
-  docCloseBtn = docEl?.querySelector(".doc-close") ?? null;
-  itemEl = document.getElementById("ITEM");
-  itemTitleEl = document.getElementById("item-title");
-  itemLeadEl = document.getElementById("item-lead");
-  itemSectionsEl = document.getElementById("item-sections");
-  itemFactsEl = document.getElementById("item-facts");
-  itemViewerEl = document.getElementById("item-viewer");
-  itemModelLayerEl = document.getElementById("ITEM_MODEL_LAYER");
-  itemCloseBtn = document.getElementById("item-close");
-  itemsListEl = document.getElementById("items-list");
-  docsListEl = document.getElementById("docs-list");
-  docsCountTagEl = document.getElementById("docs-count-tag");
-  gameGridEl = document.querySelector(".game-grid");
+  Object.assign(els, {
+    doc: document.getElementById("DOC"),
+    docType: document.getElementById("doc-type"),
+    docTitle: document.getElementById("doc-title"),
+    docLead: document.getElementById("doc-lead"),
+    docSections: document.getElementById("doc-sections"),
+    item: document.getElementById("ITEM"),
+    itemTitle: document.getElementById("item-title"),
+    itemLead: document.getElementById("item-lead"),
+    itemSections: document.getElementById("item-sections"),
+    itemFacts: document.getElementById("item-facts"),
+    itemViewer: document.getElementById("item-viewer"),
+    itemModelLayer: document.getElementById("ITEM_MODEL_LAYER"),
+    itemCloseBtn: document.getElementById("item-close"),
+    itemsList: document.getElementById("items-list"),
+    docsList: document.getElementById("docs-list"),
+    docsCountTag: document.getElementById("docs-count-tag"),
+    gameGrid: document.querySelector(".game-grid"),
+  });
+  els.docCloseBtn = els.doc?.querySelector(".doc-close") ?? null;
 }
 
 function formatMeta(isLatest) {
@@ -59,199 +47,171 @@ function formatMeta(isLatest) {
 }
 
 function updateProgress() {
-  const docsFound = foundDocs.size;
-  const docsTotal = DOCS.length;
-
-  if (docsCountTagEl) {
-    docsCountTagEl.textContent = `найдено ${docsFound} / ${docsTotal}`;
-  }
+  if (!els.docsCountTag) return;
+  els.docsCountTag.textContent = `найдено ${state.foundDocs.size} / ${DOCS.length}`;
 }
 
 function syncPanelState() {
-  gameGridEl?.classList.toggle("is-doc-open", docVisible);
-  gameGridEl?.classList.toggle("is-item-open", itemVisible);
+  els.gameGrid?.classList.toggle("is-doc-open", state.docVisible);
+  els.gameGrid?.classList.toggle("is-item-open", state.itemVisible);
 }
 
 function touchFoundDoc(docId) {
-  const index = foundOrder.indexOf(docId);
+  const index = state.foundOrder.indexOf(docId);
   if (index === 0) return;
-  if (index > 0) foundOrder.splice(index, 1);
-  foundOrder.unshift(docId);
+  if (index > 0) state.foundOrder.splice(index, 1);
+  state.foundOrder.unshift(docId);
+}
+
+function renderDocSections(sections = []) {
+  return sections
+    .map(
+      (section) => `
+        <section class="doc-section">
+          <h2>${section.title}</h2>
+          <p>${section.body}</p>
+        </section>
+      `
+    )
+    .join("");
 }
 
 function renderDocsList() {
-  if (!docsListEl) return;
-  docsListEl.innerHTML = "";
+  if (!els.docsList) return;
 
-  if (foundOrder.length === 0) {
-    const empty = document.createElement("li");
-    empty.className = "doc-card doc-card--empty";
-    empty.textContent = "Документы пока не найдены.";
-    docsListEl.appendChild(empty);
+  if (state.foundOrder.length === 0) {
+    els.docsList.innerHTML =
+      '<li class="doc-card doc-card--empty">Документы пока не найдены.</li>';
     return;
   }
 
-  const latestId = foundOrder[0];
-  for (const docId of foundOrder) {
-    const doc = DOC_BY_ID.get(docId);
-    if (!doc) continue;
-    const item = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "doc-card";
-    btn.dataset.docId = doc.id;
-
-    const title = document.createElement("span");
-    title.className = "doc-title";
-    title.textContent = doc.title;
-
-    const meta = document.createElement("span");
-    meta.className = "doc-meta";
-    meta.textContent = formatMeta(docId === latestId);
-
-    btn.append(title, meta);
-    item.appendChild(btn);
-    docsListEl.appendChild(item);
-  }
+  const latestId = state.foundOrder[0];
+  els.docsList.innerHTML = state.foundOrder
+    .map((docId) => {
+      const doc = DOC_BY_ID.get(docId);
+      if (!doc) return "";
+      return `
+        <li>
+          <button type="button" class="doc-card" data-doc-id="${doc.id}">
+            <span class="doc-title">${doc.title}</span>
+            <span class="doc-meta">${formatMeta(docId === latestId)}</span>
+          </button>
+        </li>
+      `;
+    })
+    .join("");
 }
 
 function renderItemsList() {
-  if (!itemsListEl) return;
-  itemsListEl.innerHTML = "";
-
-  for (const item of ITEMS) {
-    const isFound = foundItems.has(item.id);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "card card--yellow";
-    button.dataset.itemId = item.id;
-    button.dataset.found = isFound ? "true" : "false";
-    button.disabled = !isFound;
-    button.setAttribute("aria-disabled", isFound ? "false" : "true");
-    button.setAttribute(
-      "aria-label",
-      isFound ? `Открыть карточку: ${item.title}` : "Предмет пока не найден"
-    );
-
-    const upper = document.createElement("span");
-    upper.className = "upper";
-    const image = document.createElement("img");
-    image.className = "img";
-    image.src = item.image;
-    image.alt = isFound ? item.title : "Неизвестный предмет";
-    upper.appendChild(image);
-
-    const bottom = document.createElement("span");
-    bottom.className = "bottom";
-    const title = document.createElement("h1");
-    title.textContent = isFound ? item.title : "???";
-    const action = document.createElement("h2");
-    action.textContent = isFound ? "->" : "LOCK";
-    bottom.append(title, action);
-
-    button.append(upper, bottom);
-    itemsListEl.appendChild(button);
-  }
+  if (!els.itemsList) return;
+  els.itemsList.innerHTML = ITEMS.map((item) => {
+    const isFound = state.foundItems.has(item.id);
+    return `
+      <button
+        type="button"
+        class="card card--yellow"
+        data-item-id="${item.id}"
+        data-found="${isFound}"
+        aria-disabled="${isFound ? "false" : "true"}"
+        aria-label="${isFound ? `Открыть карточку: ${item.title}` : "Предмет пока не найден"}"
+        ${isFound ? "" : "disabled"}
+      >
+        <span class="upper">
+          <img class="img" src="${item.image}" alt="${isFound ? item.title : "Неизвестный предмет"}" />
+        </span>
+        <span class="bottom">
+          <h1>${isFound ? item.title : "???"}</h1>
+          <h2>${isFound ? "->" : "LOCK"}</h2>
+        </span>
+      </button>
+    `;
+  }).join("");
 }
 
 function flashRevisitDoc(docId) {
-  if (!docsListEl) return;
-  const button = docsListEl.querySelector(`button[data-doc-id="${docId}"]`);
+  if (!els.docsList) return;
+  const button = els.docsList.querySelector(`button[data-doc-id="${docId}"]`);
   if (!(button instanceof HTMLElement)) return;
   button.classList.remove("is-revisit");
   void button.offsetWidth;
   button.classList.add("is-revisit");
-  if (revisitFlashTimeout) window.clearTimeout(revisitFlashTimeout);
-  revisitFlashTimeout = window.setTimeout(() => {
+  if (state.revisitFlashTimeout) window.clearTimeout(state.revisitFlashTimeout);
+  state.revisitFlashTimeout = window.setTimeout(() => {
     button.classList.remove("is-revisit");
   }, 320);
 }
 
 function setDocContent(doc) {
-  if (!docEl || !docTypeEl || !docTitleEl || !docLeadEl || !docSectionsEl)
-    return;
+  if (!els.doc || !els.docType || !els.docTitle || !els.docLead || !els.docSections) return;
   const type = DOC_TYPES[doc.type];
-  docEl.dataset.type = doc.type;
-  docTypeEl.textContent = type?.label ?? "DOC";
-  docTitleEl.textContent = doc.title;
-  docLeadEl.textContent = doc.lead;
-  docSectionsEl.innerHTML = "";
-
-  for (const section of doc.sections ?? []) {
-    const sectionEl = document.createElement("section");
-    sectionEl.className = "doc-section";
-    const titleEl = document.createElement("h2");
-    titleEl.textContent = section.title;
-    const bodyEl = document.createElement("p");
-    bodyEl.textContent = section.body;
-    sectionEl.append(titleEl, bodyEl);
-    docSectionsEl.appendChild(sectionEl);
-  }
-  docSectionsEl.closest(".doc-shell")?.scrollTo(0, 0);
+  els.doc.dataset.type = doc.type;
+  els.docType.textContent = type?.label ?? "DOC";
+  els.docTitle.textContent = doc.title;
+  els.docLead.textContent = doc.lead;
+  els.docSections.innerHTML = renderDocSections(doc.sections);
+  els.docSections.closest(".doc-shell")?.scrollTo(0, 0);
 }
 
 function setItemContent(item) {
-  if (!itemEl || !itemTitleEl || !itemLeadEl || !itemSectionsEl || !itemFactsEl)
-    return;
-  itemEl.dataset.type = "item";
-  itemTitleEl.textContent = item.title;
-  itemLeadEl.textContent = item.scienceLead ?? item.hint ?? "";
-  itemFactsEl.innerHTML = "";
-  const factsTitle = document.createElement("h2");
-  factsTitle.textContent = "Научпоп";
-  itemFactsEl.appendChild(factsTitle);
+  if (!els.item || !els.itemTitle || !els.itemLead || !els.itemSections || !els.itemFacts) return;
+  els.item.dataset.type = "item";
+  els.itemTitle.textContent = item.title;
+  els.itemLead.textContent = item.scienceLead ?? item.hint ?? "";
 
-  const facts = item.scienceFacts?.length ? item.scienceFacts : [item.hint];
-  for (const fact of facts) {
-    const factLine = document.createElement("p");
-    factLine.textContent = fact;
-    itemFactsEl.appendChild(factLine);
-  }
+  const facts = (item.scienceFacts?.length ? item.scienceFacts : [item.hint]).filter(Boolean);
+  els.itemFacts.innerHTML = `<h2>Научпоп</h2>${facts.map((fact) => `<p>${fact}</p>`).join("")}`;
 
-  itemViewer?.showItem(item.id);
-  itemSectionsEl.closest(".doc-shell")?.scrollTo(0, 0);
+  state.itemViewer?.showItem(item.id);
+  els.itemSections.closest(".doc-shell")?.scrollTo(0, 0);
 }
 
-export function showDOC() {
-  if (!docEl) return;
-  docEl.classList.add("doc-open");
-  docEl.setAttribute("aria-hidden", "false");
-  docVisible = true;
+function setDocVisible(isVisible) {
+  if (!els.doc) return;
+  els.doc.classList.toggle("doc-open", isVisible);
+  els.doc.setAttribute("aria-hidden", isVisible ? "false" : "true");
+  state.docVisible = isVisible;
   syncPanelState();
 }
 
-export function hideDOC() {
-  if (!docEl) return;
-  docEl.classList.remove("doc-open");
-  docEl.setAttribute("aria-hidden", "true");
-  docVisible = false;
+function setItemVisible(isVisible) {
+  if (!els.item) return;
+  els.item.classList.toggle("doc-open", isVisible);
+  els.item.setAttribute("aria-hidden", isVisible ? "false" : "true");
+  els.itemModelLayer?.classList.toggle("is-open", isVisible);
+  els.itemModelLayer?.setAttribute("aria-hidden", isVisible ? "false" : "true");
+  state.itemVisible = isVisible;
+  if (!isVisible) state.itemViewer?.hide();
   syncPanelState();
 }
 
 function showITEM() {
-  if (!itemEl) return;
-  itemEl.classList.add("doc-open");
-  itemEl.setAttribute("aria-hidden", "false");
-  itemModelLayerEl?.classList.add("is-open");
-  itemModelLayerEl?.setAttribute("aria-hidden", "false");
-  itemVisible = true;
-  syncPanelState();
+  setItemVisible(true);
 }
 
 function hideITEM() {
-  if (!itemEl) return;
-  itemEl.classList.remove("doc-open");
-  itemEl.setAttribute("aria-hidden", "true");
-  itemModelLayerEl?.classList.remove("is-open");
-  itemModelLayerEl?.setAttribute("aria-hidden", "true");
-  itemVisible = false;
-  itemViewer?.hide();
-  syncPanelState();
+  setItemVisible(false);
+}
+
+function onDelegatedClick(container, selector, handler) {
+  container?.addEventListener("click", (event) => {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    const button = target?.closest(selector);
+    if (!(button instanceof HTMLElement)) return;
+    handler(button);
+  });
+}
+
+export function showDOC() {
+  setDocVisible(true);
+}
+
+export function hideDOC() {
+  setDocVisible(false);
 }
 
 function openItemById(itemId) {
   const item = ITEM_BY_ID.get(itemId);
-  if (!item || !foundItems.has(itemId)) return;
+  if (!item || !state.foundItems.has(itemId)) return;
   hideDOC();
   setItemContent(item);
   showITEM();
@@ -261,10 +221,13 @@ export function openDocById(docId) {
   const doc = DOC_BY_ID.get(docId);
   if (!doc) return;
 
-  const isNewDoc = !foundDocs.has(docId);
-  foundDocs.add(docId);
+  const isNewDoc = !state.foundDocs.has(docId);
+  state.foundDocs.add(docId);
   touchFoundDoc(docId);
-  if (isNewDoc) updateProgress();
+  if (isNewDoc) {
+    state.onDocFound?.(docId);
+    updateProgress();
+  }
   renderDocsList();
 
   hideITEM();
@@ -274,52 +237,46 @@ export function openDocById(docId) {
 
 export function markItemFound(itemId) {
   if (!ITEM_BY_ID.has(itemId)) return;
-  if (foundItems.has(itemId)) return;
-  foundItems.add(itemId);
+  if (state.foundItems.has(itemId)) return;
+  state.foundItems.add(itemId);
   renderItemsList();
 }
 
+export function setDocFoundListener(listener) {
+  state.onDocFound = typeof listener === "function" ? listener : null;
+}
+
 export function initDOCControls() {
-  if (isBound) return;
-  isBound = true;
+  if (state.isBound) return;
+  state.isBound = true;
   cacheEls();
   updateProgress();
   renderDocsList();
   renderItemsList();
-  if (!itemViewer && itemViewerEl) {
-    itemViewer = createItemViewer({ mountEl: itemViewerEl });
+  if (!state.itemViewer && els.itemViewer) {
+    state.itemViewer = createItemViewer({ mountEl: els.itemViewer });
   }
 
-  docCloseBtn?.addEventListener("click", hideDOC);
-  itemCloseBtn?.addEventListener("click", hideITEM);
+  els.docCloseBtn?.addEventListener("click", hideDOC);
+  els.itemCloseBtn?.addEventListener("click", hideITEM);
 
-  docsListEl?.addEventListener("click", (event) => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const button = target?.closest("button[data-doc-id]");
-    if (!button) return;
+  onDelegatedClick(els.docsList, "button[data-doc-id]", (button) => {
     const docId = button.dataset.docId;
     if (!docId) return;
-    const isRevisit = foundDocs.has(docId);
+    const isRevisit = state.foundDocs.has(docId);
     openDocById(docId);
     if (isRevisit) flashRevisitDoc(docId);
   });
 
-  itemsListEl?.addEventListener("click", (event) => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const button = target?.closest("button[data-item-id]");
-    if (!button) return;
+  onDelegatedClick(els.itemsList, "button[data-item-id]", (button) => {
     const itemId = button.dataset.itemId;
-    if (!itemId || !foundItems.has(itemId)) return;
+    if (!itemId || !state.foundItems.has(itemId)) return;
     openItemById(itemId);
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.code !== "Escape") return;
-    if (itemVisible) {
-      hideITEM();
-    }
-    if (docVisible) {
-      hideDOC();
-    }
+  document.addEventListener("keydown", (event) => {
+    if (event.code !== "Escape") return;
+    hideITEM();
+    hideDOC();
   });
 }
