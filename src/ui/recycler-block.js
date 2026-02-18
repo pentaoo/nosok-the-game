@@ -1,4 +1,6 @@
-const DEFAULT_TARGET_ASSET = "/src/img/nosok.svg";
+import defaultTargetAsset from "../img/nosok.svg";
+
+const DEFAULT_TARGET_ASSET = defaultTargetAsset;
 const TARGET_SOCK_ASSETS = Object.entries(
   import.meta.glob("../img/socks/*.svg", {
     eager: true,
