@@ -24,6 +24,18 @@ export function createInput(target = window) {
   target.addEventListener("keydown", onKeyDown);
   target.addEventListener("keyup", onKeyUp);
 
+  const reset = () => {
+    keyboardDown.clear();
+    keyboardPressed.clear();
+    virtualDown.clear();
+    virtualPressed.clear();
+    axis.x = 0;
+    axis.z = 0;
+    axis.magnitude = 0;
+    axis.active = false;
+    axis.run = false;
+  };
+
   return {
     isDown(code) {
       return keyboardDown.has(code) || virtualDown.has(code);
@@ -53,13 +65,11 @@ export function createInput(target = window) {
       keyboardPressed.clear();
       virtualPressed.clear();
     },
+    reset,
     destroy() {
       target.removeEventListener("keydown", onKeyDown);
       target.removeEventListener("keyup", onKeyUp);
-      keyboardDown.clear();
-      keyboardPressed.clear();
-      virtualDown.clear();
-      virtualPressed.clear();
+      reset();
     },
   };
 }

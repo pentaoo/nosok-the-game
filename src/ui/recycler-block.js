@@ -1,14 +1,7 @@
-import defaultTargetAsset from "../img/nosok.svg";
+import defaultTargetAsset from "../img/figma/recycler-main-sock.svg";
 
 const DEFAULT_TARGET_ASSET = defaultTargetAsset;
-const TARGET_SOCK_ASSETS = Object.entries(
-  import.meta.glob("../img/socks/*.svg", {
-    eager: true,
-    import: "default",
-  }),
-)
-  .sort(([left], [right]) => left.localeCompare(right))
-  .map(([, assetUrl]) => assetUrl);
+const TARGET_SOCK_ASSETS = [DEFAULT_TARGET_ASSET];
 
 const TARGETS = [
   { hp: 110, drop: [34, 46], tilt: -28 },
@@ -49,29 +42,39 @@ function toggleClassOnNextFrame(node, className, frameState, key) {
 }
 
 function initTooltip(helpButton, tooltip) {
-  if (!helpButton || !tooltip) return;
+  if (!helpButton || !tooltip) return () => {};
 
   const closeTooltip = () => {
     tooltip.classList.remove("is-open");
     helpButton.setAttribute("aria-expanded", "false");
   };
 
-  helpButton.addEventListener("click", (event) => {
+  const onHelpClick = (event) => {
     event.stopPropagation();
     const isOpen = tooltip.classList.toggle("is-open");
     helpButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  });
+  };
 
-  document.addEventListener("click", (event) => {
+  const onDocumentClick = (event) => {
     const target = event.target;
     if (!(target instanceof Node)) return;
     if (helpButton.contains(target) || tooltip.contains(target)) return;
     closeTooltip();
-  });
+  };
 
-  document.addEventListener("keydown", (event) => {
+  const onDocumentKeyDown = (event) => {
     if (event.key === "Escape") closeTooltip();
-  });
+  };
+
+  helpButton.addEventListener("click", onHelpClick);
+  document.addEventListener("click", onDocumentClick);
+  document.addEventListener("keydown", onDocumentKeyDown);
+
+  return () => {
+    helpButton.removeEventListener("click", onHelpClick);
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onDocumentKeyDown);
+  };
 }
 
 function getRecyclerNodes() {
@@ -81,6 +84,7 @@ function getRecyclerNodes() {
   const hitFlash = document.querySelector("#recycler-hitflash");
   const popLayer = document.querySelector("#recycler-pop-layer");
   const lifeBar = document.querySelector("#recycler-life-bar");
+  const hpLabel = document.querySelector("#recycler-hp-label");
   const drop = document.querySelector("#recycler-drop");
   const hitline = document.querySelector("#recycler-hitline");
   const resourceValue = document.querySelector("#recycler-resource-value");
@@ -97,6 +101,7 @@ function getRecyclerNodes() {
     !hitFlash ||
     !popLayer ||
     !lifeBar ||
+    !hpLabel ||
     !drop ||
     !hitline ||
     !resourceValue ||
@@ -115,6 +120,7 @@ function getRecyclerNodes() {
     hitFlash,
     popLayer,
     lifeBar,
+    hpLabel,
     drop,
     hitline,
     resourceValue,
@@ -128,7 +134,13 @@ function getRecyclerNodes() {
 
 export function initRecyclerBlock() {
   const nodes = getRecyclerNodes();
-  if (!nodes) return;
+  if (!nodes) {
+    return {
+      setActive() {},
+      syncVisibility() {},
+      destroy() {},
+    };
+  }
 
   const {
     stage,
@@ -137,6 +149,7 @@ export function initRecyclerBlock() {
     hitFlash,
     popLayer,
     lifeBar,
+    hpLabel,
     drop,
     hitline,
     resourceValue,
@@ -163,16 +176,22 @@ export function initRecyclerBlock() {
     currentAsset: DEFAULT_TARGET_ASSET,
     assetQueue: getShuffledAssetQueue(availableAssets),
     switching: false,
-    timers: { drop: 0, switch: 0 },
-    frames: { hit: 0, strike: 0, drop: 0, flash: 0, auto: 0 },
+    timers: { drop: 0, switch: 0, auto: 0 },
+    frames: { hit: 0, strike: 0, drop: 0, flash: 0 },
+    auto: {
+      active: true,
+      intervalMs: 125,
+      lastUpdateTs: window.performance.now(),
+    },
   };
 
-  targetImage.addEventListener("error", () => {
+  const onTargetImageError = () => {
     if (requestedAsset === DEFAULT_TARGET_ASSET) return;
     requestedAsset = DEFAULT_TARGET_ASSET;
     state.currentAsset = DEFAULT_TARGET_ASSET;
     targetImage.src = DEFAULT_TARGET_ASSET;
-  });
+  };
+  targetImage.addEventListener("error", onTargetImageError);
 
   const updateStats = () => {
     resourceValue.textContent = state.materials.toLocaleString("ru-RU");
@@ -182,8 +201,20 @@ export function initRecyclerBlock() {
 
   const updateLife = () => {
     const maxHp = TARGETS[state.targetIndex].hp;
-    const ratio = Math.max(0, state.targetHp / maxHp);
-    lifeBar.style.transform = `scaleX(${ratio.toFixed(3)})`;
+    const ratio = Math.max(0, Math.min(1, state.targetHp / maxHp));
+
+    const isMobile = window.innerWidth <= 1024;
+    lifeBar.style.transform = "none";
+
+    if (isMobile) {
+      const hiddenRight = (1 - ratio) * 100;
+      lifeBar.style.clipPath = `inset(0 ${hiddenRight.toFixed(3)}% 0 0)`;
+    } else {
+      const hiddenTop = (1 - ratio) * 100;
+      lifeBar.style.clipPath = `inset(${hiddenTop.toFixed(3)}% 0 0 0)`;
+    }
+
+    hpLabel.textContent = `${Math.ceil(state.targetHp)} HP`;
   };
 
   const syncTools = () => {
@@ -201,7 +232,7 @@ export function initRecyclerBlock() {
       toolButton.classList.toggle("is-locked", !isBought && !isReady);
 
       const meta = toolButton.querySelector(".recycler-tool-meta");
-      if (meta) meta.textContent = isBought ? "куплено" : `${upgrade.cost} сырья`;
+      if (meta) meta.textContent = isBought ? "" : `${upgrade.cost} сырья`;
     });
   };
 
@@ -211,7 +242,7 @@ export function initRecyclerBlock() {
     window.clearTimeout(state.timers.drop);
     state.timers.drop = window.setTimeout(() => {
       drop.classList.remove("is-show");
-    }, 520);
+    }, 420);
   };
 
   const spawnHitPop = (damage) => {
@@ -231,20 +262,20 @@ export function initRecyclerBlock() {
 
   const strike = (damage = 0) => {
     target.classList.remove("is-hit");
-    target.style.setProperty("--hit_kick", `${randomInt(-4, 4)}deg`);
+    target.style.setProperty("--hit_kick", `${randomInt(-2, 2)}deg`);
     toggleClassOnNextFrame(target, "is-hit", state.frames, "hit");
 
-    hitline.style.setProperty("--strike_rot", `${randomInt(-42, 42)}deg`);
-    hitline.style.setProperty("--strike_x", `${randomInt(-16, 16)}%`);
-    hitline.style.setProperty("--strike_y", `${randomInt(-14, 14)}%`);
+    hitline.style.setProperty("--strike_rot", `${randomInt(-18, 18)}deg`);
+    hitline.style.setProperty("--strike_x", `${randomInt(-10, 10)}%`);
+    hitline.style.setProperty("--strike_y", `${randomInt(-8, 8)}%`);
     toggleClassOnNextFrame(hitline, "is-active", state.frames, "strike");
 
-    hitFlash.style.setProperty("--flash_x", `${randomInt(-26, 26)}%`);
-    hitFlash.style.setProperty("--flash_y", `${randomInt(-20, 20)}%`);
+    hitFlash.style.setProperty("--flash_x", `${randomInt(-14, 14)}%`);
+    hitFlash.style.setProperty("--flash_y", `${randomInt(-12, 12)}%`);
     toggleClassOnNextFrame(hitFlash, "is-active", state.frames, "flash");
 
     if (damage > 0) spawnHitPop(damage);
-    if (typeof navigator.vibrate === "function") navigator.vibrate(8);
+    if (typeof navigator.vibrate === "function") navigator.vibrate(5);
   };
 
   const pullNextAsset = () => {
@@ -333,41 +364,99 @@ export function initRecyclerBlock() {
     updateStats();
     syncTools();
     showDrop(`-${upgrade.cost}`);
-
-    stage.classList.remove("is-upgraded");
-    window.requestAnimationFrame(() => {
-      stage.classList.add("is-upgraded");
-    });
   };
 
-  const startAutoLoop = () => {
-    let previousTime = window.performance.now();
+  const applyAutoProgress = (elapsedSec) => {
+    if (elapsedSec <= 0) return;
+    if (state.autoPower <= 0 || state.switching) return;
 
-    const step = (now) => {
-      const dt = Math.min((now - previousTime) / 1000, 0.25);
-      previousTime = now;
+    state.autoBuffer += state.autoPower * elapsedSec;
 
-      if (state.autoPower > 0 && !state.switching) {
-        state.autoBuffer += state.autoPower * dt;
-        const autoDamage = Math.floor(state.autoBuffer);
-        if (autoDamage > 0) {
-          state.autoBuffer -= autoDamage;
-          applyDamage(autoDamage, false);
-        }
+    // Limit burst processing per tick; leftover buffer is applied on next tick.
+    for (let i = 0; i < 160; i += 1) {
+      if (state.switching) break;
+      const autoDamage = Math.floor(state.autoBuffer);
+      if (autoDamage <= 0) break;
+      const damageChunk = Math.min(autoDamage, 120);
+      state.autoBuffer -= damageChunk;
+      applyDamage(damageChunk, false);
+    }
+  };
+
+  const consumeAutoElapsed = (now = window.performance.now()) => {
+    const elapsedSec = Math.min((now - state.auto.lastUpdateTs) / 1000, 120);
+    state.auto.lastUpdateTs = now;
+    applyAutoProgress(elapsedSec);
+  };
+
+  const scheduleAutoTick = () => {
+    if (!state.auto.active || state.timers.auto) return;
+    state.timers.auto = window.setTimeout(() => {
+      state.timers.auto = 0;
+      consumeAutoElapsed();
+      scheduleAutoTick();
+    }, state.auto.intervalMs);
+  };
+
+  const setActive = (isActive) => {
+    const nextActive = Boolean(isActive);
+    if (nextActive === state.auto.active) {
+      if (nextActive) {
+        consumeAutoElapsed();
+        scheduleAutoTick();
       }
+      return;
+    }
 
-      state.frames.auto = window.requestAnimationFrame(step);
-    };
+    if (!nextActive) {
+      state.auto.active = false;
+      window.clearTimeout(state.timers.auto);
+      state.timers.auto = 0;
+      return;
+    }
 
-    state.frames.auto = window.requestAnimationFrame(step);
+    state.auto.active = true;
+    consumeAutoElapsed();
+    scheduleAutoTick();
   };
 
-  initTooltip(helpButton, tooltip);
+  const tooltipCleanup = initTooltip(helpButton, tooltip);
   target.addEventListener("click", breakDownCurrent);
   tools.forEach((toolButton) => toolButton.addEventListener("click", onToolClick));
+
+  // Обновляем HP-бар при изменении размера окна
+  let resizeTimeout = 0;
+  const onResize = () => {
+    window.clearTimeout(resizeTimeout);
+    resizeTimeout = window.setTimeout(() => {
+      updateLife();
+    }, 100);
+  };
+  window.addEventListener("resize", onResize);
 
   setTarget(0);
   updateStats();
   syncTools();
-  startAutoLoop();
+  scheduleAutoTick();
+
+  const destroy = () => {
+    setActive(false);
+    window.clearTimeout(resizeTimeout);
+    window.clearTimeout(state.timers.drop);
+    window.clearTimeout(state.timers.switch);
+    window.removeEventListener("resize", onResize);
+    target.removeEventListener("click", breakDownCurrent);
+    targetImage.removeEventListener("error", onTargetImageError);
+    tools.forEach((toolButton) => toolButton.removeEventListener("click", onToolClick));
+    Object.values(state.frames).forEach((frameId) => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+    });
+    tooltipCleanup();
+  };
+
+  return {
+    setActive,
+    syncVisibility: setActive,
+    destroy,
+  };
 }

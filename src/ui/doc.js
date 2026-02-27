@@ -15,6 +15,8 @@ const state = {
   revisitFlashTimeout: null,
   itemViewer: null,
   onDocFound: null,
+  cleanupFns: [],
+  controller: null,
 };
 
 const els = {};
@@ -42,8 +44,17 @@ function cacheEls() {
   els.docCloseBtn = els.doc?.querySelector(".doc-close") ?? null;
 }
 
+function clearNode(node) {
+  if (!node) return;
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
 function formatMeta(isLatest) {
   return isLatest ? "только что" : "найдено";
+}
+
+function getPlaceholderText(index) {
+  return `Документ ${index + 1} пока не найден`;
 }
 
 function updateProgress() {
@@ -63,69 +74,108 @@ function touchFoundDoc(docId) {
   state.foundOrder.unshift(docId);
 }
 
+function createTextNode(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (typeof text === "string") node.textContent = text;
+  return node;
+}
+
 function renderDocSections(sections = []) {
-  return sections
-    .map(
-      (section) => `
-        <section class="doc-section">
-          <h2>${section.title}</h2>
-          <p>${section.body}</p>
-        </section>
-      `
-    )
-    .join("");
+  if (!els.docSections) return;
+  clearNode(els.docSections);
+
+  for (const section of sections) {
+    const sectionEl = createTextNode("section", "doc-section");
+    sectionEl.append(
+      createTextNode("h2", "", section.title ?? ""),
+      createTextNode("p", "", section.body ?? "")
+    );
+    els.docSections.append(sectionEl);
+  }
 }
 
 function renderDocsList() {
   if (!els.docsList) return;
+  clearNode(els.docsList);
+
+  const fragment = document.createDocumentFragment();
 
   if (state.foundOrder.length === 0) {
-    els.docsList.innerHTML =
-      '<li class="doc-card doc-card--empty">Документы пока не найдены.</li>';
+    const placeholderCount = Math.max(1, Math.min(DOCS.length, 4));
+    for (let index = 0; index < placeholderCount; index += 1) {
+      const item = document.createElement("li");
+      const card = createTextNode("span", "doc-card doc-card--empty");
+      card.append(
+        createTextNode("span", "doc-title", getPlaceholderText(index)),
+        createTextNode("span", "doc-meta", "только что")
+      );
+      item.append(card);
+      fragment.append(item);
+    }
+    els.docsList.append(fragment);
     return;
   }
 
   const latestId = state.foundOrder[0];
-  els.docsList.innerHTML = state.foundOrder
-    .map((docId) => {
-      const doc = DOC_BY_ID.get(docId);
-      if (!doc) return "";
-      return `
-        <li>
-          <button type="button" class="doc-card" data-doc-id="${doc.id}">
-            <span class="doc-title">${doc.title}</span>
-            <span class="doc-meta">${formatMeta(docId === latestId)}</span>
-          </button>
-        </li>
-      `;
-    })
-    .join("");
+  for (const docId of state.foundOrder) {
+    const doc = DOC_BY_ID.get(docId);
+    if (!doc) continue;
+
+    const item = document.createElement("li");
+    const button = createTextNode("button", "doc-card");
+    button.type = "button";
+    button.dataset.docId = doc.id;
+
+    button.append(
+      createTextNode("span", "doc-title", doc.title),
+      createTextNode("span", "doc-meta", formatMeta(docId === latestId))
+    );
+
+    item.append(button);
+    fragment.append(item);
+  }
+
+  els.docsList.append(fragment);
 }
 
 function renderItemsList() {
   if (!els.itemsList) return;
-  els.itemsList.innerHTML = ITEMS.map((item) => {
+  clearNode(els.itemsList);
+
+  const fragment = document.createDocumentFragment();
+
+  for (const item of ITEMS) {
     const isFound = state.foundItems.has(item.id);
-    return `
-      <button
-        type="button"
-        class="card card--yellow"
-        data-item-id="${item.id}"
-        data-found="${isFound}"
-        aria-disabled="${isFound ? "false" : "true"}"
-        aria-label="${isFound ? `Открыть карточку: ${item.title}` : "Предмет пока не найден"}"
-        ${isFound ? "" : "disabled"}
-      >
-        <span class="upper">
-          <img class="img" src="${item.image}" alt="${isFound ? item.title : "Неизвестный предмет"}" />
-        </span>
-        <span class="bottom">
-          <h1>${isFound ? item.title : "???"}</h1>
-          <h2>${isFound ? "->" : "LOCK"}</h2>
-        </span>
-      </button>
-    `;
-  }).join("");
+
+    const button = createTextNode("button", "card card--yellow");
+    button.type = "button";
+    button.dataset.itemId = item.id;
+    button.dataset.found = String(isFound);
+    button.setAttribute("aria-disabled", isFound ? "false" : "true");
+    button.setAttribute(
+      "aria-label",
+      isFound ? `Открыть карточку: ${item.title}` : "Предмет пока не найден"
+    );
+    button.disabled = !isFound;
+
+    const upper = createTextNode("span", "upper");
+    const img = createTextNode("img", "img");
+    img.src = item.image;
+    img.alt = isFound ? item.title : "Неизвестный предмет";
+    upper.append(img);
+
+    const bottom = createTextNode("span", "bottom");
+    bottom.append(
+      createTextNode("h1", "", isFound ? item.title : "???"),
+      createTextNode("h2", "", isFound ? "->" : "LOCK")
+    );
+
+    button.append(upper, bottom);
+    fragment.append(button);
+  }
+
+  els.itemsList.append(fragment);
 }
 
 function flashRevisitDoc(docId) {
@@ -148,18 +198,24 @@ function setDocContent(doc) {
   els.docType.textContent = type?.label ?? "DOC";
   els.docTitle.textContent = doc.title;
   els.docLead.textContent = doc.lead;
-  els.docSections.innerHTML = renderDocSections(doc.sections);
+  renderDocSections(doc.sections);
   els.docSections.closest(".doc-shell")?.scrollTo(0, 0);
 }
 
 function setItemContent(item) {
   if (!els.item || !els.itemTitle || !els.itemLead || !els.itemSections || !els.itemFacts) return;
+
   els.item.dataset.type = "item";
   els.itemTitle.textContent = item.title;
   els.itemLead.textContent = item.scienceLead ?? item.hint ?? "";
 
+  clearNode(els.itemFacts);
+  els.itemFacts.append(createTextNode("h2", "", "Научпоп"));
+
   const facts = (item.scienceFacts?.length ? item.scienceFacts : [item.hint]).filter(Boolean);
-  els.itemFacts.innerHTML = `<h2>Научпоп</h2>${facts.map((fact) => `<p>${fact}</p>`).join("")}`;
+  for (const fact of facts) {
+    els.itemFacts.append(createTextNode("p", "", fact));
+  }
 
   state.itemViewer?.showItem(item.id);
   els.itemSections.closest(".doc-shell")?.scrollTo(0, 0);
@@ -193,12 +249,17 @@ function hideITEM() {
 }
 
 function onDelegatedClick(container, selector, handler) {
-  container?.addEventListener("click", (event) => {
+  if (!container) return () => {};
+
+  const listener = (event) => {
     const target = event.target instanceof HTMLElement ? event.target : null;
     const button = target?.closest(selector);
     if (!(button instanceof HTMLElement)) return;
     handler(button);
-  });
+  };
+
+  container.addEventListener("click", listener);
+  return () => container.removeEventListener("click", listener);
 }
 
 export function showDOC() {
@@ -247,36 +308,82 @@ export function setDocFoundListener(listener) {
 }
 
 export function initDOCControls() {
-  if (state.isBound) return;
+  if (state.isBound) {
+    return state.controller ?? { destroy() {} };
+  }
+
   state.isBound = true;
   cacheEls();
   updateProgress();
   renderDocsList();
   renderItemsList();
+
   if (!state.itemViewer && els.itemViewer) {
     state.itemViewer = createItemViewer({ mountEl: els.itemViewer });
   }
 
-  els.docCloseBtn?.addEventListener("click", hideDOC);
-  els.itemCloseBtn?.addEventListener("click", hideITEM);
+  const cleanupFns = [];
 
-  onDelegatedClick(els.docsList, "button[data-doc-id]", (button) => {
-    const docId = button.dataset.docId;
-    if (!docId) return;
-    const isRevisit = state.foundDocs.has(docId);
-    openDocById(docId);
-    if (isRevisit) flashRevisitDoc(docId);
-  });
+  const onDocClose = () => hideDOC();
+  const onItemClose = () => hideITEM();
+  els.docCloseBtn?.addEventListener("click", onDocClose);
+  els.itemCloseBtn?.addEventListener("click", onItemClose);
+  cleanupFns.push(() => els.docCloseBtn?.removeEventListener("click", onDocClose));
+  cleanupFns.push(() => els.itemCloseBtn?.removeEventListener("click", onItemClose));
 
-  onDelegatedClick(els.itemsList, "button[data-item-id]", (button) => {
-    const itemId = button.dataset.itemId;
-    if (!itemId || !state.foundItems.has(itemId)) return;
-    openItemById(itemId);
-  });
+  cleanupFns.push(
+    onDelegatedClick(els.docsList, "button[data-doc-id]", (button) => {
+      const docId = button.dataset.docId;
+      if (!docId) return;
+      const isRevisit = state.foundDocs.has(docId);
+      openDocById(docId);
+      if (isRevisit) flashRevisitDoc(docId);
+    })
+  );
 
-  document.addEventListener("keydown", (event) => {
+  cleanupFns.push(
+    onDelegatedClick(els.itemsList, "button[data-item-id]", (button) => {
+      const itemId = button.dataset.itemId;
+      if (!itemId || !state.foundItems.has(itemId)) return;
+      openItemById(itemId);
+    })
+  );
+
+  const onKeyDown = (event) => {
     if (event.code !== "Escape") return;
     hideITEM();
     hideDOC();
-  });
+  };
+  document.addEventListener("keydown", onKeyDown);
+  cleanupFns.push(() => document.removeEventListener("keydown", onKeyDown));
+
+  state.cleanupFns = cleanupFns;
+
+  const destroy = () => {
+    if (!state.isBound) return;
+    state.isBound = false;
+
+    if (state.revisitFlashTimeout) {
+      window.clearTimeout(state.revisitFlashTimeout);
+      state.revisitFlashTimeout = null;
+    }
+
+    while (state.cleanupFns.length) {
+      const cleanup = state.cleanupFns.pop();
+      try {
+        cleanup?.();
+      } catch (error) {
+        console.error("DOC controls cleanup failed", error);
+      }
+    }
+
+    hideITEM();
+    hideDOC();
+    state.itemViewer?.dispose?.();
+    state.itemViewer = null;
+    state.controller = null;
+  };
+
+  state.controller = { destroy };
+  return state.controller;
 }

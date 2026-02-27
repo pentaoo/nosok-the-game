@@ -5,15 +5,15 @@ const QUEST_IDS = {
 };
 
 const QUEST_ORDER = [
+  QUEST_IDS.WASH_ITEMS,
   QUEST_IDS.COLLECT_ITEMS,
   QUEST_IDS.COLLECT_DOCS,
-  QUEST_IDS.WASH_ITEMS,
 ];
 
 const QUEST_TITLE = {
   [QUEST_IDS.COLLECT_ITEMS]: "Собрать все вещи",
-  [QUEST_IDS.COLLECT_DOCS]: "Собрать все документы",
-  [QUEST_IDS.WASH_ITEMS]: "Постирать вещи",
+  [QUEST_IDS.COLLECT_DOCS]: "Прочтите потерянные документы",
+  [QUEST_IDS.WASH_ITEMS]: "Почините стиралку",
 };
 
 export function createQuestController({ hud = null, totalDocs = 0, washDurationMs = 3200 } = {}) {
@@ -24,6 +24,7 @@ export function createQuestController({ hud = null, totalDocs = 0, washDurationM
   const cardsById = new Map();
   const countersById = new Map();
 
+  const questList = document.getElementById("quest-list");
   const progressTag = document.getElementById("quests-progress-tag");
   document.querySelectorAll("[data-quest-id]").forEach((card) => {
     cardsById.set(card.dataset.questId, card);
@@ -51,12 +52,16 @@ export function createQuestController({ hud = null, totalDocs = 0, washDurationM
   const updateCounters = () => {
     const itemCounter = countersById.get(QUEST_IDS.COLLECT_ITEMS);
     if (itemCounter) {
-      itemCounter.textContent = `${getFoundItemsCount()} / ${trackedItemIds.size}`;
+      itemCounter.textContent = isItemsQuestDone()
+        ? "выполнено"
+        : `${getFoundItemsCount()} / ${trackedItemIds.size}`;
     }
 
     const docCounter = countersById.get(QUEST_IDS.COLLECT_DOCS);
     if (docCounter) {
-      docCounter.textContent = `${getFoundDocsCount()} / ${totalDocs}`;
+      docCounter.textContent = isDocsQuestDone()
+        ? "выполнено"
+        : `${getFoundDocsCount()} / ${totalDocs}`;
     }
 
     const washCounter = countersById.get(QUEST_IDS.WASH_ITEMS);
@@ -73,6 +78,27 @@ export function createQuestController({ hud = null, totalDocs = 0, washDurationM
     washCounter.textContent = isItemsQuestDone() ? "готово к запуску" : "ожидает сбор вещей";
   };
 
+  const reorderCards = () => {
+    if (!questList) return;
+
+    const activeCards = [];
+    const doneCards = [];
+
+    QUEST_ORDER.forEach((questId) => {
+      const card = cardsById.get(questId);
+      if (!card) return;
+      if (completedQuests.has(questId)) {
+        doneCards.push(card);
+      } else {
+        activeCards.push(card);
+      }
+    });
+
+    [...activeCards, ...doneCards].forEach((card) => {
+      questList.append(card);
+    });
+  };
+
   const updateProgressTag = () => {
     if (!progressTag) return;
     progressTag.textContent = `${completedQuests.size}/${QUEST_ORDER.length}`;
@@ -82,6 +108,7 @@ export function createQuestController({ hud = null, totalDocs = 0, washDurationM
     QUEST_ORDER.forEach((questId) => {
       updateCardStatus(questId, completedQuests.has(questId));
     });
+    reorderCards();
     updateProgressTag();
     updateCounters();
   };

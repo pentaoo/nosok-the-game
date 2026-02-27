@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const SETTINGS = {
   radius: 0.45,
+  colliderHeight: 1.9,
   walkSpeed: 6,
   runSpeed: 9,
   gravity: 30,
@@ -19,6 +20,8 @@ const SETTINGS = {
   jumpBuffer: 0.12,
   apexThreshold: 3.2,
   apexGravityMult: 0.6,
+  stepUp: 0.9,
+  groundProbeDown: 5.5,
 };
 
 function damp(current, target, lambda, dt) {
@@ -176,7 +179,12 @@ export function createPlayer(scene) {
       state.isGrounded = true;
     }
 
-    const groundY = collisionWorld.getGroundYAt(root.position.x, root.position.z, SETTINGS.groundY);
+    const groundY = collisionWorld.getGroundYAt(root.position.x, root.position.z, {
+      baseGroundY: SETTINGS.groundY,
+      feetY: root.position.y,
+      stepUp: SETTINGS.stepUp,
+      probeDown: SETTINGS.groundProbeDown,
+    });
     if (state.vy <= 0 && root.position.y <= groundY) {
       root.position.y = groundY;
       state.vy = 0;
@@ -224,7 +232,10 @@ export function createPlayer(scene) {
     vectors.desiredPos.x += vectors.velocity.x * dt;
     vectors.desiredPos.z += vectors.velocity.z * dt;
 
-    const resolved = collisionWorld.resolveCircleVsBoxes(vectors.desiredPos, SETTINGS.radius);
+    const resolved = collisionWorld.resolveCircleVsBoxes(vectors.desiredPos, SETTINGS.radius, {
+      actorMinY: root.position.y,
+      actorMaxY: root.position.y + SETTINGS.colliderHeight,
+    });
     root.position.x = resolved.x;
     root.position.z = resolved.z;
 

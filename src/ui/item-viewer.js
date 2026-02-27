@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createSpoolModel } from "../world/spool-model.js";
 
 const MODEL_BY_ITEM_ID = {
   ushanka: "models/USHANKA.glb",
@@ -12,40 +13,6 @@ function loadGLTF(loader, url) {
   return new Promise((resolve, reject) => {
     loader.load(url, resolve, undefined, reject);
   });
-}
-
-function createSpoolModel() {
-  const group = new THREE.Group();
-  const coreMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffdce8,
-    roughness: 0.52,
-    metalness: 0.04,
-  });
-  const threadMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfe4aae,
-    roughness: 0.44,
-    metalness: 0.06,
-  });
-
-  const topDisc = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.4, 0.4, 0.08, 24),
-    coreMaterial
-  );
-  const bottomDisc = topDisc.clone();
-  const core = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.15, 0.15, 0.9, 24),
-    coreMaterial
-  );
-  const thread = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.31, 0.31, 0.78, 32, 1, true),
-    threadMaterial
-  );
-
-  topDisc.position.y = 0.52;
-  bottomDisc.position.y = -0.52;
-  group.add(topDisc, bottomDisc, core, thread);
-  group.rotation.z = -0.22;
-  return group;
 }
 
 function disposeObject(root) {
