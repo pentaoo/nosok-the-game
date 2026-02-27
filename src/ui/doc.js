@@ -4,6 +4,7 @@ import { createItemViewer } from "./item-viewer.js";
 
 const DOC_BY_ID = new Map(DOCS.map((doc) => [doc.id, doc]));
 const ITEM_BY_ID = new Map(ITEMS.map((item) => [item.id, item]));
+const NOOP_CONTROLLER = { destroy() {} };
 
 const state = {
   isBound: false,
@@ -270,6 +271,11 @@ export function hideDOC() {
   setDocVisible(false);
 }
 
+function closePanels() {
+  hideITEM();
+  hideDOC();
+}
+
 function openItemById(itemId) {
   const item = ITEM_BY_ID.get(itemId);
   if (!item || !state.foundItems.has(itemId)) return;
@@ -309,11 +315,15 @@ export function setDocFoundListener(listener) {
 
 export function initDOCControls() {
   if (state.isBound) {
-    return state.controller ?? { destroy() {} };
+    return state.controller ?? NOOP_CONTROLLER;
+  }
+
+  cacheEls();
+  if (!els.doc || !els.item || !els.docsList || !els.itemsList) {
+    return NOOP_CONTROLLER;
   }
 
   state.isBound = true;
-  cacheEls();
   updateProgress();
   renderDocsList();
   renderItemsList();
@@ -351,8 +361,7 @@ export function initDOCControls() {
 
   const onKeyDown = (event) => {
     if (event.code !== "Escape") return;
-    hideITEM();
-    hideDOC();
+    closePanels();
   };
   document.addEventListener("keydown", onKeyDown);
   cleanupFns.push(() => document.removeEventListener("keydown", onKeyDown));
@@ -377,11 +386,11 @@ export function initDOCControls() {
       }
     }
 
-    hideITEM();
-    hideDOC();
+    closePanels();
     state.itemViewer?.dispose?.();
     state.itemViewer = null;
     state.controller = null;
+    state.cleanupFns = [];
   };
 
   state.controller = { destroy };

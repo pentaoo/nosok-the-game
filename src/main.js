@@ -205,7 +205,7 @@ async function main() {
       throw new Error("Game mount element #game not found");
     }
 
-    const hud = createHUD();
+    const hud = register(createHUD());
     const quests = createQuestController({ hud, totalDocs: DOCS.length });
 
     setDocFoundListener((docId) => quests.markDocCollected(docId));
