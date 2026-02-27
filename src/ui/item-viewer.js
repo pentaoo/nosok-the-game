@@ -3,6 +3,12 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createSpoolModel } from "../world/spool-model.js";
 
+const NOOP_ITEM_VIEWER = {
+  showItem() {},
+  hide() {},
+  dispose() {},
+};
+
 const MODEL_BY_ITEM_ID = {
   ushanka: "models/USHANKA.glb",
   vans: "models/vans.glb",
@@ -25,6 +31,36 @@ function disposeObject(root) {
     }
     node.material?.dispose?.();
   });
+}
+
+function cloneSceneWithOwnResources(sourceScene) {
+  const clone = sourceScene.clone(true);
+  const sourceMeshes = [];
+  const clonedMeshes = [];
+
+  sourceScene.traverse((node) => {
+    if (node.isMesh) sourceMeshes.push(node);
+  });
+  clone.traverse((node) => {
+    if (node.isMesh) clonedMeshes.push(node);
+  });
+
+  for (let index = 0; index < clonedMeshes.length; index += 1) {
+    const sourceMesh = sourceMeshes[index];
+    const clonedMesh = clonedMeshes[index];
+    if (!sourceMesh || !clonedMesh) continue;
+
+    clonedMesh.geometry = sourceMesh.geometry?.clone?.() ?? sourceMesh.geometry;
+    if (Array.isArray(sourceMesh.material)) {
+      clonedMesh.material = sourceMesh.material.map(
+        (material) => material?.clone?.() ?? material
+      );
+    } else {
+      clonedMesh.material = sourceMesh.material?.clone?.() ?? sourceMesh.material;
+    }
+  }
+
+  return clone;
 }
 
 function normalizeModel(root) {
@@ -50,7 +86,7 @@ function prepareModel(root) {
 }
 
 export function createItemViewer({ mountEl }) {
-  if (!(mountEl instanceof HTMLElement)) return null;
+  if (!(mountEl instanceof HTMLElement)) return NOOP_ITEM_VIEWER;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
@@ -66,8 +102,7 @@ export function createItemViewer({ mountEl }) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  mountEl.innerHTML = "";
-  mountEl.appendChild(renderer.domElement);
+  mountEl.replaceChildren(renderer.domElement);
   renderer.domElement.style.width = "100%";
   renderer.domElement.style.height = "100%";
   renderer.domElement.style.maxWidth = "100%";
@@ -125,6 +160,7 @@ export function createItemViewer({ mountEl }) {
     running: false,
     loadVersion: 0,
     activeModel: null,
+    disposed: false,
   };
 
   const tmpCenter = new THREE.Vector3();
@@ -132,18 +168,19 @@ export function createItemViewer({ mountEl }) {
   const tmpDirection = new THREE.Vector3();
 
   const render = () => {
+    if (state.disposed) return;
     controls.update();
     renderer.render(scene, camera);
   };
 
   const frame = () => {
-    if (!state.running) return;
+    if (!state.running || state.disposed) return;
     render();
     state.rafId = window.requestAnimationFrame(frame);
   };
 
   const start = () => {
-    if (state.running) return;
+    if (state.running || state.disposed) return;
     state.running = true;
     frame();
   };
@@ -189,6 +226,7 @@ export function createItemViewer({ mountEl }) {
   };
 
   const resize = () => {
+    if (state.disposed) return;
     const width = Math.max(1, mountEl.clientWidth);
     const height = Math.max(1, mountEl.clientHeight);
     renderer.setSize(width, height, false);
@@ -198,8 +236,15 @@ export function createItemViewer({ mountEl }) {
     render();
   };
 
-  const resizeObserver = new ResizeObserver(resize);
-  resizeObserver.observe(mountEl);
+  let resizeObserver = null;
+  let hasWindowResizeFallback = false;
+  if (typeof ResizeObserver === "function") {
+    resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(mountEl);
+  } else {
+    hasWindowResizeFallback = true;
+    window.addEventListener("resize", resize);
+  }
 
   const clearModel = () => {
     while (modelRoot.children.length) {
@@ -221,16 +266,17 @@ export function createItemViewer({ mountEl }) {
       sourceScene = gltf.scene;
       sourceCache.set(modelPath, sourceScene);
     }
-    return sourceScene.clone(true);
+    return cloneSceneWithOwnResources(sourceScene);
   };
 
   const showItem = async (itemId) => {
+    if (state.disposed) return;
     const version = ++state.loadVersion;
     mountEl.dataset.state = "loading";
 
     try {
       const model = await getItemModel(itemId);
-      if (version !== state.loadVersion) {
+      if (state.disposed || version !== state.loadVersion) {
         disposeObject(model);
         return;
       }
@@ -244,7 +290,7 @@ export function createItemViewer({ mountEl }) {
       resize();
       start();
     } catch (error) {
-      if (version !== state.loadVersion) return;
+      if (state.disposed || version !== state.loadVersion) return;
       mountEl.dataset.state = "error";
       console.error("Не удалось загрузить модель предмета:", error);
     }
@@ -253,12 +299,27 @@ export function createItemViewer({ mountEl }) {
   const hide = () => stop();
 
   const dispose = () => {
+    if (state.disposed) return;
+    state.disposed = true;
+    state.loadVersion += 1;
     stop();
-    resizeObserver.disconnect();
+
+    resizeObserver?.disconnect();
+    resizeObserver = null;
+    if (hasWindowResizeFallback) {
+      window.removeEventListener("resize", resize);
+      hasWindowResizeFallback = false;
+    }
+
     clearModel();
+    for (const sourceScene of sourceCache.values()) {
+      disposeObject(sourceScene);
+    }
+    sourceCache.clear();
+
     controls.dispose();
     renderer.dispose();
-    mountEl.innerHTML = "";
+    mountEl.replaceChildren();
     mountEl.dataset.state = "idle";
   };
 

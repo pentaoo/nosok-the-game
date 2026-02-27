@@ -22,8 +22,24 @@ function updateWorldObstacles(world, collisionWorld, dt) {
     washer.userData.FBA_WM_1?.userData?.updateFlipbook?.(dt);
   }
 
-  for (const item of world.itemMeshes ?? []) {
+  const itemMeshes = world.itemMeshes ?? [];
+  for (let index = itemMeshes.length - 1; index >= 0; index -= 1) {
+    const item = itemMeshes[index];
+    if (!item) {
+      itemMeshes.splice(index, 1);
+      continue;
+    }
+
+    if (item.visible === false || item.userData?.collected) {
+      collisionWorld.removeItemObstacle?.(item);
+      itemMeshes.splice(index, 1);
+      continue;
+    }
+
+    if (item.userData?.collisionRegistered) continue;
+
     collisionWorld.addItemObstacle(item);
+    item.userData.collisionRegistered = true;
   }
 }
 

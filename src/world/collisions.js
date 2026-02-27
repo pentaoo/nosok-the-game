@@ -26,6 +26,7 @@ export function createCollisionWorld() {
     obstacleById.delete(mesh.uuid);
     const idx = obstacles.indexOf(obs);
     if (idx >= 0) obstacles.splice(idx, 1);
+    if (mesh?.userData) mesh.userData.collisionRegistered = false;
   }
 
   function readTransformSnapshot(mesh, snapshot = {}) {
@@ -121,6 +122,10 @@ export function createCollisionWorld() {
     });
   }
 
+  function removeItemObstacle(mesh) {
+    removeObstacle(mesh);
+  }
+
   function resolveCircleVsBoxes(position, radius, actorBounds = null) {
     const radiusSq = radius * radius;
     const actorMinY =
@@ -183,6 +188,7 @@ export function createCollisionWorld() {
     resolveCircleVsBoxes,
     addWasherObstacle,
     addItemObstacle,
+    removeItemObstacle,
     getGroundYAt,
   };
 }
