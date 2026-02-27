@@ -1,0 +1,505 @@
+@media (max-width: 1400px) {
+  .game-grid {
+    min-height: 980px;
+  }
+
+  .game-column--left {
+    grid-template-rows: minmax(0, 680px) minmax(0, 300px);
+  }
+
+  .game-column--right {
+    grid-template-rows: minmax(0, 430px) minmax(0, 550px);
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recycler-shell {
+    grid-template-columns: minmax(0, 40%) minmax(0, 10%) minmax(0, 50%);
+    min-height: 680px;
+  }
+
+  .recycler-stage,
+  .recycler-meter-panel,
+  .recycler-meta {
+    min-height: 680px;
+  }
+
+  .recycler-tools-grid .recycler-tool {
+    min-height: 208px;
+  }
+
+  .designer-layout {
+    grid-template-columns: minmax(0, 30%) minmax(0, 70%);
+  }
+
+  .designer-shell {
+    grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --frame-inset: 16px;
+  }
+
+  .home-hero,
+  .home-game,
+  .home-recycler,
+  .home-designer {
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+  }
+
+  .home-hero {
+    border-top-width: 2px;
+    min-height: 56px;
+  }
+
+  .hero-shell {
+    min-height: calc(56px - 2px);
+  }
+
+  .hero-label {
+    font-size: 20px;
+  }
+
+  .game-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .game-column {
+    grid-template-rows: auto;
+  }
+
+  .game-column--left {
+    border-right: 0;
+  }
+
+  .game-panel--play,
+  .game-panel--docs,
+  .game-panel--tasks,
+  .game-panel--cards {
+    border-bottom: 2px solid var(--black);
+  }
+
+  .header {
+    padding: 18px 16px 12px;
+  }
+
+  .header h2 {
+    font-size: 22px;
+  }
+
+  .game-shell {
+    padding: 8px 16px 16px;
+  }
+
+  .hud-panel {
+    padding: 14px 16px;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.9);
+  }
+
+  #game-wrap {
+    min-height: 320px;
+    height: clamp(400px, 64vh, 620px);
+  }
+
+  .task-list,
+  .doc-list,
+  .cards-grid {
+    padding: 8px 16px 16px;
+  }
+
+  .task_card h4 {
+    font-size: 21px;
+  }
+
+  .task_card p {
+    font-size: 15px;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .doc-panel {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100dvh;
+    z-index: 20;
+  }
+
+  #ITEM {
+    z-index: 21;
+  }
+
+  .home-recycler {
+    min-height: 0;
+  }
+
+  .recycler-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 84px auto;
+    min-height: 0;
+  }
+
+  .recycler-stage {
+    border-right: 0;
+    border-bottom: 2px solid var(--black);
+    min-height: 420px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .recycler-stage-head {
+    min-height: 88px;
+  }
+
+  .recycler-help {
+    right: var(--frame-inset);
+    left: auto;
+    top: 12px;
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
+  .recycler-tooltip {
+    top: calc(var(--frame-inset) + 46px);
+    left: var(--frame-inset);
+    right: var(--frame-inset);
+    width: auto;
+  }
+
+  .recycler-target-area {
+    padding: 8px var(--frame-inset) 0;
+  }
+
+  .recycler-target {
+    width: min(100%, 480px);
+  }
+
+  .recycler-stats {
+    padding: 0 var(--frame-inset) 10px;
+  }
+
+  .recycler-stat-value {
+    font-size: 62px;
+  }
+
+  .recycler-stat-label {
+    padding-top: 7px;
+    font-size: 30px;
+  }
+
+  .recycler-meter-panel {
+    min-height: 84px;
+    border-right: 0;
+    border-bottom: 2px solid var(--black);
+  }
+
+  .recycler-hp-label {
+    writing-mode: horizontal-tb;
+    font-size: clamp(17px, 4.8vw, 24px);
+  }
+
+  .recycler-meta {
+    min-height: 0;
+    grid-template-rows: 120px 1fr;
+  }
+
+  .recycler-header {
+    grid-template-columns: minmax(0, 1fr) 180px;
+  }
+
+  .recycler-marquee,
+  .recycler-resource {
+    border-bottom-width: 2px;
+  }
+
+  .recycler-resource {
+    border-left-width: 2px;
+  }
+
+  .recycler-marquee-text {
+    padding-right: 26px;
+    font-size: clamp(38px, 9vw, 78px);
+  }
+
+  .recycler-resource #recycler-resource-value {
+    font-size: clamp(44px, 9vw, 68px);
+  }
+
+  .recycler-resource-currency {
+    font-size: clamp(22px, 4vw, 30px);
+    padding-top: 18px;
+  }
+
+  .recycler-tools {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .recycler-tools-group {
+    border-right: 0;
+    border-bottom-width: 2px;
+    grid-template-rows: 54px 1fr;
+  }
+
+  .recycler-tools-group:last-child {
+    border-bottom: 0;
+  }
+
+  .recycler-tools-group-title {
+    font-size: 20px;
+    border-bottom-width: 2px;
+    padding: 18px 14px 12px;
+  }
+
+  .recycler-tools-grid .recycler-tool {
+    min-height: 152px;
+    border-width: 2px;
+    padding: 12px;
+  }
+
+  .recycler-tool-name {
+    font-size: clamp(18px, 3.6vw, 24px);
+  }
+
+  .recycler-tool-rate {
+    font-size: 11px;
+  }
+
+  .designer-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .designer-void {
+    display: none;
+  }
+
+  .designer-shell {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .designer-stage-column {
+    border-right: 0;
+    border-bottom: 2px solid var(--black);
+  }
+
+  .designer-stage-column .sock-stage {
+    padding: 14px;
+  }
+
+  .designer-controls {
+    grid-template-rows: auto auto auto auto;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --frame-inset: var(--frame-inset-mobile);
+  }
+
+  .home-hero,
+  .home-game,
+  .home-recycler,
+  .home-designer {
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+
+  .hero-label {
+    font-size: 18px;
+  }
+
+  .header {
+    padding: 16px 14px 10px;
+  }
+
+  .header h2 {
+    font-size: 20px;
+  }
+
+  #game-wrap {
+    min-height: 290px;
+    height: clamp(350px, 56vh, 480px);
+  }
+
+  .hud-panel {
+    padding: 12px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
+  }
+
+  .task-list,
+  .doc-list,
+  .cards-grid {
+    padding: 8px 14px 14px;
+    gap: 12px;
+  }
+
+  .task_card {
+    padding: 14px;
+  }
+
+  .task_card h4 {
+    font-size: 19px;
+  }
+
+  .task_card p {
+    font-size: 14px;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-card {
+    padding: 12px 10px 10px;
+  }
+
+  .doc-card .doc-title {
+    font-size: 14px;
+  }
+
+  .doc-meta {
+    font-size: 11px;
+  }
+
+  .recycler-stage {
+    min-height: 320px;
+  }
+
+  .recycler-stage-head {
+    min-height: 78px;
+  }
+
+  .recycler-target {
+    width: min(92vw, 340px);
+  }
+
+  .recycler-drop {
+    top: 10px;
+    right: var(--frame-inset);
+    font-size: 14px;
+  }
+
+  .recycler-stat-value {
+    font-size: 52px;
+  }
+
+  .recycler-stat-label {
+    padding-top: 5px;
+    font-size: 24px;
+  }
+
+  .recycler-meta {
+    grid-template-rows: 96px 1fr;
+  }
+
+  .recycler-header {
+    grid-template-columns: minmax(0, 1fr) 126px;
+  }
+
+  .recycler-marquee-text {
+    padding-right: 18px;
+    font-size: clamp(28px, 9vw, 54px);
+  }
+
+  .recycler-resource #recycler-resource-value {
+    font-size: clamp(34px, 9vw, 54px);
+  }
+
+  .recycler-resource-currency {
+    font-size: clamp(18px, 4vw, 24px);
+    padding-top: 12px;
+  }
+
+  .recycler-tools-group-title {
+    font-size: 17px;
+    padding: 16px 12px 10px;
+  }
+
+  .recycler-tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recycler-tools-grid .recycler-tool {
+    min-height: 126px;
+    padding: 10px;
+  }
+
+  .recycler-tool-name {
+    font-size: clamp(16px, 5.5vw, 22px);
+  }
+
+  .recycler-tool-rate {
+    font-size: 10px;
+  }
+
+  .recycler-tool-meta {
+    font-size: 9px;
+  }
+
+  .designer-header {
+    padding: 0 12px;
+  }
+
+  .designer-header h2 {
+    font-size: 20px;
+  }
+
+  .designer-stage-column .sock-stage {
+    padding: 10px;
+  }
+
+  .designer-controls h3 {
+    padding: 18px 12px 10px;
+    font-size: 20px;
+  }
+
+  .designer-palette,
+  .designer-slider,
+  .designer-actions {
+    padding: 12px;
+  }
+
+  .designer-swatch {
+    min-height: 62px;
+  }
+
+  .sock-stage-hint {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (max-width: 480px) {
+  #touch-controls {
+    --btn: 42px;
+    --action_btn: 62px;
+    --btn_gap: 6px;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .touch-actions {
+    gap: 6px;
+  }
+
+  .touch-btn {
+    font-size: 13px;
+  }
+
+  .touch-btn.action,
+  .touch-btn.jump {
+    font-size: 14px;
+  }
+}

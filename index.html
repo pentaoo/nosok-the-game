@@ -9,153 +9,170 @@
   </head>
   <body>
     <main class="home">
-      <section class="home-hero" id="home-hero">
-        <div class="hero-inner">
-          <div class="hero-copy">
-            <span class="badge">NOSOK LAB</span>
-            <h1>Прачечная, где вещи становятся легендами</h1>
-            <p>
-              Мы превращаем заботу о вещах в игру: немного шума, немного памяти
-              и много характера.
-            </p>
-            <a class="button" href="#home-game">Перейти к игре</a>
-          </div>
-          <div class="hero-logo-panel">
-            <button
-              class="hero-logo-button"
-              type="button"
-              aria-label="Нажать логотип"
-            >
-              <img
-                src="./src/img/logo_pink.svg"
-                id="hero-logo"
-                data-logo="pink"
-                class="hero-logo-img"
-                alt="Nosok"
-              />
-            </button>
-          </div>
+      <section class="home-hero" id="home-hero" aria-label="NOSOK header">
+        <div class="hero-shell">
+          <p class="hero-label">Nosok</p>
         </div>
       </section>
 
       <section class="home-game" id="home-game">
         <div class="game-grid">
-          <div class="game-panel game-panel--play">
-            <header class="header">
-              <h2>Игра</h2>
-              <div style="display: none" class="badge"></div>
-            </header>
-            <div id="app" class="game-shell">
-              <div class="hud" id="hud">
-                <div
-                  class="hud-panel hud-panel--hint"
-                  id="hud-interaction"
-                  aria-hidden="true"
-                >
-                  <div id="hint"></div>
-                  <div class="small" id="subhint"></div>
-                </div>
-                <div
-                  class="hud-panel hud-panel--toast"
-                  id="hud-toast"
-                  aria-live="polite"
-                  aria-hidden="true"
-                >
-                  <div class="hud-toast-title" id="hud-toast-title"></div>
-                  <div class="hud-toast-sub" id="hud-toast-sub"></div>
-                  <div class="hud-toast-progress" id="hud-toast-progress"></div>
-                </div>
-              </div>
-              <div id="game-wrap">
-                <section id="game"></section>
-                <div id="touch-controls" aria-hidden="true">
-                  <div class="touch-pad">
-                    <button
-                      class="touch-btn dpad up"
-                      data-code="KeyW"
-                      type="button"
-                    >
-                      W
-                    </button>
-                    <button
-                      class="touch-btn dpad left"
-                      data-code="KeyA"
-                      type="button"
-                    >
-                      A
-                    </button>
-                    <button
-                      class="touch-btn dpad down"
-                      data-code="KeyS"
-                      type="button"
-                    >
-                      S
-                    </button>
-                    <button
-                      class="touch-btn dpad right"
-                      data-code="KeyD"
-                      type="button"
-                    >
-                      D
-                    </button>
+          <div class="game-column game-column--left">
+            <div class="game-panel game-panel--play">
+              <header class="header">
+                <h2>Игра</h2>
+              </header>
+              <div id="app" class="game-shell">
+                <div class="hud" id="hud">
+                  <div
+                    class="task_card hud-panel--hint"
+                    id="hud-interaction"
+                    aria-hidden="true"
+                  >
+                    <div class="task_card_head">
+                      <h4 id="hint"></h4>
+                    </div>
+                    <span class="task_meta" id="subhint"></span>
                   </div>
-                  <div class="touch-actions">
-                    <button
-                      class="touch-btn action"
-                      data-code="KeyE"
-                      type="button"
-                    >
-                      E
-                    </button>
-                    <button
-                      class="touch-btn jump"
-                      data-code="Space"
-                      type="button"
-                    >
-                      JUMP
-                    </button>
+                  <div
+                    class="hud-panel hud-panel--toast"
+                    id="hud-toast"
+                    aria-live="polite"
+                    aria-hidden="true"
+                  >
+                    <div class="hud-toast-title" id="hud-toast-title"></div>
+                    <div class="hud-toast-sub" id="hud-toast-sub"></div>
+                    <div
+                      class="hud-toast-progress"
+                      id="hud-toast-progress"
+                    ></div>
+                  </div>
+                </div>
+                <div id="game-wrap">
+                  <section id="game"></section>
+                  <div id="touch-controls" aria-hidden="true">
+                    <div class="touch-pad">
+                      <button
+                        class="touch-btn dpad up"
+                        data-code="KeyW"
+                        type="button"
+                      >
+                        W
+                      </button>
+                      <button
+                        class="touch-btn dpad left"
+                        data-code="KeyA"
+                        type="button"
+                      >
+                        A
+                      </button>
+                      <button
+                        class="touch-btn dpad down"
+                        data-code="KeyS"
+                        type="button"
+                      >
+                        S
+                      </button>
+                      <button
+                        class="touch-btn dpad right"
+                        data-code="KeyD"
+                        type="button"
+                      >
+                        D
+                      </button>
+                    </div>
+                    <div class="touch-actions">
+                      <button
+                        class="touch-btn action"
+                        data-code="KeyE"
+                        type="button"
+                      >
+                        E
+                      </button>
+                      <button
+                        class="touch-btn jump"
+                        data-code="Space"
+                        type="button"
+                      >
+                        JUMP
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="game-panel game-panel--tasks">
-            <div class="header">
-              <h2>Квесты</h2>
-              <span class="badge" id="quests-progress-tag">0/3</span>
-            </div>
-            <div class="task-list" id="quest-list">
-              <article class="task_card" data-quest-id="collect-items" data-status="active">
-                <h4>Собрать все вещи</h4>
-                <p>Соберите все найденные вещи в прачечной.</p>
-                <span class="task_meta" data-quest-counter="collect-items">0 / 0</span>
-              </article>
-              <article class="task_card" data-quest-id="collect-docs" data-status="active">
-                <h4>Собрать все документы</h4>
-                <p>Найдите и откройте все документы в зале.</p>
-                <span class="task_meta" data-quest-counter="collect-docs">0 / 0</span>
-              </article>
-              <article class="task_card" data-quest-id="wash-items" data-status="active">
-                <h4>Постирать вещи</h4>
-                <p>Подойдите к WM_err и нажмите E после сбора всех вещей.</p>
-                <span class="task_meta" data-quest-counter="wash-items">Ожидает сбор вещей</span>
-              </article>
+
+            <div class="game-panel game-panel--docs">
+              <div class="header">
+                <h2>Последние документы</h2>
+                <span class="badge badge--yellow" id="docs-count-tag"
+                  >найдено 0 / 5</span
+                >
+              </div>
+              <ul class="doc-list" id="docs-list"></ul>
             </div>
           </div>
 
-          <div class="game-panel game-panel--cards">
-            <div class="header">
-              <h2>Найденные предметы</h2>
+          <div class="game-column game-column--right">
+            <div class="game-panel game-panel--tasks">
+              <div class="header">
+                <h2>Квесты</h2>
+                <span class="badge badge--yellow" id="quests-progress-tag"
+                  >0/3</span
+                >
+              </div>
+              <div class="task-list" id="quest-list">
+                <article
+                  class="task_card"
+                  data-quest-id="wash-items"
+                  data-status="active"
+                >
+                  <div class="task_card_head">
+                    <h4>Почините стиралку</h4>
+                    <span class="task_meta" data-quest-counter="wash-items"
+                      >ожидает выполнение</span
+                    >
+                  </div>
+                  <p>Найдите стиральную машину и решите пазл</p>
+                </article>
+                <article
+                  class="task_card"
+                  data-quest-id="collect-items"
+                  data-status="active"
+                >
+                  <div class="task_card_head">
+                    <h4>Соберите все вещи</h4>
+                    <span class="task_meta" data-quest-counter="collect-items"
+                      >0 / 0</span
+                    >
+                  </div>
+                  <p>Каждая вещь — история, узнай больше!</p>
+                </article>
+                <article
+                  class="task_card"
+                  data-quest-id="collect-docs"
+                  data-status="active"
+                >
+                  <div class="task_card_head">
+                    <h4>Прочтите потерянные документы</h4>
+                    <span class="task_meta" data-quest-counter="collect-docs"
+                      >0 / 0</span
+                    >
+                  </div>
+                  <p>Эти файлы несут в себе много полезной информации.</p>
+                </article>
+              </div>
             </div>
-            <div class="cards-grid" id="items-list"></div>
-          </div>
-          <div class="game-panel game-panel--docs">
-            <div class="header">
-              <h2>Последние документы</h2>
-              <span class="badge" id="docs-count-tag">найдено 0 / 5</span>
+
+            <div class="game-panel game-panel--cards">
+              <div class="header">
+                <h2>Найденные предметы</h2>
+                <span class="badge badge--green">NOSOK</span>
+              </div>
+              <div class="cards-grid" id="items-list"></div>
             </div>
-            <ul class="doc-list" id="docs-list"></ul>
           </div>
+
           <div id="DOC" class="doc-panel" aria-hidden="true">
             <div class="doc-shell">
               <header class="doc-header">
@@ -175,6 +192,7 @@
               </footer>
             </div>
           </div>
+
           <div id="ITEM" class="doc-panel" aria-hidden="true" data-type="item">
             <div class="doc-shell">
               <header class="doc-header">
@@ -213,41 +231,274 @@
           </div>
         </div>
       </section>
+
+      <section
+        class="home-recycler"
+        id="home-recycler"
+        aria-labelledby="recycler-title"
+      >
+        <h2 id="recycler-title" class="recycler-title">
+          Разбери одежду в сырьё
+        </h2>
+        <div class="recycler-shell">
+          <div class="recycler-stage" id="recycler-stage">
+            <div class="recycler-stage-head">
+              <button
+                class="recycler-help"
+                id="recycler-help"
+                type="button"
+                aria-label="Подсказка по кликеру"
+                aria-expanded="true"
+                aria-controls="recycler-tooltip"
+              >
+                ?
+              </button>
+              <aside
+                class="recycler-tooltip is-open"
+                id="recycler-tooltip"
+                role="tooltip"
+              >
+                Кликайте по объекту слева, собирайте сырьё и покупайте
+                улучшения: урон за клик и автоклики в секунду.
+              </aside>
+            </div>
+
+            <div class="recycler-target-area">
+              <button
+                class="recycler-target"
+                id="recycler-target"
+                type="button"
+                aria-label="Разобрать объект"
+              >
+                <img
+                  class="recycler-target-img"
+                  id="recycler-target-img"
+                  src="./src/img/figma/recycler-main-sock.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span
+                  class="recycler-hitflash"
+                  id="recycler-hitflash"
+                  aria-hidden="true"
+                ></span>
+              </button>
+              <output
+                class="recycler-drop"
+                id="recycler-drop"
+                aria-live="polite"
+              ></output>
+              <span
+                class="recycler-hitline"
+                id="recycler-hitline"
+                aria-hidden="true"
+              ></span>
+              <div
+                class="recycler-pop-layer"
+                id="recycler-pop-layer"
+                aria-hidden="true"
+              ></div>
+            </div>
+
+            <div class="recycler-stats" aria-live="polite">
+              <p class="recycler-stat">
+                <span class="recycler-stat-label">клик</span>
+                <strong class="recycler-stat-value" id="recycler-click-value"
+                  >12</strong
+                >
+              </p>
+              <p class="recycler-stat">
+                <span class="recycler-stat-label">авто/сек</span>
+                <strong class="recycler-stat-value" id="recycler-auto-value"
+                  >0</strong
+                >
+              </p>
+            </div>
+          </div>
+
+          <aside class="recycler-meter-panel" aria-label="Здоровье объекта">
+            <div class="recycler-life">
+              <span class="recycler-life-bar" id="recycler-life-bar"></span>
+              <span class="recycler-hp-label" id="recycler-hp-label"
+                >42 HP</span
+              >
+            </div>
+          </aside>
+
+          <div class="recycler-meta">
+            <div class="recycler-header">
+              <div class="recycler-marquee" aria-hidden="true">
+                <div class="recycler-marquee-inner">
+                  <span class="recycler-marquee-text"
+                    >магазин • магазин • магазин • магазин •
+                  </span>
+                  <span class="recycler-marquee-text"
+                    >магазин • магазин • магазин • магазин •
+                  </span>
+                </div>
+              </div>
+              <div class="recycler-resource">
+                <span id="recycler-resource-value">0</span>
+                <span class="recycler-resource-currency">$</span>
+              </div>
+            </div>
+
+            <div
+              class="recycler-tools"
+              id="recycler-tools"
+              aria-label="Улучшения кликера"
+            >
+              <section
+                class="recycler-tools-group recycler-tools-group--click"
+                aria-label="Материалы за клик"
+              >
+                <h3 class="recycler-tools-group-title">Материалы за клик</h3>
+                <div class="recycler-tools-grid">
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="sandpaper"
+                    aria-label="Купить Наждачку +4 клик"
+                  >
+                    <span class="recycler-tool-name">наждачка</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+4/клик</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="scissors"
+                    aria-label="Купить Ножницы +16 клик"
+                  >
+                    <span class="recycler-tool-name">ножницы</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+16/клик</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="cutters"
+                    aria-label="Купить Кусачки +24 клик"
+                  >
+                    <span class="recycler-tool-name">кусачки</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+24/клик</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="shredder"
+                    aria-label="Купить Шредер +60 клик"
+                  >
+                    <span class="recycler-tool-name">шредер</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+60/клик</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                </div>
+              </section>
+
+              <section
+                class="recycler-tools-group recycler-tools-group--auto"
+                aria-label="Материалы в секунду"
+              >
+                <h3 class="recycler-tools-group-title">Материалы в секунду</h3>
+                <div class="recycler-tools-grid">
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="flamethrower"
+                    aria-label="Купить Огнемет +4 в секунду"
+                  >
+                    <span class="recycler-tool-name">огнемет</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+4/сек</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="overlock"
+                    aria-label="Купить Оверлок +16 в секунду"
+                  >
+                    <span class="recycler-tool-name">оверлок</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+16/сек</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="press"
+                    aria-label="Купить Пресс +24 в секунду"
+                  >
+                    <span class="recycler-tool-name">пресс</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+24/сек</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                  <button
+                    class="recycler-tool recycler-tool--yellow"
+                    type="button"
+                    data-tool-id="turbine"
+                    aria-label="Купить Турбину +60 в секунду"
+                  >
+                    <span class="recycler-tool-name">турбина</span>
+                    <span class="recycler-tool-line">
+                      <span class="recycler-tool-rate">+60/сек</span>
+                      <span class="recycler-tool-meta"></span>
+                    </span>
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section
         class="home-designer"
         id="home-designer"
         aria-labelledby="designer-title"
       >
-        <div class="designer-shell">
-          <div class="designer-copy">
-            <span class="badge">NOSOK CUSTOM LAB</span>
-            <h2 id="designer-title">Нарисуй принт прямо на носке</h2>
-            <p>
-              Выбери цвет, настрой толщину линии и придумай свой дикий узор.
-              Всё, что не помещается в рамки fast fashion, отлично помещается
-              здесь.
-            </p>
-          </div>
-          <div class="designer-workbench">
-            <div class="sock-stage">
-              <div class="sock-designer-surface">
-                <img
-                  class="sock-designer-base"
-                  src="./src/img/nosok.svg"
-                  alt=""
-                  aria-hidden="true"
-                />
-                <canvas
-                  id="sock-designer-canvas"
-                  width="820"
-                  height="840"
-                  aria-label="Холст для рисования на носке"
-                ></canvas>
+        <div class="designer-layout">
+          <div class="designer-void" aria-hidden="true"></div>
+          <div class="designer-shell">
+            <div class="designer-stage-column">
+              <header class="header designer-header">
+                <h2 id="designer-title">Задизайнь свой носок</h2>
+              </header>
+              <div class="sock-stage">
+                <div class="sock-designer-surface">
+                  <img
+                    class="sock-designer-base"
+                    src="./src/img/nosok.svg"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <canvas
+                    id="sock-designer-canvas"
+                    width="820"
+                    height="840"
+                    aria-label="Холст для рисования на носке"
+                  ></canvas>
+                </div>
+                <p class="sock-stage-hint">Тяни курсор или палец по носку</p>
               </div>
-              <p class="sock-stage-hint">Тяни курсор или палец по носку</p>
             </div>
+
             <aside class="designer-controls" aria-label="Инструменты рисования">
-              <h3>Инструменты</h3>
+              <h3>Палитра</h3>
               <div class="designer-palette" id="sock-palette">
                 <button
                   type="button"
@@ -286,6 +537,7 @@
                   aria-label="Белый цвет"
                 ></button>
               </div>
+
               <label class="designer-slider" for="sock-brush-size">
                 Размер кисти
                 <input
@@ -299,6 +551,7 @@
                   >18 px</output
                 >
               </label>
+
               <div class="designer-actions">
                 <button
                   class="designer-btn designer-btn--pink"
@@ -325,176 +578,6 @@
               </div>
             </aside>
           </div>
-        </div>
-      </section>
-      <section
-        class="home-recycler"
-        id="home-recycler"
-        aria-labelledby="recycler-title"
-      >
-        <h2 id="recycler-title" class="recycler-title">Разбери одежду в сырьё</h2>
-        <button
-          class="recycler-help"
-          id="recycler-help"
-          type="button"
-          aria-label="Подсказка по кликеру"
-          aria-expanded="false"
-          aria-controls="recycler-tooltip"
-        >
-          ?
-        </button>
-        <aside class="recycler-tooltip" id="recycler-tooltip" role="tooltip">
-          Кликайте по объекту слева, собирайте сырьё и покупайте улучшения:
-          урон за клик и автоклики в секунду.
-        </aside>
-        <div class="recycler-shell">
-          <div class="recycler-stage" id="recycler-stage">
-            <button
-              class="recycler-target"
-              id="recycler-target"
-              type="button"
-              aria-label="Разобрать объект"
-            >
-              <img
-                class="recycler-target-img"
-                id="recycler-target-img"
-                src="./src/img/nosok.svg"
-                alt=""
-                aria-hidden="true"
-              />
-              <span
-                class="recycler-hitflash"
-                id="recycler-hitflash"
-                aria-hidden="true"
-              ></span>
-            </button>
-            <output
-              class="recycler-drop"
-              id="recycler-drop"
-              aria-live="polite"
-            ></output>
-            <span
-              class="recycler-hitline"
-              id="recycler-hitline"
-              aria-hidden="true"
-            ></span>
-            <div
-              class="recycler-pop-layer"
-              id="recycler-pop-layer"
-              aria-hidden="true"
-            ></div>
-            <div class="recycler-stats" aria-live="polite">
-              <p class="recycler-stat">
-                <span class="recycler-stat-label">сырьё</span>
-                <strong class="recycler-stat-value" id="recycler-resource-value"
-                  >0</strong
-                >
-              </p>
-              <p class="recycler-stat">
-                <span class="recycler-stat-label">клик</span>
-                <strong class="recycler-stat-value" id="recycler-click-value"
-                  >12</strong
-                >
-              </p>
-              <p class="recycler-stat">
-                <span class="recycler-stat-label">авто/сек</span>
-                <strong class="recycler-stat-value" id="recycler-auto-value"
-                  >0</strong
-                >
-              </p>
-            </div>
-          </div>
-          <div class="recycler-meta">
-            <div
-              class="recycler-tools"
-              id="recycler-tools"
-              aria-label="Улучшения кликера"
-            >
-              <button
-                class="recycler-tool recycler-tool--green"
-                type="button"
-                data-tool-id="sandpaper"
-                aria-label="Купить Наждачку +4 клик"
-              >
-                <span class="recycler-tool-name">наждачка</span>
-                <span class="recycler-tool-rate">+4/клик</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--yellow"
-                type="button"
-                data-tool-id="scissors"
-                aria-label="Купить Ножницы +16 клик"
-              >
-                <span class="recycler-tool-name">ножницы</span>
-                <span class="recycler-tool-rate">+16/клик</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--green"
-                type="button"
-                data-tool-id="cutters"
-                aria-label="Купить Кусачки +24 клик"
-              >
-                <span class="recycler-tool-name">кусачки</span>
-                <span class="recycler-tool-rate">+24/клик</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--yellow"
-                type="button"
-                data-tool-id="shredder"
-                aria-label="Купить Шредер +60 клик"
-              >
-                <span class="recycler-tool-name">шредер</span>
-                <span class="recycler-tool-rate">+60/клик</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--purple"
-                type="button"
-                data-tool-id="flamethrower"
-                aria-label="Купить Огнемет +4 в секунду"
-              >
-                <span class="recycler-tool-name">огнемет</span>
-                <span class="recycler-tool-rate">+4/сек</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--pink"
-                type="button"
-                data-tool-id="overlock"
-                aria-label="Купить Оверлок +16 в секунду"
-              >
-                <span class="recycler-tool-name">оверлок</span>
-                <span class="recycler-tool-rate">+16/сек</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--purple"
-                type="button"
-                data-tool-id="press"
-                aria-label="Купить Пресс +24 в секунду"
-              >
-                <span class="recycler-tool-name">пресс</span>
-                <span class="recycler-tool-rate">+24/сек</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-              <button
-                class="recycler-tool recycler-tool--pink"
-                type="button"
-                data-tool-id="turbine"
-                aria-label="Купить Турбину +60 в секунду"
-              >
-                <span class="recycler-tool-name">турбина</span>
-                <span class="recycler-tool-rate">+60/сек</span>
-                <span class="recycler-tool-meta"></span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="recycler-life recycler-life--bottom" aria-hidden="true">
-          <span class="recycler-life-bar" id="recycler-life-bar"></span>
         </div>
       </section>
     </main>

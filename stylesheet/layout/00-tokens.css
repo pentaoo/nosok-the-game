@@ -1,0 +1,34 @@
+:root {
+  --ink: #111111;
+  --white: #fff;
+  --yellow: #ffe600;
+  --pink: #fe4aae;
+  --green: #b4ff3b;
+  --purple: #7e5bff;
+  --black: #000000;
+  --frame-inset: 24px;
+  --frame-inset-mobile: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: var(--white);
+  color: var(--ink);
+  font-family: "Mabry Pro", "Arial Black", sans-serif;
+}
+
+body {
+  overflow-x: hidden;
+}
+

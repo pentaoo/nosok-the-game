@@ -1,0 +1,49 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Frame 123">
+<g id="Vector">
+<path d="M177.771 307.963H208.115V338.308H177.771V307.963Z" fill="var(--fill-0, black)"/>
+<path d="M177.771 459.686H208.115V490.03H177.771V459.686Z" fill="var(--fill-0, black)"/>
+<path d="M238.46 292.791H268.804V323.136H238.46V292.791Z" fill="var(--fill-0, black)"/>
+<path d="M238.46 459.686H268.804V490.03H238.46V459.686Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 110.724H329.493V141.069H299.149V110.724Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 156.241H329.493V186.586H299.149V156.241Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 186.586H329.493V216.93H299.149V186.586Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 216.93H329.493V247.274H299.149V216.93Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 247.274H329.493V277.619H299.149V247.274Z" fill="var(--fill-0, black)"/>
+<path d="M268.804 277.619H299.149V307.963H268.804V277.619Z" fill="var(--fill-0, black)"/>
+<path d="M299.149 459.686H329.493V490.03H299.149V459.686Z" fill="var(--fill-0, black)"/>
+<path d="M359.838 156.241H390.182V186.586H359.838V156.241Z" fill="var(--fill-0, black)"/>
+<path d="M359.838 429.341H390.182V459.686H359.838V429.341Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 110.724H450.871V141.069H420.527V110.724Z" fill="var(--fill-0, black)"/>
+<path d="M359.838 110.724H390.182V141.069H359.838V110.724Z" fill="var(--fill-0, black)"/>
+<path d="M390.182 110.724H420.527V141.069H390.182V110.724Z" fill="var(--fill-0, black)"/>
+<path d="M329.493 110.724H359.838V141.069H329.493V110.724Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 156.241H450.871V186.586H420.527V156.241Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 186.586H450.871V216.93H420.527V186.586Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 216.93H450.871V247.274H420.527V216.93Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 247.274H450.871V277.619H420.527V247.274Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 277.619H450.871V307.963H420.527V277.619Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 307.963H450.871V338.308H420.527V307.963Z" fill="var(--fill-0, black)"/>
+<path d="M420.527 338.308H450.871V368.652H420.527V338.308Z" fill="var(--fill-0, black)"/>
+<path d="M177.771 307.963H208.115V338.308H177.771V307.963Z" fill="var(--fill-0, black)"/>
+<path d="M208.115 307.963H238.46V338.308H208.115V307.963Z" fill="var(--fill-0, black)"/>
+<path d="M208.115 459.686H238.46V490.03H208.115V459.686Z" fill="var(--fill-0, black)"/>
+<path d="M268.804 141.069H299.149V171.413H268.804V141.069Z" fill="var(--fill-0, black)"/>
+<path d="M268.804 459.686H299.149V490.03H268.804V459.686Z" fill="var(--fill-0, black)"/>
+<path d="M329.493 156.241H359.838V186.586H329.493V156.241Z" fill="var(--fill-0, black)"/>
+<path d="M329.493 429.341H359.838V459.686H329.493V429.341Z" fill="var(--fill-0, black)"/>
+<path d="M147.426 338.308H177.771V368.652H147.426V338.308Z" fill="var(--fill-0, black)"/>
+<path d="M147.426 429.341H177.771V459.686H147.426V429.341Z" fill="var(--fill-0, black)"/>
+<path d="M117.082 368.652H147.426V398.997H117.082V368.652Z" fill="var(--fill-0, black)"/>
+<path d="M117.082 398.997H147.426V429.341H117.082V398.997Z" fill="var(--fill-0, black)"/>
+<path d="M390.182 156.241H420.527V186.586H390.182V156.241Z" fill="var(--fill-0, black)"/>
+<path d="M405.354 368.652H435.699V398.997H405.354V368.652Z" fill="var(--fill-0, black)"/>
+<path d="M390.182 398.997H420.527V429.341H390.182V398.997Z" fill="var(--fill-0, black)"/>
+<path d="M450.871 125.897H481.216V156.241H450.871V125.897Z" fill="var(--fill-0, black)"/>
+<path d="M268.804 125.897H299.149V156.241H268.804V125.897Z" fill="var(--fill-0, black)"/>
+<path d="M450.871 141.069H481.216V171.413H450.871V141.069Z" fill="var(--fill-0, black)"/>
+<path d="M329.493 141.069H299.149V156.241H329.493H359.838H390.182H420.527H450.871V141.069H420.527H390.182H359.838H329.493Z" fill="white"/>
+<path d="M208.115 338.308H177.771V368.652H147.426V398.997V429.341H177.771V459.686H208.115H238.46H268.804H299.149H329.493V429.341H359.838H390.182V398.997H405.354V368.652H420.527V338.308V307.963V277.619V247.274V216.93V186.586H390.182H359.838H329.493V216.93V247.274V277.619H299.149V307.963H268.804V323.136H238.46V338.308H208.115Z" fill="white"/>
+</g>
+</g>
+</svg>

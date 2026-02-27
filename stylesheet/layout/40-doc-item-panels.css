@@ -1,0 +1,276 @@
+.doc-panel {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 41.6146%;
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fffaf3 0%, #fef3ff 100%);
+  color: var(--ink);
+  font-family: "Mabry Pro", "Arial Black", sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(2%);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  z-index: 6;
+  overflow: hidden;
+}
+
+.doc-panel.doc-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.doc-shell {
+  max-width: 960px;
+  margin: 0;
+  padding: 18px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.doc-panel .doc-shell {
+  max-width: none;
+}
+
+.doc-header {
+  padding-bottom: 18px;
+  border-bottom: 3px solid var(--black);
+}
+
+.doc-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.doc-close {
+  border: 2px solid var(--black);
+  background: var(--pink);
+  color: var(--ink);
+  font-family: "Mabry Pro", "Arial Black", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 10px 4px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.doc-close:hover,
+.doc-close:focus-visible {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.doc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px 2px;
+  border: 2px solid var(--black);
+  background: var(--yellow);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.doc-panel[data-type="care"] .doc-tag {
+  background: var(--green);
+  color: #0f0f0f;
+}
+
+.doc-panel[data-type="history"] .doc-tag {
+  background: var(--purple);
+  color: #0f0f0f;
+}
+
+.doc-panel[data-type="note"] .doc-tag {
+  background: var(--yellow);
+}
+
+.doc-header .doc-title {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 5vw, 48px);
+  text-transform: uppercase;
+}
+
+.doc-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.doc-section {
+  padding: 18px;
+  border: 2px solid var(--black);
+  background: var(--white);
+  box-shadow: 6px 6px 0 var(--black);
+  display: grid;
+  gap: 12px;
+}
+
+.doc-sections {
+  display: grid;
+  gap: 18px;
+}
+
+#ITEM .doc-sections {
+  grid-template-columns: 1fr;
+}
+
+#ITEM {
+  z-index: 12;
+}
+
+#ITEM .doc-shell {
+  gap: 18px;
+}
+
+#ITEM_MODEL_LAYER {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  z-index: auto;
+  display: none;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  opacity: 1;
+  pointer-events: none;
+  transition: none;
+  overflow: visible;
+}
+
+#ITEM_MODEL_LAYER.is-open {
+  display: flex;
+  pointer-events: auto;
+}
+
+#item-viewer-wrap {
+  position: relative;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  min-height: clamp(260px, 40vh, 520px);
+  height: clamp(260px, 40vh, 520px);
+  border: 3px solid var(--black);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, #fff3bd 0%, #ffe7f6 100%);
+}
+
+#item-viewer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  touch-action: none;
+  cursor: grab;
+  overflow: hidden;
+}
+
+#item-viewer > canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+}
+
+#item-viewer:active {
+  cursor: grabbing;
+}
+
+#item-viewer[data-state="loading"]::after,
+#item-viewer[data-state="error"]::after {
+  position: absolute;
+  inset: auto 12px 12px 12px;
+  padding: 8px 10px 6px;
+  border: 2px solid var(--black);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+}
+
+#item-viewer[data-state="loading"]::after {
+  content: "Загружаем 3D-модель";
+}
+
+#item-viewer[data-state="error"]::after {
+  content: "Не удалось загрузить модель";
+}
+
+#item-viewer-tip {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  padding: 7px 10px 5px;
+  border: 2px solid var(--black);
+  background: rgba(255, 255, 255, 0.88);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#item-facts {
+  align-content: start;
+}
+
+#item-facts p + p {
+  margin-top: 12px;
+}
+
+.doc-section h2 {
+  margin: 0;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.doc-section p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.doc-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.doc-footer-hint {
+  opacity: 0.7;
+}
+
+.game-grid.is-doc-open .game-column--right > .game-panel,
+.game-grid.is-item-open .game-column--right > .game-panel {
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.game-grid.is-doc-open .game-panel--tasks > :not(.doc-panel) {
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.game-grid.is-doc-open #hud-interaction,
+.game-grid.is-item-open #hud-interaction {
+  opacity: 0 !important;
+  transform: translateY(4px);
+  visibility: hidden;
+}

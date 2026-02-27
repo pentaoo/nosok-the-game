@@ -1,0 +1,25 @@
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .touch-btn,
+  .hud-panel,
+  .recycler-help,
+  .recycler-tooltip,
+  .recycler-marquee-inner,
+  .recycler-target,
+  .recycler-pop,
+  .recycler-hitflash,
+  .recycler-stage,
+  .recycler-drop,
+  .recycler-hitline,
+  .recycler-tool,
+  .task_card,
+  .card,
+  .doc-card,
+  .doc-panel {
+    animation: none !important;
+    transition: none !important;
+  }
+}
