@@ -2,6 +2,7 @@ const DEFAULT_BRUSH_SIZE = 18;
 const DEFAULT_BRUSH_COLOR = "#111111";
 const FILENAME_PREFIX = "nosok-print";
 const WHITE_CHANNEL_THRESHOLD = 236;
+const NOOP_CONTROLLER = { destroy() {} };
 
 function getDesignerNodes() {
   const canvas = document.querySelector("#sock-designer-canvas");
@@ -76,7 +77,7 @@ function formatBrushSize(size) {
 
 export function initSockDesigner() {
   const nodes = getDesignerNodes();
-  if (!nodes) return;
+  if (!nodes) return NOOP_CONTROLLER;
 
   const {
     canvas,
@@ -90,7 +91,7 @@ export function initSockDesigner() {
   } = nodes;
 
   const displayCtx = canvas.getContext("2d");
-  if (!displayCtx) return;
+  if (!displayCtx) return NOOP_CONTROLLER;
 
   const paintLayer = document.createElement("canvas");
   paintLayer.width = canvas.width;
@@ -107,7 +108,7 @@ export function initSockDesigner() {
   sourceLayer.height = canvas.height;
   const sourceCtx = sourceLayer.getContext("2d", { willReadFrequently: true });
 
-  if (!paintCtx || !maskCtx || !sourceCtx) return;
+  if (!paintCtx || !maskCtx || !sourceCtx) return NOOP_CONTROLLER;
 
   const state = {
     isDrawing: false,
@@ -118,6 +119,7 @@ export function initSockDesigner() {
     imageReady: false,
     imageRect: { x: 0, y: 0, width: canvas.width, height: canvas.height },
   };
+  const cleanupFns = [];
 
   const setActiveSwatch = (nextActive) => {
     swatches.forEach((swatch) => {
@@ -277,29 +279,44 @@ export function initSockDesigner() {
   };
 
   swatches.forEach((swatch) => {
-    swatch.addEventListener("click", () => {
+    const onSwatchClick = () => {
       const nextColor = swatch.getAttribute("data-sock-color");
       if (!nextColor) return;
       state.brushColor = nextColor;
       state.isEraser = false;
       setActiveSwatch(swatch);
       syncToolToggle();
-    });
+    };
+    swatch.addEventListener("click", onSwatchClick);
+    cleanupFns.push(() => swatch.removeEventListener("click", onSwatchClick));
   });
 
   brushInput.addEventListener("input", syncBrushSize);
-  toolToggle.addEventListener("click", () => {
+  cleanupFns.push(() => brushInput.removeEventListener("input", syncBrushSize));
+
+  const onToolToggleClick = () => {
     state.isEraser = !state.isEraser;
     syncToolToggle();
-  });
+  };
+  toolToggle.addEventListener("click", onToolToggleClick);
+  cleanupFns.push(() => toolToggle.removeEventListener("click", onToolToggleClick));
+
   clearButton.addEventListener("click", clearCanvas);
+  cleanupFns.push(() => clearButton.removeEventListener("click", clearCanvas));
+
   downloadButton.addEventListener("click", downloadCanvas);
+  cleanupFns.push(() => downloadButton.removeEventListener("click", downloadCanvas));
 
   canvas.addEventListener("pointerdown", startDrawing);
   canvas.addEventListener("pointermove", draw);
   canvas.addEventListener("pointerup", stopDrawing);
   canvas.addEventListener("pointercancel", stopDrawing);
   canvas.addEventListener("lostpointercapture", stopDrawing);
+  cleanupFns.push(() => canvas.removeEventListener("pointerdown", startDrawing));
+  cleanupFns.push(() => canvas.removeEventListener("pointermove", draw));
+  cleanupFns.push(() => canvas.removeEventListener("pointerup", stopDrawing));
+  cleanupFns.push(() => canvas.removeEventListener("pointercancel", stopDrawing));
+  cleanupFns.push(() => canvas.removeEventListener("lostpointercapture", stopDrawing));
 
   const onImageReady = () => {
     state.imageReady = true;
@@ -310,8 +327,11 @@ export function initSockDesigner() {
   if (baseImage.complete && baseImage.naturalWidth > 0) {
     onImageReady();
   } else {
-    baseImage.addEventListener("load", onImageReady, { once: true });
-    baseImage.addEventListener("error", redraw, { once: true });
+    const onImageError = () => redraw();
+    baseImage.addEventListener("load", onImageReady);
+    baseImage.addEventListener("error", onImageError);
+    cleanupFns.push(() => baseImage.removeEventListener("load", onImageReady));
+    cleanupFns.push(() => baseImage.removeEventListener("error", onImageError));
   }
 
   const initialSwatch =
@@ -323,4 +343,14 @@ export function initSockDesigner() {
   syncBrushSize();
   syncToolToggle();
   redraw();
+
+  return {
+    destroy() {
+      stopDrawing();
+      while (cleanupFns.length) {
+        const cleanup = cleanupFns.pop();
+        cleanup?.();
+      }
+    },
+  };
 }

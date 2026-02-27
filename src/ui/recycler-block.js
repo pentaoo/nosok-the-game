@@ -78,7 +78,6 @@ function initTooltip(helpButton, tooltip) {
 }
 
 function getRecyclerNodes() {
-  const stage = document.querySelector("#recycler-stage");
   const target = document.querySelector("#recycler-target");
   const targetImage = document.querySelector("#recycler-target-img");
   const hitFlash = document.querySelector("#recycler-hitflash");
@@ -95,7 +94,6 @@ function getRecyclerNodes() {
   const tools = Array.from(document.querySelectorAll(".recycler-tool"));
 
   if (
-    !stage ||
     !target ||
     !(targetImage instanceof HTMLImageElement) ||
     !hitFlash ||
@@ -114,7 +112,6 @@ function getRecyclerNodes() {
   if (tools.length !== UPGRADES.length) return null;
 
   return {
-    stage,
     target,
     targetImage,
     hitFlash,
@@ -143,7 +140,6 @@ export function initRecyclerBlock() {
   }
 
   const {
-    stage,
     target,
     targetImage,
     hitFlash,

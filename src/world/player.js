@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { shortestAngleDelta } from "./scene/math-utils.js";
 
 const SETTINGS = {
   radius: 0.45,
@@ -29,14 +30,19 @@ function damp(current, target, lambda, dt) {
   return current + (target - current) * t;
 }
 
-function shortestAngleDelta(current, target) {
-  let delta = target - current;
-  delta = ((delta + Math.PI) % (2 * Math.PI)) - Math.PI;
-  return delta;
-}
-
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function disposeObject(root) {
+  root.traverse((node) => {
+    if (!node.isMesh) return;
+    node.geometry?.dispose?.();
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    for (const material of materials) {
+      material?.dispose?.();
+    }
+  });
 }
 
 function readMoveInput(input) {
@@ -82,6 +88,7 @@ export function createPlayer(scene) {
   };
 
   const state = {
+    destroyed: false,
     vy: 0,
     isGrounded: true,
     facing: 0,
@@ -108,6 +115,11 @@ export function createPlayer(scene) {
   loader.load(
     "models/player.glb",
     (gltf) => {
+      if (state.destroyed) {
+        disposeObject(gltf.scene);
+        return;
+      }
+
       const model = gltf.scene;
       model.scale.setScalar(0.05);
       root.add(model);
@@ -270,13 +282,25 @@ export function createPlayer(scene) {
   };
 
   const update = ({ dt, input, collisionWorld, cameraYaw }) => {
+    if (state.destroyed) return;
     updateVerticalMovement({ dt, input, collisionWorld });
     const movementState = updateHorizontalMovement({ dt, input, collisionWorld, cameraYaw });
     updateAnimation({ dt, ...movementState });
   };
 
+  const destroy = () => {
+    if (state.destroyed) return;
+    state.destroyed = true;
+    state.mixer?.stopAllAction?.();
+    state.mixer = null;
+    root.removeFromParent();
+    disposeObject(root);
+    root.clear();
+  };
+
   return {
     update,
+    destroy,
     get position() {
       return root.position;
     },

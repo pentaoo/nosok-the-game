@@ -223,7 +223,7 @@ async function main() {
     register(createTouchControls({ input }));
 
     const collisionWorld = createCollisionWorld();
-    const player = createPlayer(game.scene);
+    const player = register(createPlayer(game.scene));
     const interactables = game.interactables;
 
     const loop = createLoop((dt) => {
@@ -265,7 +265,33 @@ async function main() {
   }
 }
 
+function reportStartupError(error) {
+  console.error(error);
+
+  if (document.getElementById("startup-error")) return;
+
+  const banner = document.createElement("div");
+  banner.id = "startup-error";
+  banner.setAttribute("role", "alert");
+  banner.textContent = "Ошибка запуска. Откройте консоль для деталей.";
+  Object.assign(banner.style, {
+    position: "fixed",
+    left: "12px",
+    right: "12px",
+    bottom: "12px",
+    zIndex: "9999",
+    padding: "12px 14px",
+    border: "2px solid #000",
+    background: "#ffe600",
+    color: "#111111",
+    fontFamily: '"Mabry Pro", "Arial Black", sans-serif',
+    fontSize: "14px",
+    lineHeight: "1.35",
+    boxShadow: "4px 4px 0 #000",
+  });
+  document.body.appendChild(banner);
+}
+
 main().catch((err) => {
-  console.error(err);
-  alert("Ошибка запуска. Смотрите консоль.");
+  reportStartupError(err);
 });

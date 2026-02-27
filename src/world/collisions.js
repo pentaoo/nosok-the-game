@@ -65,14 +65,19 @@ export function createCollisionWorld() {
     { padX = 0, padZ = padX, maxY = 0, preserveMinY = false } = {}
   ) {
     if (!mesh) return;
-    const obs = getOrCreateObstacle(mesh);
+    const existing = obstacleById.get(mesh.uuid);
+    if (mesh.visible === false) {
+      if (existing) removeObstacle(mesh);
+      return;
+    }
+
+    const obs = existing ?? getOrCreateObstacle(mesh);
     const visibilityChanged = obs.lastVisible !== mesh.visible;
     const transformChanged = hasTransformChanged(mesh, obs.transformSnapshot);
 
     if (!visibilityChanged && !transformChanged) return;
 
     obs.lastVisible = mesh.visible;
-    if (mesh.visible === false) return removeObstacle(mesh);
 
     mesh.updateWorldMatrix(true, true);
     obs.box.setFromObject(mesh);
