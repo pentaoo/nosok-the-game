@@ -1,12 +1,3 @@
-const NOOP_HUD = {
-  show() {},
-  hide() {},
-  notify() {},
-  showLoading() {},
-  hideNotice() {},
-  destroy() {},
-};
-
 export function createHUD() {
   const root = document.getElementById("hud");
   const interactionPanel = document.getElementById("hud-interaction");
@@ -15,8 +6,6 @@ export function createHUD() {
   const toastPanel = document.getElementById("hud-toast");
   const toastTitle = document.getElementById("hud-toast-title");
   const toastSub = document.getElementById("hud-toast-sub");
-
-  if (!root) return NOOP_HUD;
 
   let interactionVisible = false;
   let noticeVisible = false;
@@ -40,11 +29,7 @@ export function createHUD() {
   };
 
   const hideNotice = () => {
-    if (!toastPanel) {
-      noticeVisible = false;
-      syncRootVisibility();
-      return;
-    }
+    if (!toastPanel) return;
     clearNoticeTimers();
     toastPanel.classList.remove("is-visible", "is-loading");
     toastPanel.removeAttribute("data-tone");
@@ -136,11 +121,5 @@ export function createHUD() {
 
   syncRootVisibility();
 
-  const destroy = () => {
-    hide();
-    hideNotice();
-    clearNoticeTimers();
-  };
-
-  return { show, hide, notify, showLoading, hideNotice, destroy };
+  return { show, hide, notify, showLoading, hideNotice };
 }

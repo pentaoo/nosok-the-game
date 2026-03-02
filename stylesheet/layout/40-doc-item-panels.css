@@ -5,7 +5,7 @@
   min-width: 360px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #fffaf3 0%, #fef3ff 100%);
+  background: transparent;
   color: var(--ink);
   font-family: "Mabry Pro", "Arial Black", sans-serif;
   pointer-events: none;
@@ -112,7 +112,7 @@
 .doc-section {
   padding: 18px;
   border: 2px solid var(--black);
-  background: var(--white);
+  background: rgba(255, 255, 255, 0.12);
   box-shadow: 6px 6px 0 var(--black);
   display: grid;
   gap: 12px;
@@ -164,7 +164,7 @@
   height: clamp(260px, 40vh, 520px);
   border: 3px solid var(--black);
   box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45);
-  background: linear-gradient(180deg, #fff3bd 0%, #ffe7f6 100%);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 #item-viewer {

@@ -1,8 +1,6 @@
 const DEFAULT_BRUSH_SIZE = 18;
 const DEFAULT_BRUSH_COLOR = "#111111";
-const FILENAME_PREFIX = "nosok-print";
 const WHITE_CHANNEL_THRESHOLD = 236;
-const NOOP_CONTROLLER = { destroy() {} };
 
 function getDesignerNodes() {
   const canvas = document.querySelector("#sock-designer-canvas");
@@ -12,7 +10,6 @@ function getDesignerNodes() {
   const brushOutput = document.querySelector("#sock-brush-output");
   const toolToggle = document.querySelector("#sock-tool-toggle");
   const clearButton = document.querySelector("#sock-clear");
-  const downloadButton = document.querySelector("#sock-download");
 
   if (
     !(canvas instanceof HTMLCanvasElement) ||
@@ -21,8 +18,7 @@ function getDesignerNodes() {
     !(brushInput instanceof HTMLInputElement) ||
     !(brushOutput instanceof HTMLOutputElement) ||
     !(toolToggle instanceof HTMLButtonElement) ||
-    !(clearButton instanceof HTMLButtonElement) ||
-    !(downloadButton instanceof HTMLButtonElement)
+    !(clearButton instanceof HTMLButtonElement)
   ) {
     return null;
   }
@@ -37,7 +33,6 @@ function getDesignerNodes() {
     brushOutput,
     toolToggle,
     clearButton,
-    downloadButton,
     swatches,
   };
 }
@@ -77,21 +72,40 @@ function formatBrushSize(size) {
 
 export function initSockDesigner() {
   const nodes = getDesignerNodes();
-  if (!nodes) return NOOP_CONTROLLER;
+  if (!nodes) {
+    return {
+      getSnapshot() {
+        return {
+          hasDrawings: false,
+          imageDataUrl: "",
+        };
+      },
+      getImageDataUrl() {
+        return "";
+      },
+      clear() {},
+      destroy() {},
+    };
+  }
 
-  const {
-    canvas,
-    baseImage,
-    brushInput,
-    brushOutput,
-    toolToggle,
-    clearButton,
-    downloadButton,
-    swatches,
-  } = nodes;
+  const { canvas, baseImage, brushInput, brushOutput, toolToggle, clearButton, swatches } = nodes;
 
   const displayCtx = canvas.getContext("2d");
-  if (!displayCtx) return NOOP_CONTROLLER;
+  if (!displayCtx) {
+    return {
+      getSnapshot() {
+        return {
+          hasDrawings: false,
+          imageDataUrl: "",
+        };
+      },
+      getImageDataUrl() {
+        return "";
+      },
+      clear() {},
+      destroy() {},
+    };
+  }
 
   const paintLayer = document.createElement("canvas");
   paintLayer.width = canvas.width;
@@ -108,7 +122,27 @@ export function initSockDesigner() {
   sourceLayer.height = canvas.height;
   const sourceCtx = sourceLayer.getContext("2d", { willReadFrequently: true });
 
-  if (!paintCtx || !maskCtx || !sourceCtx) return NOOP_CONTROLLER;
+  if (!paintCtx || !maskCtx || !sourceCtx) {
+    return {
+      getSnapshot() {
+        return {
+          hasDrawings: false,
+          imageDataUrl: "",
+        };
+      },
+      getImageDataUrl() {
+        return "";
+      },
+      clear() {},
+      destroy() {},
+    };
+  }
+
+  const listeners = [];
+  const addListener = (target, event, handler, options) => {
+    target.addEventListener(event, handler, options);
+    listeners.push(() => target.removeEventListener(event, handler, options));
+  };
 
   const state = {
     isDrawing: false,
@@ -118,8 +152,8 @@ export function initSockDesigner() {
     isEraser: false,
     imageReady: false,
     imageRect: { x: 0, y: 0, width: canvas.width, height: canvas.height },
+    hasDrawings: false,
   };
-  const cleanupFns = [];
 
   const setActiveSwatch = (nextActive) => {
     swatches.forEach((swatch) => {
@@ -148,7 +182,7 @@ export function initSockDesigner() {
       canvas.width,
       canvas.height,
       baseImage.naturalWidth,
-      baseImage.naturalHeight,
+      baseImage.naturalHeight
     );
 
     sourceCtx.drawImage(
@@ -156,7 +190,7 @@ export function initSockDesigner() {
       state.imageRect.x,
       state.imageRect.y,
       state.imageRect.width,
-      state.imageRect.height,
+      state.imageRect.height
     );
 
     const maskPixels = sourceCtx.getImageData(0, 0, sourceLayer.width, sourceLayer.height);
@@ -202,6 +236,7 @@ export function initSockDesigner() {
     } else {
       paintCtx.globalCompositeOperation = "source-over";
       paintCtx.strokeStyle = state.brushColor;
+      state.hasDrawings = true;
     }
 
     paintCtx.beginPath();
@@ -240,6 +275,7 @@ export function initSockDesigner() {
 
   const clearCanvas = () => {
     paintCtx.clearRect(0, 0, paintLayer.width, paintLayer.height);
+    state.hasDrawings = false;
     redraw();
   };
 
@@ -256,7 +292,7 @@ export function initSockDesigner() {
         state.imageRect.x,
         state.imageRect.y,
         state.imageRect.width,
-        state.imageRect.height,
+        state.imageRect.height
       );
       exportCtx.globalCompositeOperation = "source-atop";
       exportCtx.drawImage(paintLayer, 0, 0);
@@ -268,55 +304,29 @@ export function initSockDesigner() {
     return exportCanvas.toDataURL("image/png");
   };
 
-  const downloadCanvas = () => {
-    const dataUrl = buildExportDataUrl();
-    if (!dataUrl) return;
-
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = `${FILENAME_PREFIX}-${Date.now()}.png`;
-    link.click();
-  };
-
   swatches.forEach((swatch) => {
-    const onSwatchClick = () => {
+    addListener(swatch, "click", () => {
       const nextColor = swatch.getAttribute("data-sock-color");
       if (!nextColor) return;
       state.brushColor = nextColor;
       state.isEraser = false;
       setActiveSwatch(swatch);
       syncToolToggle();
-    };
-    swatch.addEventListener("click", onSwatchClick);
-    cleanupFns.push(() => swatch.removeEventListener("click", onSwatchClick));
+    });
   });
 
-  brushInput.addEventListener("input", syncBrushSize);
-  cleanupFns.push(() => brushInput.removeEventListener("input", syncBrushSize));
-
-  const onToolToggleClick = () => {
+  addListener(brushInput, "input", syncBrushSize);
+  addListener(toolToggle, "click", () => {
     state.isEraser = !state.isEraser;
     syncToolToggle();
-  };
-  toolToggle.addEventListener("click", onToolToggleClick);
-  cleanupFns.push(() => toolToggle.removeEventListener("click", onToolToggleClick));
+  });
+  addListener(clearButton, "click", clearCanvas);
 
-  clearButton.addEventListener("click", clearCanvas);
-  cleanupFns.push(() => clearButton.removeEventListener("click", clearCanvas));
-
-  downloadButton.addEventListener("click", downloadCanvas);
-  cleanupFns.push(() => downloadButton.removeEventListener("click", downloadCanvas));
-
-  canvas.addEventListener("pointerdown", startDrawing);
-  canvas.addEventListener("pointermove", draw);
-  canvas.addEventListener("pointerup", stopDrawing);
-  canvas.addEventListener("pointercancel", stopDrawing);
-  canvas.addEventListener("lostpointercapture", stopDrawing);
-  cleanupFns.push(() => canvas.removeEventListener("pointerdown", startDrawing));
-  cleanupFns.push(() => canvas.removeEventListener("pointermove", draw));
-  cleanupFns.push(() => canvas.removeEventListener("pointerup", stopDrawing));
-  cleanupFns.push(() => canvas.removeEventListener("pointercancel", stopDrawing));
-  cleanupFns.push(() => canvas.removeEventListener("lostpointercapture", stopDrawing));
+  addListener(canvas, "pointerdown", startDrawing);
+  addListener(canvas, "pointermove", draw);
+  addListener(canvas, "pointerup", stopDrawing);
+  addListener(canvas, "pointercancel", stopDrawing);
+  addListener(canvas, "lostpointercapture", stopDrawing);
 
   const onImageReady = () => {
     state.imageReady = true;
@@ -327,11 +337,8 @@ export function initSockDesigner() {
   if (baseImage.complete && baseImage.naturalWidth > 0) {
     onImageReady();
   } else {
-    const onImageError = () => redraw();
-    baseImage.addEventListener("load", onImageReady);
-    baseImage.addEventListener("error", onImageError);
-    cleanupFns.push(() => baseImage.removeEventListener("load", onImageReady));
-    cleanupFns.push(() => baseImage.removeEventListener("error", onImageError));
+    addListener(baseImage, "load", onImageReady, { once: true });
+    addListener(baseImage, "error", redraw, { once: true });
   }
 
   const initialSwatch =
@@ -345,12 +352,25 @@ export function initSockDesigner() {
   redraw();
 
   return {
+    getSnapshot() {
+      return {
+        hasDrawings: state.hasDrawings,
+        imageDataUrl: buildExportDataUrl(),
+        brushSize: state.brushSize,
+        brushColor: state.brushColor,
+        isEraser: state.isEraser,
+      };
+    },
+    getImageDataUrl() {
+      return buildExportDataUrl();
+    },
+    clear: clearCanvas,
     destroy() {
-      stopDrawing();
-      while (cleanupFns.length) {
-        const cleanup = cleanupFns.pop();
-        cleanup?.();
+      while (listeners.length) {
+        const remove = listeners.pop();
+        remove?.();
       }
+      stopDrawing();
     },
   };
 }

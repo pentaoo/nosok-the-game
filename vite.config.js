@@ -6,17 +6,4 @@ const repositoryName =
 
 export default defineConfig({
   base: `/${repositoryName}/`,
-  build: {
-    chunkSizeWarningLimit: 620,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return undefined;
-          if (id.includes("three/examples/jsm")) return "three-examples";
-          if (id.includes("/three/")) return "three-core";
-          return "vendor";
-        },
-      },
-    },
-  },
 });

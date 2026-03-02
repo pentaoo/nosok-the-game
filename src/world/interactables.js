@@ -35,9 +35,5 @@ export function createInteractables() {
       : null;
   }
 
-  const clear = () => {
-    items.length = 0;
-  };
-
-  return { getBestInteraction, register, clear };
+  return { getBestInteraction, register };
 }

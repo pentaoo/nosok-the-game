@@ -3,17 +3,11 @@ import * as THREE from "three";
 export function createCollisionWorld() {
   const obstacles = [];
   const obstacleById = new Map();
-  const EPSILON = 1e-6;
 
   function getOrCreateObstacle(mesh) {
     let obs = obstacleById.get(mesh.uuid);
     if (!obs) {
-      obs = {
-        mesh,
-        box: new THREE.Box3(),
-        lastVisible: null,
-        transformSnapshot: null,
-      };
+      obs = { mesh, box: new THREE.Box3() };
       obstacles.push(obs);
       obstacleById.set(mesh.uuid, obs);
     }
@@ -26,39 +20,6 @@ export function createCollisionWorld() {
     obstacleById.delete(mesh.uuid);
     const idx = obstacles.indexOf(obs);
     if (idx >= 0) obstacles.splice(idx, 1);
-    if (mesh?.userData) mesh.userData.collisionRegistered = false;
-  }
-
-  function readTransformSnapshot(mesh, snapshot = {}) {
-    const { position, quaternion, scale } = mesh;
-    snapshot.px = position.x;
-    snapshot.py = position.y;
-    snapshot.pz = position.z;
-    snapshot.qx = quaternion.x;
-    snapshot.qy = quaternion.y;
-    snapshot.qz = quaternion.z;
-    snapshot.qw = quaternion.w;
-    snapshot.sx = scale.x;
-    snapshot.sy = scale.y;
-    snapshot.sz = scale.z;
-    return snapshot;
-  }
-
-  function hasTransformChanged(mesh, snapshot) {
-    if (!snapshot) return true;
-    const { position, quaternion, scale } = mesh;
-    return (
-      Math.abs(position.x - snapshot.px) > EPSILON ||
-      Math.abs(position.y - snapshot.py) > EPSILON ||
-      Math.abs(position.z - snapshot.pz) > EPSILON ||
-      Math.abs(quaternion.x - snapshot.qx) > EPSILON ||
-      Math.abs(quaternion.y - snapshot.qy) > EPSILON ||
-      Math.abs(quaternion.z - snapshot.qz) > EPSILON ||
-      Math.abs(quaternion.w - snapshot.qw) > EPSILON ||
-      Math.abs(scale.x - snapshot.sx) > EPSILON ||
-      Math.abs(scale.y - snapshot.sy) > EPSILON ||
-      Math.abs(scale.z - snapshot.sz) > EPSILON
-    );
   }
 
   function updateObstacleBox(
@@ -66,21 +27,10 @@ export function createCollisionWorld() {
     { padX = 0, padZ = padX, maxY = 0, preserveMinY = false } = {}
   ) {
     if (!mesh) return;
-    const existing = obstacleById.get(mesh.uuid);
-    if (mesh.visible === false) {
-      if (existing) removeObstacle(mesh);
-      return;
-    }
-
-    const obs = existing ?? getOrCreateObstacle(mesh);
-    const visibilityChanged = obs.lastVisible !== mesh.visible;
-    const transformChanged = hasTransformChanged(mesh, obs.transformSnapshot);
-
-    if (!visibilityChanged && !transformChanged) return;
-
-    obs.lastVisible = mesh.visible;
+    if (mesh.visible === false) return removeObstacle(mesh);
 
     mesh.updateWorldMatrix(true, true);
+    const obs = getOrCreateObstacle(mesh);
     obs.box.setFromObject(mesh);
     if (!preserveMinY) obs.box.min.y = 0;
     obs.box.max.y = Math.max(maxY, obs.box.max.y);
@@ -88,7 +38,6 @@ export function createCollisionWorld() {
     obs.box.max.x += padX;
     obs.box.min.z -= padZ;
     obs.box.max.z += padZ;
-    obs.transformSnapshot = readTransformSnapshot(mesh, obs.transformSnapshot);
   }
 
   function addWasherObstacle(mesh) {
@@ -120,10 +69,6 @@ export function createCollisionWorld() {
       maxY: maxYValue,
       preserveMinY,
     });
-  }
-
-  function removeItemObstacle(mesh) {
-    removeObstacle(mesh);
   }
 
   function resolveCircleVsBoxes(position, radius, actorBounds = null) {
@@ -188,7 +133,6 @@ export function createCollisionWorld() {
     resolveCircleVsBoxes,
     addWasherObstacle,
     addItemObstacle,
-    removeItemObstacle,
     getGroundYAt,
   };
 }

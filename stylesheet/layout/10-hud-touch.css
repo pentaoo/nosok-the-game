@@ -29,8 +29,8 @@
 
 #touch-controls {
   --btn: clamp(50px, 5.4vw, 74px);
-  --btn_gap: clamp(6px, 1.1vw, 12px);
-  --action_btn: clamp(72px, 7.8vw, 108px);
+  --btn-gap: clamp(6px, 1.1vw, 12px);
+  --action-btn: clamp(72px, 7.8vw, 108px);
   display: none;
   align-items: center;
   justify-content: space-between;
@@ -59,7 +59,7 @@ body.gamepad-ui #touch-controls {
   display: grid;
   grid-template-columns: repeat(3, var(--btn));
   grid-template-rows: repeat(3, var(--btn));
-  gap: var(--btn_gap);
+  gap: var(--btn-gap);
   padding: 6px;
   border: 2px solid var(--black);
   background: #fff;
@@ -144,8 +144,8 @@ body.gamepad-ui #touch-controls {
 
 .touch-btn.action,
 .touch-btn.jump {
-  width: var(--action_btn);
-  height: var(--action_btn);
+  width: var(--action-btn);
+  height: var(--action-btn);
   font-size: clamp(13px, 1vw, 17px);
 }
 

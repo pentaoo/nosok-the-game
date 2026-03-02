@@ -1,7 +1,8 @@
-import defaultTargetAsset from "../img/figma/recycler-main-sock.svg";
+const TARGET_SOCK_ASSETS = Object.values(
+  import.meta.glob("../img/socks/*.svg", { eager: true, import: "default" })
+);
 
-const DEFAULT_TARGET_ASSET = defaultTargetAsset;
-const TARGET_SOCK_ASSETS = [DEFAULT_TARGET_ASSET];
+const DEFAULT_TARGET_ASSET = TARGET_SOCK_ASSETS[0] ?? "";
 
 const TARGETS = [
   { hp: 110, drop: [34, 46], tilt: -28 },
@@ -11,14 +12,21 @@ const TARGETS = [
 ];
 
 const UPGRADES = [
-  { id: "sandpaper", power: 4, type: "click", cost: 90 },
-  { id: "scissors", power: 16, type: "click", cost: 230 },
-  { id: "cutters", power: 24, type: "click", cost: 460 },
-  { id: "shredder", power: 60, type: "click", cost: 920 },
-  { id: "flamethrower", power: 4, type: "auto", cost: 140 },
-  { id: "overlock", power: 16, type: "auto", cost: 360 },
-  { id: "press", power: 24, type: "auto", cost: 640 },
-  { id: "turbine", power: 60, type: "auto", cost: 1240 },
+  { id: "sandpaper", power: 4, type: "click", cost: 90, label: "наждачка", rate: "+4/клик" },
+  { id: "scissors", power: 16, type: "click", cost: 230, label: "ножницы", rate: "+16/клик" },
+  { id: "cutters", power: 24, type: "click", cost: 460, label: "нож", rate: "+24/клик" },
+  {
+    id: "shredder",
+    power: 60,
+    type: "click",
+    cost: 920,
+    label: "лазерный резак",
+    rate: "+60/клик",
+  },
+  { id: "flamethrower", power: 4, type: "auto", cost: 140, label: "пресс", rate: "+4/сек" },
+  { id: "overlock", power: 16, type: "auto", cost: 360, label: "роборука", rate: "+16/сек" },
+  { id: "press", power: 24, type: "auto", cost: 640, label: "огнемет", rate: "+24/сек" },
+  { id: "turbine", power: 60, type: "auto", cost: 1240, label: "шредер", rate: "+60/сек" },
 ];
 
 const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -78,6 +86,7 @@ function initTooltip(helpButton, tooltip) {
 }
 
 function getRecyclerNodes() {
+  const stage = document.querySelector("#recycler-stage");
   const target = document.querySelector("#recycler-target");
   const targetImage = document.querySelector("#recycler-target-img");
   const hitFlash = document.querySelector("#recycler-hitflash");
@@ -94,6 +103,7 @@ function getRecyclerNodes() {
   const tools = Array.from(document.querySelectorAll(".recycler-tool"));
 
   if (
+    !stage ||
     !target ||
     !(targetImage instanceof HTMLImageElement) ||
     !hitFlash ||
@@ -112,6 +122,7 @@ function getRecyclerNodes() {
   if (tools.length !== UPGRADES.length) return null;
 
   return {
+    stage,
     target,
     targetImage,
     hitFlash,
@@ -157,9 +168,7 @@ export function initRecyclerBlock() {
   } = nodes;
 
   let requestedAsset = DEFAULT_TARGET_ASSET;
-  const availableAssets = TARGET_SOCK_ASSETS.length
-    ? TARGET_SOCK_ASSETS
-    : [DEFAULT_TARGET_ASSET];
+  const availableAssets = TARGET_SOCK_ASSETS.length ? TARGET_SOCK_ASSETS : [DEFAULT_TARGET_ASSET];
 
   const state = {
     targetIndex: 0,
@@ -182,7 +191,7 @@ export function initRecyclerBlock() {
   };
 
   const onTargetImageError = () => {
-    if (requestedAsset === DEFAULT_TARGET_ASSET) return;
+    if (!DEFAULT_TARGET_ASSET || requestedAsset === DEFAULT_TARGET_ASSET) return;
     requestedAsset = DEFAULT_TARGET_ASSET;
     state.currentAsset = DEFAULT_TARGET_ASSET;
     targetImage.src = DEFAULT_TARGET_ASSET;
@@ -226,6 +235,14 @@ export function initRecyclerBlock() {
       toolButton.classList.toggle("is-bought", isBought);
       toolButton.classList.toggle("is-ready", isReady);
       toolButton.classList.toggle("is-locked", !isBought && !isReady);
+
+      const nameEl = toolButton.querySelector(".recycler-tool-name");
+      if (nameEl) nameEl.textContent = upgrade.label;
+
+      const rateEl = toolButton.querySelector(".recycler-tool-rate");
+      if (rateEl) rateEl.textContent = upgrade.rate;
+
+      toolButton.setAttribute("aria-label", `Купить ${upgrade.label} ${upgrade.rate}`);
 
       const meta = toolButton.querySelector(".recycler-tool-meta");
       if (meta) meta.textContent = isBought ? "" : `${upgrade.cost} сырья`;
@@ -295,8 +312,12 @@ export function initRecyclerBlock() {
     state.targetHp = nextTarget.hp;
     target.classList.remove("is-shredded");
     target.style.setProperty("--target_tilt", `${nextTarget.tilt}deg`);
+
     requestedAsset = pullNextAsset();
-    targetImage.src = requestedAsset;
+    if (requestedAsset) {
+      targetImage.src = requestedAsset;
+    }
+
     updateLife();
   };
 
@@ -368,7 +389,6 @@ export function initRecyclerBlock() {
 
     state.autoBuffer += state.autoPower * elapsedSec;
 
-    // Limit burst processing per tick; leftover buffer is applied on next tick.
     for (let i = 0; i < 160; i += 1) {
       if (state.switching) break;
       const autoDamage = Math.floor(state.autoBuffer);
@@ -420,7 +440,6 @@ export function initRecyclerBlock() {
   target.addEventListener("click", breakDownCurrent);
   tools.forEach((toolButton) => toolButton.addEventListener("click", onToolClick));
 
-  // Обновляем HP-бар при изменении размера окна
   let resizeTimeout = 0;
   const onResize = () => {
     window.clearTimeout(resizeTimeout);

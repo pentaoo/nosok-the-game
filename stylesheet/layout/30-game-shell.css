@@ -26,23 +26,12 @@
 
 .game-panel {
   min-height: 0;
-  background: var(--white);
+  background: transparent;
   display: flex;
   flex-direction: column;
 }
 
-.game-column > .game-panel--play,
-.game-column > .game-panel--docs,
-.game-column > .game-panel--tasks,
-.game-column > .game-panel--cards {
-  grid-column: auto;
-  grid-row: auto;
-}
-
-.game-panel--play {
-  border-bottom: 3px solid var(--black);
-}
-
+.game-panel--play,
 .game-panel--tasks {
   border-bottom: 3px solid var(--black);
 }
@@ -96,8 +85,7 @@
   width: 100%;
 }
 
-.task_card[data-status="done"],
-.task_card--showcase {
+.task_card[data-status="done"] {
   background: var(--green);
 }
 
@@ -134,10 +122,6 @@
   opacity: 1;
 }
 
-.task_card--showcase .task_meta {
-  display: none;
-}
-
 .doc-list {
   list-style: none;
 }
@@ -145,7 +129,7 @@
 .doc-card {
   width: 100%;
   border: 2px solid var(--black);
-  background: var(--white);
+  background: transparent;
   padding: 18px 16px 14px;
   display: flex;
   align-items: baseline;
@@ -156,12 +140,12 @@
 
 .doc-card:hover,
 .doc-card:focus-visible {
-  background: #fff8c7;
+  background: rgba(255, 248, 199, 0.45);
   transform: none;
 }
 
 .doc-card--empty {
-  background: #f2f2f2;
+  background: rgba(242, 242, 242, 0.35);
   color: #444;
 }
 
@@ -193,7 +177,7 @@
   height: 100%;
   flex: 1 1 auto;
   min-height: 0;
-  background: var(--white);
+  background: transparent;
   overflow: hidden;
   padding: 8px 24px 24px;
 }
@@ -207,7 +191,7 @@
   min-height: 0;
   border: 2px solid var(--black);
   overflow: hidden;
-  background: #d9dee6;
+  background: transparent;
 }
 
 #game {
@@ -249,10 +233,6 @@
   height: 100%;
 }
 
-.game-panel--cards {
-  border-top: 0;
-}
-
 .cards-grid {
   width: 100%;
   height: auto;
@@ -269,7 +249,7 @@
   grid-template-rows: 1fr auto;
   padding: 0;
   border: 2px solid var(--black);
-  background: var(--white);
+  background: transparent;
   color: inherit;
   font-family: "Mabry Pro", "Arial Black", sans-serif;
   text-align: left;

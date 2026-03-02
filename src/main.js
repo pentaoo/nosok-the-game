@@ -12,6 +12,12 @@ import {
   openDocById,
   setDocFoundListener,
 } from "./ui/doc.js";
+import { initRecyclerBlock } from "./ui/recycler-block.js";
+import { initSockDesigner } from "./ui/sock-designer.js";
+import { initHeroSocks } from "./ui/hero-socks.js";
+import { initSeamDesigner } from "./ui/seam-designer.js";
+import { initStainCleaner } from "./ui/stain-cleaner.js";
+import { createStoryShare } from "./ui/story-share.js";
 import { createQuestController } from "./ui/quests.js";
 import { isLowPowerDevice } from "./world/scene/device-profile.js";
 
@@ -22,24 +28,8 @@ function updateWorldObstacles(world, collisionWorld, dt) {
     washer.userData.FBA_WM_1?.userData?.updateFlipbook?.(dt);
   }
 
-  const itemMeshes = world.itemMeshes ?? [];
-  for (let index = itemMeshes.length - 1; index >= 0; index -= 1) {
-    const item = itemMeshes[index];
-    if (!item) {
-      itemMeshes.splice(index, 1);
-      continue;
-    }
-
-    if (item.visible === false || item.userData?.collected) {
-      collisionWorld.removeItemObstacle?.(item);
-      itemMeshes.splice(index, 1);
-      continue;
-    }
-
-    if (item.userData?.collisionRegistered) continue;
-
+  for (const item of world.itemMeshes ?? []) {
     collisionWorld.addItemObstacle(item);
-    item.userData.collisionRegistered = true;
   }
 }
 
@@ -50,9 +40,7 @@ function handleInteraction({ interaction, hud, input }) {
   }
 
   const isTouchUI = document.body.classList.contains("touch-ui");
-  const hintText = isTouchUI
-    ? `Удерживайте E — ${interaction.label}`
-    : `Нажмите E — ${interaction.label}`;
+  const hintText = isTouchUI ? `Удерживайте E — ${interaction.label}` : `Нажмите E — ${interaction.label}`;
 
   hud.show(hintText, interaction.description);
 
@@ -134,8 +122,7 @@ function createPerformanceController({
             sectionState.gameVisible = entry.isIntersecting && entry.intersectionRatio > 0.03;
           }
           if (entry.target === recyclerSection) {
-            sectionState.recyclerVisible =
-              entry.isIntersecting && entry.intersectionRatio > 0.03;
+            sectionState.recyclerVisible = entry.isIntersecting && entry.intersectionRatio > 0.03;
           }
         }
         sync();
@@ -207,22 +194,32 @@ async function main() {
   window.addEventListener("pagehide", onPageHide, { once: true });
 
   try {
-    const [{ initRecyclerBlock }, { initSockDesigner }] = await Promise.all([
-      import("./ui/recycler-block.js"),
-      import("./ui/sock-designer.js"),
-    ]);
-
     register(initDOCControls());
+    register(initHeroSocks());
     const recycler = register(initRecyclerBlock());
-    register(initSockDesigner());
+    const sockDesigner = register(initSockDesigner());
+    const seamDesigner = register(initSeamDesigner());
+    const stainCleaner = register(initStainCleaner());
 
     const appEl = document.querySelector("#game");
     if (!(appEl instanceof HTMLElement)) {
       throw new Error("Game mount element #game not found");
     }
 
-    const hud = register(createHUD());
+    const hud = createHUD();
     const quests = createQuestController({ hud, totalDocs: DOCS.length });
+
+    register(
+      createStoryShare({
+        notify: (text, options) => hud.notify(text, options),
+        getSnapshot: () => ({
+          sockImageDataUrl: sockDesigner?.getImageDataUrl?.() ?? "",
+          seamProgress: seamDesigner?.getState?.().progress ?? 0,
+          stainProgress: stainCleaner?.getState?.().progress ?? 0,
+          drawState: sockDesigner?.getSnapshot?.() ?? null,
+        }),
+      })
+    );
 
     setDocFoundListener((docId) => quests.markDocCollected(docId));
     register({}, () => setDocFoundListener(null));
@@ -239,7 +236,7 @@ async function main() {
     register(createTouchControls({ input }));
 
     const collisionWorld = createCollisionWorld();
-    const player = register(createPlayer(game.scene));
+    const player = createPlayer(game.scene);
     const interactables = game.interactables;
 
     const loop = createLoop((dt) => {
@@ -281,33 +278,7 @@ async function main() {
   }
 }
 
-function reportStartupError(error) {
-  console.error(error);
-
-  if (document.getElementById("startup-error")) return;
-
-  const banner = document.createElement("div");
-  banner.id = "startup-error";
-  banner.setAttribute("role", "alert");
-  banner.textContent = "Ошибка запуска. Откройте консоль для деталей.";
-  Object.assign(banner.style, {
-    position: "fixed",
-    left: "12px",
-    right: "12px",
-    bottom: "12px",
-    zIndex: "9999",
-    padding: "12px 14px",
-    border: "2px solid #000",
-    background: "#ffe600",
-    color: "#111111",
-    fontFamily: '"Mabry Pro", "Arial Black", sans-serif',
-    fontSize: "14px",
-    lineHeight: "1.35",
-    boxShadow: "4px 4px 0 #000",
-  });
-  document.body.appendChild(banner);
-}
-
 main().catch((err) => {
-  reportStartupError(err);
+  console.error(err);
+  alert("Ошибка запуска. Смотрите консоль.");
 });
