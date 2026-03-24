@@ -3,7 +3,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createFlipbookPlane } from "../flipbook_animations.js";
 import { DOCS, DOC_TYPES } from "../../data/docs.js";
 import { ITEMS } from "../../data/items.js";
-import { createSpoolModel } from "../spool-model.js";
 import {
   addHighlight,
   applyToyMaterials,
@@ -11,11 +10,11 @@ import {
 } from "./object-utils.js";
 
 const DOC_SPAWN_POINTS = [
-  { x: -2.6, y: 0.05, z: 7.2, rot: Math.PI * 0.1, radius: 1.4 },
-  { x: -2.1, y: 2.41, z: 4.0, rot: Math.PI * -0.18, radius: 1.3 },
-  { x: -10.8, y: 5.66, z: 1.2, rot: Math.PI * -0.12, radius: 1.25 },
-  { x: 10.5, y: 3.46, z: 4.4, rot: Math.PI * 0.12, radius: 1.3 },
-  { x: 0.5, y: 7.61, z: -1.6, rot: Math.PI * 0.04, radius: 1.2 },
+  { x: -14.1, y: 0.05, z: 9.1, rot: Math.PI * 0.08, radius: 1.45 },
+  { x: 0.9, y: 3.41, z: 4.8, rot: Math.PI * -0.14, radius: 1.35 },
+  { x: -15.0, y: 5.81, z: -10.1, rot: Math.PI * -0.11, radius: 1.3 },
+  { x: 16.0, y: 4.61, z: -4.1, rot: Math.PI * 0.1, radius: 1.4 },
+  { x: 0.8, y: 6.31, z: -12.0, rot: Math.PI * -0.06, radius: 1.25 },
 ];
 
 const DEFAULT_DOC_SPAWN = { x: 0, y: 0.05, z: 0, rot: 0 };
@@ -77,6 +76,8 @@ export function spawnWorldContent({
   isLowPower,
   onDocOpen,
   onItemFound,
+  onWorldEvent,
+  roomMeta,
   lifecycle,
 }) {
   const isAlive = () => !lifecycle?.disposed;
@@ -212,6 +213,37 @@ export function spawnWorldContent({
     });
   });
 
+  for (const mapSwitch of roomMeta?.mapSwitches ?? []) {
+    addHighlight(
+      mapSwitch.mesh,
+      {
+        intensity: 0.18,
+        distance: 3.6,
+        yOffset: 1.2,
+      },
+      highlightScale
+    );
+
+    interactables.register({
+      mesh: mapSwitch.mesh,
+      interactionTarget: mapSwitch.interactionTarget,
+      label: () => mapSwitch.label?.() ?? "переключить механизм",
+      description: () => mapSwitch.description?.() ?? "",
+      radius: 1.9,
+      onInteract: () => {
+        if (!isAlive()) return;
+        const isActive = mapSwitch.onInteract?.();
+        onWorldEvent?.(isActive ? mapSwitch.activeText : mapSwitch.inactiveText, {
+          description: isActive
+            ? "Маршрут в прачечной изменился."
+            : "Карта снова стала компактнее.",
+          tone: isActive ? "success" : "warning",
+          duration: 1800,
+        });
+      },
+    });
+  }
+
   const collectibleConfigs = [
     {
       path: "models/vans.glb",
@@ -219,7 +251,7 @@ export function spawnWorldContent({
       radius: 2.1,
       highlight: { intensity: 0.24, distance: 4.4, yOffset: 1.3 },
       setup(mesh) {
-        mesh.position.set(-8.8, platformTops.shelfLeftHigh, 1.1);
+        mesh.position.set(-15.2, platformTops.loftLeft, -10.0);
         mesh.scale.set(3, 3, 3);
         mesh.userData.collisionPad = 0.12;
         mesh.userData.collisionMaxY = 2.6;
@@ -232,7 +264,7 @@ export function spawnWorldContent({
       radius: 2.0,
       highlight: { intensity: 0.26, distance: 4.6, yOffset: 1.0 },
       setup(mesh) {
-        mesh.position.set(10.0, platformTops.shelfRightHigh, 1.0);
+        mesh.position.set(15.8, platformTops.backRightDeck, -8.9);
         mesh.scale.set(2, 2, 2);
         mesh.rotateY(-1);
         mesh.userData.collisionPad = -0.2;
@@ -253,9 +285,69 @@ export function spawnWorldContent({
         mesh.updateWorldMatrix(true, true);
 
         const placedBox = new THREE.Box3().setFromObject(mesh);
-        mesh.position.set(0.2, platformTops.topCenter - placedBox.min.y, -1.85);
+        mesh.position.set(4.6, platformTops.topCenter - placedBox.min.y, -5.7);
         mesh.userData.collisionPad = 0.08;
         mesh.userData.collisionMaxY = 2.2;
+        mesh.userData.collisionPreserveMinY = true;
+      },
+    },
+    {
+      path: "models/uggi.glb",
+      itemId: "uggi",
+      radius: 2.1,
+      highlight: { intensity: 0.25, distance: 4.3, yOffset: 0.95 },
+      setup(mesh) {
+        const box = new THREE.Box3().setFromObject(mesh);
+        const size = box.getSize(new THREE.Vector3());
+        const scale = 1.95 / Math.max(size.x, size.y, size.z, 0.001);
+        mesh.scale.setScalar(scale);
+        mesh.updateWorldMatrix(true, true);
+
+        const placedBox = new THREE.Box3().setFromObject(mesh);
+        mesh.position.set(16.0, platformTops.rightBalcony - placedBox.min.y, -4.1);
+        mesh.rotateY(-0.72);
+        mesh.userData.collisionPad = 0.02;
+        mesh.userData.collisionMaxY = 1.8;
+        mesh.userData.collisionPreserveMinY = true;
+      },
+    },
+    {
+      path: "models/jeans.glb",
+      itemId: "jeans",
+      radius: 2.25,
+      highlight: { intensity: 0.24, distance: 4.4, yOffset: 1.05 },
+      setup(mesh) {
+        const box = new THREE.Box3().setFromObject(mesh);
+        const size = box.getSize(new THREE.Vector3());
+        const scale = 2.1 / Math.max(size.x, size.y, size.z, 0.001);
+        mesh.scale.setScalar(scale);
+        mesh.updateWorldMatrix(true, true);
+
+        const placedBox = new THREE.Box3().setFromObject(mesh);
+        mesh.position.set(0.9, platformTops.centerLedge - placedBox.min.y, -12.0);
+        mesh.rotateY(0.48);
+        mesh.userData.collisionPad = 0.04;
+        mesh.userData.collisionMaxY = 2.1;
+        mesh.userData.collisionPreserveMinY = true;
+      },
+    },
+    {
+      path: "models/sumka.glb",
+      itemId: "sumka",
+      radius: 2.1,
+      highlight: { intensity: 0.22, distance: 4.1, yOffset: 0.95 },
+      setup(mesh) {
+        const box = new THREE.Box3().setFromObject(mesh);
+        const size = box.getSize(new THREE.Vector3());
+        const scale = 1.8 / Math.max(size.x, size.y, size.z, 0.001);
+        mesh.scale.setScalar(scale);
+        mesh.updateWorldMatrix(true, true);
+
+        const placedBox = new THREE.Box3().setFromObject(mesh);
+        mesh.position.set(0.4, platformTops.frontCenter - placedBox.min.y, 9.4);
+        mesh.rotateY(0.36);
+        mesh.userData.collisionPad = 0.02;
+        mesh.userData.collisionMaxY = 1.55;
         mesh.userData.collisionPreserveMinY = true;
       },
     },
@@ -276,25 +368,4 @@ export function spawnWorldContent({
       collectItem(mesh, config.itemId, config.radius);
     });
   });
-
-  const spool = createSpoolModel();
-  spool.scale.setScalar(0.7);
-  spool.position.set(1.3, platformTops.stepC + 0.02, 2.1);
-  spool.userData.collisionPad = -0.12;
-  spool.userData.collisionMaxY = 1.2;
-  spool.userData.collisionPreserveMinY = true;
-
-  addHighlight(
-    spool,
-    {
-      intensity: 0.22,
-      distance: 3.8,
-      yOffset: 0.5,
-    },
-    highlightScale
-  );
-
-  scene.add(spool);
-  world.itemMeshes.push(spool);
-  collectItem(spool, "spool", 1.7);
 }

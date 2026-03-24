@@ -10,8 +10,8 @@ export function createTouchControls({ input }) {
       navigator.maxTouchPoints > 0 ||
       window.matchMedia("(pointer: coarse)").matches
   );
-  const gamepadBreakpoint = window.matchMedia("(max-width: 980px)");
-  const touchCameraBreakpoint = window.matchMedia("(max-width: 800px)");
+  const gamepadBreakpoint = window.matchMedia("(max-width: 1024px)");
+  const touchCameraBreakpoint = window.matchMedia("(max-width: 1024px)");
 
   const setButton = (code, isPressed) => input.setVirtualButton(code, isPressed);
   const getCode = (node) => node?.dataset?.code || "";
@@ -43,9 +43,14 @@ export function createTouchControls({ input }) {
   };
 
   const onPointerUp = (e) => {
+    e.preventDefault();
     const code = getCode(e.currentTarget);
     if (!code) return;
     setButton(code, false);
+  };
+
+  const preventTouchScroll = (event) => {
+    event.preventDefault();
   };
 
   const pointerEvents = ["pointerdown", "pointerup", "pointercancel", "pointerleave"];
@@ -57,6 +62,9 @@ export function createTouchControls({ input }) {
   }
 
   syncControlModes();
+  root.addEventListener("touchstart", preventTouchScroll, { passive: false });
+  root.addEventListener("touchmove", preventTouchScroll, { passive: false });
+  root.addEventListener("touchend", preventTouchScroll, { passive: false });
   if (typeof gamepadBreakpoint.addEventListener === "function") {
     gamepadBreakpoint.addEventListener("change", syncControlModes);
   } else if (typeof gamepadBreakpoint.addListener === "function") {
@@ -90,6 +98,9 @@ export function createTouchControls({ input }) {
         gamepadBreakpoint.removeListener(syncControlModes);
       }
       window.removeEventListener("blur", releaseAllButtons);
+      root.removeEventListener("touchstart", preventTouchScroll);
+      root.removeEventListener("touchmove", preventTouchScroll);
+      root.removeEventListener("touchend", preventTouchScroll);
       root.setAttribute("aria-hidden", "true");
       document.body.classList.remove("gamepad-ui");
       document.body.classList.remove("touch-ui");

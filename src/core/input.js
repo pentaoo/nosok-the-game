@@ -11,15 +11,36 @@ export function createInput(target = window) {
     run: false,
   };
 
+  const shouldBlockKeyDefault = (event) => {
+    if (!["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+      return false;
+    }
+
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLElement &&
+      (active.matches("input, textarea, select, button") || active.isContentEditable)
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   const onKeyDown = (e) => {
-    if (e.code === "Space") {
+    if (shouldBlockKeyDefault(e)) {
       e.preventDefault();
     }
     if (!keyboardDown.has(e.code)) keyboardPressed.add(e.code);
     keyboardDown.add(e.code);
   };
 
-  const onKeyUp = (e) => keyboardDown.delete(e.code);
+  const onKeyUp = (e) => {
+    if (shouldBlockKeyDefault(e)) {
+      e.preventDefault();
+    }
+    keyboardDown.delete(e.code);
+  };
 
   target.addEventListener("keydown", onKeyDown);
   target.addEventListener("keyup", onKeyUp);

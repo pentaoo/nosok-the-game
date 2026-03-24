@@ -1,4 +1,5 @@
 :root {
+  --font-display: "Mabry Pro", "Arial Black", sans-serif;
   --ink: #111111;
   --white: #fff;
   --yellow: #ffe600;
@@ -6,6 +7,19 @@
   --green: #b4ff3b;
   --purple: #7e5bff;
   --black: #000000;
+  --surface-base: var(--white);
+  --surface-overlay: rgba(255, 255, 255, 0.96);
+  --border-ui: 2px solid var(--black);
+  --border-frame: 3px solid var(--black);
+  --shadow-press: 3px 3px 0 var(--black);
+  --shadow-press-hover: 2px 2px 0 var(--black);
+  --shadow-elevated: 6px 6px 0 var(--black);
+  --shadow-hud: 8px 8px 0 rgba(0, 0, 0, 0.9);
+  --type-title-size: 24px;
+  --type-title-track: -0.03em;
+  --motion-fast: 120ms ease;
+  --motion-base: 140ms ease;
+  --motion-panel: 180ms ease;
   --frame-inset: 24px;
   --frame-inset-mobile: 12px;
 }
@@ -25,10 +39,21 @@ body {
   width: 100%;
   background: var(--white);
   color: var(--ink);
-  font-family: "Mabry Pro", "Arial Black", sans-serif;
+  font-family: var(--font-display);
 }
 
 body {
   overflow-x: hidden;
 }
 
+:is(
+    .hero-label,
+    .header > :is(h1, h2, h3, h4, h5, h6),
+    .task_card h4,
+    .recycler-tools-group-title
+  ) {
+  margin: 0;
+  font-size: var(--type-title-size);
+  line-height: 1;
+  letter-spacing: var(--type-title-track);
+}

@@ -1,4 +1,4 @@
-import { DOCS, DOC_TYPES } from "../data/docs.js";
+import { DOCS } from "../data/docs.js";
 import { ITEMS } from "../data/items.js";
 import { createItemViewer } from "./item-viewer.js";
 
@@ -24,7 +24,6 @@ const els = {};
 function cacheEls() {
   Object.assign(els, {
     doc: document.getElementById("DOC"),
-    docType: document.getElementById("doc-type"),
     docTitle: document.getElementById("doc-title"),
     docLead: document.getElementById("doc-lead"),
     docSections: document.getElementById("doc-sections"),
@@ -37,6 +36,7 @@ function cacheEls() {
     itemModelLayer: document.getElementById("ITEM_MODEL_LAYER"),
     itemCloseBtn: document.getElementById("item-close"),
     itemsList: document.getElementById("items-list"),
+    itemsCountTag: document.getElementById("items-count-tag"),
     docsList: document.getElementById("docs-list"),
     docsCountTag: document.getElementById("docs-count-tag"),
     gameGrid: document.querySelector(".game-grid"),
@@ -59,7 +59,12 @@ function getPlaceholderText(index) {
 
 function updateProgress() {
   if (!els.docsCountTag) return;
-  els.docsCountTag.textContent = `найдено ${state.foundDocs.size} / ${DOCS.length}`;
+  els.docsCountTag.textContent = `${state.foundDocs.size} / ${DOCS.length}`;
+}
+
+function updateItemsProgress() {
+  if (!els.itemsCountTag) return;
+  els.itemsCountTag.textContent = `${state.foundItems.size} / ${ITEMS.length}`;
 }
 
 function syncPanelState() {
@@ -79,6 +84,13 @@ function createTextNode(tag, className, text) {
   if (className) node.className = className;
   if (typeof text === "string") node.textContent = text;
   return node;
+}
+
+function clearActiveFocus() {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement) {
+    active.blur();
+  }
 }
 
 function renderDocSections(sections = []) {
@@ -148,7 +160,7 @@ function renderItemsList() {
   for (const item of ITEMS) {
     const isFound = state.foundItems.has(item.id);
 
-    const button = createTextNode("button", "card card--yellow");
+    const button = createTextNode("button", "card");
     button.type = "button";
     button.dataset.itemId = item.id;
     button.dataset.found = String(isFound);
@@ -159,23 +171,33 @@ function renderItemsList() {
     );
     button.disabled = !isFound;
 
-    const upper = createTextNode("span", "upper");
-    const img = createTextNode("img", "img");
-    img.src = item.image;
-    img.alt = isFound ? item.title : "Неизвестный предмет";
-    upper.append(img);
+    const upper = createTextNode("span", "card__media");
+    if (isFound) {
+      const img = createTextNode("img", "card__image");
+      img.src = item.image;
+      img.alt = item.title;
+      upper.append(img);
+    } else {
+      upper.append(createTextNode("span", "card__unknown", "?"));
+    }
 
-    const bottom = createTextNode("span", "bottom");
-    bottom.append(
-      createTextNode("h1", "", isFound ? item.title : "???"),
-      createTextNode("h2", "", isFound ? "->" : "LOCK")
+    const bottom = createTextNode("span", "card__footer");
+    const title = createTextNode(
+      "span",
+      isFound ? "card__title" : "card__title card__title--unknown"
     );
+    title.innerHTML = isFound ? item.title : 'Найди <em>это</em> на карте';
+    bottom.append(title);
+    if (isFound) {
+      bottom.append(createTextNode("span", "card__arrow", "→"));
+    }
 
     button.append(upper, bottom);
     fragment.append(button);
   }
 
   els.itemsList.append(fragment);
+  updateItemsProgress();
 }
 
 function flashRevisitDoc(docId) {
@@ -192,10 +214,8 @@ function flashRevisitDoc(docId) {
 }
 
 function setDocContent(doc) {
-  if (!els.doc || !els.docType || !els.docTitle || !els.docLead || !els.docSections) return;
-  const type = DOC_TYPES[doc.type];
+  if (!els.doc || !els.docTitle || !els.docLead || !els.docSections) return;
   els.doc.dataset.type = doc.type;
-  els.docType.textContent = type?.label ?? "DOC";
   els.docTitle.textContent = doc.title;
   els.docLead.textContent = doc.lead;
   renderDocSections(doc.sections);
@@ -241,10 +261,12 @@ function setItemVisible(isVisible) {
 }
 
 function showITEM() {
+  clearActiveFocus();
   setItemVisible(true);
 }
 
 function hideITEM() {
+  clearActiveFocus();
   setItemVisible(false);
 }
 
@@ -263,16 +285,19 @@ function onDelegatedClick(container, selector, handler) {
 }
 
 export function showDOC() {
+  clearActiveFocus();
   setDocVisible(true);
 }
 
 export function hideDOC() {
+  clearActiveFocus();
   setDocVisible(false);
 }
 
 function openItemById(itemId) {
   const item = ITEM_BY_ID.get(itemId);
   if (!item || !state.foundItems.has(itemId)) return;
+  clearActiveFocus();
   hideDOC();
   setItemContent(item);
   showITEM();
@@ -281,6 +306,7 @@ function openItemById(itemId) {
 export function openDocById(docId) {
   const doc = DOC_BY_ID.get(docId);
   if (!doc) return;
+  clearActiveFocus();
 
   const isNewDoc = !state.foundDocs.has(docId);
   state.foundDocs.add(docId);
@@ -315,6 +341,7 @@ export function initDOCControls() {
   state.isBound = true;
   cacheEls();
   updateProgress();
+  updateItemsProgress();
   renderDocsList();
   renderItemsList();
 
@@ -326,10 +353,20 @@ export function initDOCControls() {
 
   const onDocClose = () => hideDOC();
   const onItemClose = () => hideITEM();
+  const onDocBackdropClick = (event) => {
+    if (event.target === els.doc) hideDOC();
+  };
+  const onItemBackdropClick = (event) => {
+    if (event.target === els.item) hideITEM();
+  };
   els.docCloseBtn?.addEventListener("click", onDocClose);
   els.itemCloseBtn?.addEventListener("click", onItemClose);
+  els.doc?.addEventListener("click", onDocBackdropClick);
+  els.item?.addEventListener("click", onItemBackdropClick);
   cleanupFns.push(() => els.docCloseBtn?.removeEventListener("click", onDocClose));
   cleanupFns.push(() => els.itemCloseBtn?.removeEventListener("click", onItemClose));
+  cleanupFns.push(() => els.doc?.removeEventListener("click", onDocBackdropClick));
+  cleanupFns.push(() => els.item?.removeEventListener("click", onItemBackdropClick));
 
   cleanupFns.push(
     onDelegatedClick(els.docsList, "button[data-doc-id]", (button) => {

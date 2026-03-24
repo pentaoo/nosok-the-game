@@ -31,6 +31,7 @@ const UPGRADES = [
 
 const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 function getShuffledAssetQueue(assets) {
   const queue = [...assets];
@@ -188,6 +189,16 @@ export function initRecyclerBlock() {
       intervalMs: 125,
       lastUpdateTs: window.performance.now(),
     },
+    pointer: {
+      active: false,
+      id: null,
+      hover: false,
+      lastX: 0,
+      lastY: 0,
+      trail: 0,
+      originX: 50,
+      originY: 50,
+    },
   };
 
   const onTargetImageError = () => {
@@ -210,16 +221,57 @@ export function initRecyclerBlock() {
 
     const isMobile = window.innerWidth <= 1024;
     lifeBar.style.transform = "none";
+    lifeBar.style.setProperty("--hp-progress", ratio.toFixed(4));
 
     if (isMobile) {
       const hiddenRight = (1 - ratio) * 100;
       lifeBar.style.clipPath = `inset(0 ${hiddenRight.toFixed(3)}% 0 0)`;
+      lifeBar.style.setProperty("--hp-edge-x", `${(ratio * 100).toFixed(3)}%`);
+      lifeBar.style.setProperty("--hp-edge-y", "0%");
     } else {
       const hiddenTop = (1 - ratio) * 100;
       lifeBar.style.clipPath = `inset(${hiddenTop.toFixed(3)}% 0 0 0)`;
+      lifeBar.style.setProperty("--hp-edge-y", `${hiddenTop.toFixed(3)}%`);
+      lifeBar.style.setProperty("--hp-edge-x", "100%");
     }
 
     hpLabel.textContent = `${Math.ceil(state.targetHp)} HP`;
+  };
+
+  const setTargetPointer = ({ normalizedX = 0, normalizedY = 0, originX = 50, originY = 50 } = {}) => {
+    const x = clamp(normalizedX, -1, 1);
+    const y = clamp(normalizedY, -1, 1);
+    state.pointer.originX = clamp(originX, 0, 100);
+    state.pointer.originY = clamp(originY, 0, 100);
+    target.style.setProperty("--pointer_x", x.toFixed(4));
+    target.style.setProperty("--pointer_y", y.toFixed(4));
+    target.style.setProperty("--impact_x", `${state.pointer.originX.toFixed(3)}%`);
+    target.style.setProperty("--impact_y", `${state.pointer.originY.toFixed(3)}%`);
+  };
+
+  const resetTargetPointer = () => {
+    setTargetPointer();
+  };
+
+  const getPointerMetrics = (event) => {
+    const rect = target.getBoundingClientRect();
+    const clientX = "clientX" in event ? event.clientX : rect.left + rect.width * 0.5;
+    const clientY = "clientY" in event ? event.clientY : rect.top + rect.height * 0.5;
+    const localX = clamp(clientX - rect.left, 0, rect.width || 1);
+    const localY = clamp(clientY - rect.top, 0, rect.height || 1);
+    const originX = (localX / Math.max(rect.width, 1)) * 100;
+    const originY = (localY / Math.max(rect.height, 1)) * 100;
+    const normalizedX = originX / 50 - 1;
+    const normalizedY = originY / 50 - 1;
+
+    return {
+      clientX,
+      clientY,
+      originX,
+      originY,
+      normalizedX,
+      normalizedY,
+    };
   };
 
   const syncTools = () => {
@@ -258,12 +310,14 @@ export function initRecyclerBlock() {
     }, 420);
   };
 
-  const spawnHitPop = (damage) => {
+  const spawnHitPop = (damage, origin = null) => {
     const pop = document.createElement("span");
     pop.className = "recycler-pop";
     pop.textContent = `-${damage}`;
-    pop.style.setProperty("--pop_x", `${randomInt(-18, 18)}%`);
-    pop.style.setProperty("--pop_y", `${randomInt(-8, 12)}%`);
+    const xBase = origin?.originX ?? 50;
+    const yBase = origin?.originY ?? 50;
+    pop.style.setProperty("--pop_x", `${xBase + randomInt(-9, 9)}%`);
+    pop.style.setProperty("--pop_y", `${yBase + randomInt(-7, 8)}%`);
     popLayer.append(pop);
     window.requestAnimationFrame(() => {
       pop.classList.add("is-show");
@@ -273,21 +327,24 @@ export function initRecyclerBlock() {
     }, 430);
   };
 
-  const strike = (damage = 0) => {
+  const strike = (damage = 0, origin = null) => {
+    const impactX = origin?.originX ?? state.pointer.originX;
+    const impactY = origin?.originY ?? state.pointer.originY;
+
     target.classList.remove("is-hit");
     target.style.setProperty("--hit_kick", `${randomInt(-2, 2)}deg`);
     toggleClassOnNextFrame(target, "is-hit", state.frames, "hit");
 
     hitline.style.setProperty("--strike_rot", `${randomInt(-18, 18)}deg`);
-    hitline.style.setProperty("--strike_x", `${randomInt(-10, 10)}%`);
-    hitline.style.setProperty("--strike_y", `${randomInt(-8, 8)}%`);
+    hitline.style.setProperty("--strike_x", `${impactX + randomInt(-8, 8)}%`);
+    hitline.style.setProperty("--strike_y", `${impactY + randomInt(-6, 6)}%`);
     toggleClassOnNextFrame(hitline, "is-active", state.frames, "strike");
 
-    hitFlash.style.setProperty("--flash_x", `${randomInt(-14, 14)}%`);
-    hitFlash.style.setProperty("--flash_y", `${randomInt(-12, 12)}%`);
+    hitFlash.style.setProperty("--flash_x", `${impactX + randomInt(-8, 8)}%`);
+    hitFlash.style.setProperty("--flash_y", `${impactY + randomInt(-8, 8)}%`);
     toggleClassOnNextFrame(hitFlash, "is-active", state.frames, "flash");
 
-    if (damage > 0) spawnHitPop(damage);
+    if (damage > 0) spawnHitPop(damage, { originX: impactX, originY: impactY });
     if (typeof navigator.vibrate === "function") navigator.vibrate(5);
   };
 
@@ -345,21 +402,26 @@ export function initRecyclerBlock() {
     }, 320);
   };
 
-  const applyDamage = (damage, withStrike = false) => {
+  const applyDamage = (damage, withStrike = false, origin = null) => {
     if (state.switching) return;
     if (damage <= 0) return;
 
-    if (withStrike) strike(damage);
+    if (withStrike) strike(damage, origin);
     state.targetHp = Math.max(0, state.targetHp - damage);
     updateLife();
 
     if (state.targetHp <= 0) breakTarget();
   };
 
-  const breakDownCurrent = () => {
+  const breakDownCurrent = (origin = null) => {
     const spread = 0.86 + Math.random() * 0.28;
     const damage = Math.max(1, Math.round(state.clickPower * spread));
-    applyDamage(damage, true);
+    applyDamage(damage, true, origin);
+  };
+
+  const grindCurrent = (origin = null, intensity = 1) => {
+    const damage = Math.max(1, Math.round(state.clickPower * (0.16 + intensity * 0.12)));
+    applyDamage(damage, true, origin);
   };
 
   const onToolClick = (event) => {
@@ -437,7 +499,90 @@ export function initRecyclerBlock() {
   };
 
   const tooltipCleanup = initTooltip(helpButton, tooltip);
-  target.addEventListener("click", breakDownCurrent);
+
+  const endPointerSession = () => {
+    state.pointer.active = false;
+    state.pointer.id = null;
+    state.pointer.trail = 0;
+    target.classList.remove("is-pointer-active");
+    if (!state.pointer.hover) resetTargetPointer();
+  };
+
+  const onTargetPointerEnter = (event) => {
+    state.pointer.hover = true;
+    target.classList.add("is-hovered");
+    setTargetPointer(getPointerMetrics(event));
+  };
+
+  const onTargetPointerMove = (event) => {
+    const metrics = getPointerMetrics(event);
+    setTargetPointer(metrics);
+
+    if (!state.pointer.active || event.pointerId !== state.pointer.id) return;
+
+    const deltaX = metrics.clientX - state.pointer.lastX;
+    const deltaY = metrics.clientY - state.pointer.lastY;
+    const distance = Math.hypot(deltaX, deltaY);
+    state.pointer.lastX = metrics.clientX;
+    state.pointer.lastY = metrics.clientY;
+    state.pointer.trail += distance;
+
+    const stepDistance = 26;
+    while (state.pointer.trail >= stepDistance && !state.switching) {
+      state.pointer.trail -= stepDistance;
+      grindCurrent(metrics, clamp(distance / stepDistance, 0.8, 1.8));
+    }
+  };
+
+  const onTargetPointerLeave = () => {
+    state.pointer.hover = false;
+    target.classList.remove("is-hovered");
+    if (!state.pointer.active) resetTargetPointer();
+  };
+
+  const onTargetPointerDown = (event) => {
+    if (state.switching) return;
+    const metrics = getPointerMetrics(event);
+    state.pointer.active = true;
+    state.pointer.id = event.pointerId;
+    state.pointer.lastX = metrics.clientX;
+    state.pointer.lastY = metrics.clientY;
+    state.pointer.trail = 0;
+    target.classList.add("is-pointer-active");
+    target.setPointerCapture?.(event.pointerId);
+    setTargetPointer(metrics);
+    breakDownCurrent(metrics);
+  };
+
+  const onTargetPointerUp = (event) => {
+    if (state.pointer.id !== event.pointerId) return;
+    try {
+      target.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // Ignore capture mismatches from synthetic or interrupted pointer sessions.
+    }
+    endPointerSession();
+  };
+
+  const onTargetPointerCancel = (event) => {
+    if (state.pointer.id !== event.pointerId) return;
+    endPointerSession();
+  };
+
+  const onTargetKeyDown = (event) => {
+    if (event.repeat) return;
+    if (event.code !== "Enter" && event.code !== "Space") return;
+    event.preventDefault();
+    breakDownCurrent();
+  };
+
+  target.addEventListener("pointerenter", onTargetPointerEnter);
+  target.addEventListener("pointermove", onTargetPointerMove);
+  target.addEventListener("pointerleave", onTargetPointerLeave);
+  target.addEventListener("pointerdown", onTargetPointerDown);
+  target.addEventListener("pointerup", onTargetPointerUp);
+  target.addEventListener("pointercancel", onTargetPointerCancel);
+  target.addEventListener("keydown", onTargetKeyDown);
   tools.forEach((toolButton) => toolButton.addEventListener("click", onToolClick));
 
   let resizeTimeout = 0;
@@ -460,7 +605,13 @@ export function initRecyclerBlock() {
     window.clearTimeout(state.timers.drop);
     window.clearTimeout(state.timers.switch);
     window.removeEventListener("resize", onResize);
-    target.removeEventListener("click", breakDownCurrent);
+    target.removeEventListener("pointerenter", onTargetPointerEnter);
+    target.removeEventListener("pointermove", onTargetPointerMove);
+    target.removeEventListener("pointerleave", onTargetPointerLeave);
+    target.removeEventListener("pointerdown", onTargetPointerDown);
+    target.removeEventListener("pointerup", onTargetPointerUp);
+    target.removeEventListener("pointercancel", onTargetPointerCancel);
+    target.removeEventListener("keydown", onTargetKeyDown);
     targetImage.removeEventListener("error", onTargetImageError);
     tools.forEach((toolButton) => toolButton.removeEventListener("click", onToolClick));
     Object.values(state.frames).forEach((frameId) => {

@@ -201,6 +201,11 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
     };
   }
 
+  const setBusyState = (isBusy) => {
+    button.disabled = isBusy;
+    button.setAttribute("aria-busy", isBusy ? "true" : "false");
+  };
+
   const sendNotice = (text, tone = "success") => {
     if (typeof notify === "function") {
       notify(text, { tone, duration: 2600 });
@@ -211,7 +216,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
 
   const onClick = async () => {
     if (button.disabled) return;
-    button.disabled = true;
+    setBusyState(true);
 
     try {
       const snapshot = {
@@ -244,7 +249,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
       console.error(error);
       sendNotice("Не удалось собрать сторис. Попробуйте ещё раз.", "warning");
     } finally {
-      button.disabled = false;
+      setBusyState(false);
     }
   };
 

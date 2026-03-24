@@ -1,22 +1,30 @@
-const DEFAULT_BRUSH_SIZE = 18;
+const BRUSH_SIZE_STEPS = [12, 24, 36];
+const BRUSH_STEP_LABELS = ["Маленькая кисть", "Средняя кисть", "Большая кисть"];
+const BRUSH_PROGRESS_STEPS = ["0%", "50%", "100%"];
+const DEFAULT_BRUSH_STEP = 1;
 const DEFAULT_BRUSH_COLOR = "#111111";
 const WHITE_CHANNEL_THRESHOLD = 236;
+const DESKTOP_BREAKPOINT = 1024;
+
+function clampBrushStep(value) {
+  return Math.max(0, Math.min(BRUSH_SIZE_STEPS.length - 1, Math.round(value)));
+}
 
 function getDesignerNodes() {
   const canvas = document.querySelector("#sock-designer-canvas");
   const baseImage = document.querySelector(".sock-designer-base");
   const palette = document.querySelector("#sock-palette");
   const brushInput = document.querySelector("#sock-brush-size");
-  const brushOutput = document.querySelector("#sock-brush-output");
   const toolToggle = document.querySelector("#sock-tool-toggle");
   const clearButton = document.querySelector("#sock-clear");
+  const brushSlider = brushInput?.closest(".designer-slider");
 
   if (
     !(canvas instanceof HTMLCanvasElement) ||
     !(baseImage instanceof HTMLImageElement) ||
     !(palette instanceof HTMLElement) ||
     !(brushInput instanceof HTMLInputElement) ||
-    !(brushOutput instanceof HTMLOutputElement) ||
+    !(brushSlider instanceof HTMLElement) ||
     !(toolToggle instanceof HTMLButtonElement) ||
     !(clearButton instanceof HTMLButtonElement)
   ) {
@@ -30,7 +38,7 @@ function getDesignerNodes() {
     canvas,
     baseImage,
     brushInput,
-    brushOutput,
+    brushSlider,
     toolToggle,
     clearButton,
     swatches,
@@ -42,9 +50,59 @@ function getEventPoint(event, canvas) {
   const x = ((event.clientX - rect.left) / rect.width) * canvas.width;
   const y = ((event.clientY - rect.top) / rect.height) * canvas.height;
   return {
-    x: Math.max(0, Math.min(canvas.width, x)),
-    y: Math.max(0, Math.min(canvas.height, y)),
+    x: Math.max(0, Math.min(canvas.width - 1, x)),
+    y: Math.max(0, Math.min(canvas.height - 1, y)),
   };
+}
+
+function getPixelCell(point, canvas, pixelSize) {
+  const maxColumn = Math.max(0, Math.ceil(canvas.width / pixelSize) - 1);
+  const maxRow = Math.max(0, Math.ceil(canvas.height / pixelSize) - 1);
+
+  return {
+    column: Math.max(0, Math.min(maxColumn, Math.floor(point.x / pixelSize))),
+    row: Math.max(0, Math.min(maxRow, Math.floor(point.y / pixelSize))),
+  };
+}
+
+function getPixelRect(cell, canvas, pixelSize) {
+  const x = cell.column * pixelSize;
+  const y = cell.row * pixelSize;
+
+  return {
+    x,
+    y,
+    width: Math.min(pixelSize, canvas.width - x),
+    height: Math.min(pixelSize, canvas.height - y),
+  };
+}
+
+function getCellsOnPath(fromCell, toCell) {
+  const cells = [];
+  let column = fromCell.column;
+  let row = fromCell.row;
+  const deltaColumn = Math.abs(toCell.column - column);
+  const deltaRow = Math.abs(toCell.row - row);
+  const stepColumn = column < toCell.column ? 1 : -1;
+  const stepRow = row < toCell.row ? 1 : -1;
+  let error = deltaColumn - deltaRow;
+
+  while (true) {
+    cells.push({ column, row });
+    if (column === toCell.column && row === toCell.row) break;
+
+    const doubledError = error * 2;
+    if (doubledError > -deltaRow) {
+      error -= deltaRow;
+      column += stepColumn;
+    }
+    if (doubledError < deltaColumn) {
+      error += deltaColumn;
+      row += stepRow;
+    }
+  }
+
+  return cells;
 }
 
 function getContainRect(containerWidth, containerHeight, sourceWidth, sourceHeight) {
@@ -66,8 +124,13 @@ function getContainRect(containerWidth, containerHeight, sourceWidth, sourceHeig
   return { x: (containerWidth - width) / 2, y: 0, width, height };
 }
 
-function formatBrushSize(size) {
-  return `${Math.round(size)} px`;
+function getRoundedRect(rect) {
+  return {
+    x: Math.round(rect.x),
+    y: Math.round(rect.y),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+  };
 }
 
 export function initSockDesigner() {
@@ -88,7 +151,7 @@ export function initSockDesigner() {
     };
   }
 
-  const { canvas, baseImage, brushInput, brushOutput, toolToggle, clearButton, swatches } = nodes;
+  const { canvas, baseImage, brushInput, brushSlider, toolToggle, clearButton, swatches } = nodes;
 
   const displayCtx = canvas.getContext("2d");
   if (!displayCtx) {
@@ -146,10 +209,12 @@ export function initSockDesigner() {
 
   const state = {
     isDrawing: false,
-    lastPoint: null,
-    brushSize: Number(brushInput.value) || DEFAULT_BRUSH_SIZE,
+    lastCell: null,
+    brushStep: DEFAULT_BRUSH_STEP,
+    brushSize: BRUSH_SIZE_STEPS[DEFAULT_BRUSH_STEP],
     brushColor: DEFAULT_BRUSH_COLOR,
     isEraser: false,
+    isDesktopPrimaryAction: window.innerWidth > DESKTOP_BREAKPOINT,
     imageReady: false,
     imageRect: { x: 0, y: 0, width: canvas.width, height: canvas.height },
     hasDrawings: false,
@@ -162,15 +227,31 @@ export function initSockDesigner() {
   };
 
   const syncBrushSize = () => {
-    const parsed = Number(brushInput.value);
-    state.brushSize = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_BRUSH_SIZE;
-    brushOutput.textContent = formatBrushSize(state.brushSize);
+    const nextStep = clampBrushStep(Number(brushInput.value));
+    state.brushStep = nextStep;
+    state.brushSize = BRUSH_SIZE_STEPS[nextStep];
+    brushInput.value = String(nextStep);
+    brushInput.setAttribute("aria-valuetext", BRUSH_STEP_LABELS[nextStep]);
+    brushSlider.style.setProperty("--designer-slider-progress", BRUSH_PROGRESS_STEPS[nextStep]);
+    brushSlider.dataset.brushStep = String(nextStep);
   };
 
   const syncToolToggle = () => {
-    toolToggle.classList.toggle("is-eraser", state.isEraser);
-    toolToggle.setAttribute("aria-pressed", String(state.isEraser));
-    toolToggle.textContent = state.isEraser ? "Кисть" : "Ластик";
+    toolToggle.classList.toggle("is-eraser", !state.isDesktopPrimaryAction && state.isEraser);
+    toolToggle.dataset.mode = state.isDesktopPrimaryAction ? "fill" : "eraser";
+    toolToggle.setAttribute(
+      "aria-pressed",
+      state.isDesktopPrimaryAction ? "false" : String(state.isEraser)
+    );
+    toolToggle.textContent = state.isDesktopPrimaryAction ? "Залить" : "Ластик";
+  };
+
+  const syncPrimaryActionMode = () => {
+    state.isDesktopPrimaryAction = window.innerWidth > DESKTOP_BREAKPOINT;
+    if (state.isDesktopPrimaryAction) {
+      state.isEraser = false;
+    }
+    syncToolToggle();
   };
 
   const rebuildMask = () => {
@@ -178,11 +259,8 @@ export function initSockDesigner() {
     sourceCtx.clearRect(0, 0, sourceLayer.width, sourceLayer.height);
     if (!state.imageReady) return;
 
-    state.imageRect = getContainRect(
-      canvas.width,
-      canvas.height,
-      baseImage.naturalWidth,
-      baseImage.naturalHeight
+    state.imageRect = getRoundedRect(
+      getContainRect(canvas.width, canvas.height, baseImage.naturalWidth, baseImage.naturalHeight)
     );
 
     sourceCtx.drawImage(
@@ -214,6 +292,14 @@ export function initSockDesigner() {
     maskCtx.putImageData(maskPixels, 0, 0);
   };
 
+  const applyMaskToPaintLayer = () => {
+    if (!state.imageReady) return;
+    paintCtx.save();
+    paintCtx.globalCompositeOperation = "destination-in";
+    paintCtx.drawImage(maskLayer, 0, 0);
+    paintCtx.restore();
+  };
+
   const redraw = () => {
     displayCtx.clearRect(0, 0, canvas.width, canvas.height);
     displayCtx.drawImage(paintLayer, 0, 0);
@@ -225,26 +311,32 @@ export function initSockDesigner() {
     displayCtx.globalCompositeOperation = "source-over";
   };
 
-  const drawSegment = (from, to) => {
+  const drawCells = (cells) => {
+    if (!cells.length) return;
+
     paintCtx.save();
-    paintCtx.lineWidth = state.brushSize;
-    paintCtx.lineCap = "round";
-    paintCtx.lineJoin = "round";
 
     if (state.isEraser) {
       paintCtx.globalCompositeOperation = "destination-out";
+      paintCtx.fillStyle = "#000000";
     } else {
       paintCtx.globalCompositeOperation = "source-over";
-      paintCtx.strokeStyle = state.brushColor;
+      paintCtx.fillStyle = state.brushColor;
       state.hasDrawings = true;
     }
 
-    paintCtx.beginPath();
-    paintCtx.moveTo(from.x, from.y);
-    paintCtx.lineTo(to.x, to.y);
-    paintCtx.stroke();
+    cells.forEach((cell) => {
+      const rect = getPixelRect(cell, canvas, state.brushSize);
+      paintCtx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    });
+
     paintCtx.restore();
     redraw();
+  };
+
+  const getEventCell = (event) => {
+    const point = getEventPoint(event, canvas);
+    return getPixelCell(point, canvas, state.brushSize);
   };
 
   const startDrawing = (event) => {
@@ -252,16 +344,21 @@ export function initSockDesigner() {
     event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
     state.isDrawing = true;
-    state.lastPoint = getEventPoint(event, canvas);
-    drawSegment(state.lastPoint, state.lastPoint);
+    state.lastCell = getEventCell(event);
+    drawCells([state.lastCell]);
   };
 
   const draw = (event) => {
-    if (!state.isDrawing || !state.lastPoint) return;
+    if (!state.isDrawing || !state.lastCell) return;
     event.preventDefault();
-    const nextPoint = getEventPoint(event, canvas);
-    drawSegment(state.lastPoint, nextPoint);
-    state.lastPoint = nextPoint;
+    const nextCell = getEventCell(event);
+
+    if (nextCell.column === state.lastCell.column && nextCell.row === state.lastCell.row) {
+      return;
+    }
+
+    drawCells(getCellsOnPath(state.lastCell, nextCell));
+    state.lastCell = nextCell;
   };
 
   const stopDrawing = (event) => {
@@ -270,13 +367,28 @@ export function initSockDesigner() {
       canvas.releasePointerCapture(event.pointerId);
     }
     state.isDrawing = false;
-    state.lastPoint = null;
+    state.lastCell = null;
   };
 
   const clearCanvas = () => {
     paintCtx.clearRect(0, 0, paintLayer.width, paintLayer.height);
     state.hasDrawings = false;
     redraw();
+  };
+
+  const fillCanvas = () => {
+    paintCtx.save();
+    paintCtx.clearRect(0, 0, paintLayer.width, paintLayer.height);
+    paintCtx.globalCompositeOperation = "source-over";
+    paintCtx.fillStyle = state.brushColor;
+    paintCtx.fillRect(0, 0, paintLayer.width, paintLayer.height);
+
+    applyMaskToPaintLayer();
+    paintCtx.restore();
+    state.hasDrawings = true;
+    state.isEraser = false;
+    redraw();
+    syncToolToggle();
   };
 
   const buildExportDataUrl = () => {
@@ -316,7 +428,13 @@ export function initSockDesigner() {
   });
 
   addListener(brushInput, "input", syncBrushSize);
+  addListener(window, "resize", syncPrimaryActionMode);
   addListener(toolToggle, "click", () => {
+    if (state.isDesktopPrimaryAction) {
+      fillCanvas();
+      return;
+    }
+
     state.isEraser = !state.isEraser;
     syncToolToggle();
   });
@@ -331,6 +449,9 @@ export function initSockDesigner() {
   const onImageReady = () => {
     state.imageReady = true;
     rebuildMask();
+    if (state.hasDrawings) {
+      applyMaskToPaintLayer();
+    }
     redraw();
   };
 
@@ -346,9 +467,10 @@ export function initSockDesigner() {
   const initialColor = initialSwatch.getAttribute("data-sock-color");
   if (initialColor) state.brushColor = initialColor;
 
+  brushInput.value = String(DEFAULT_BRUSH_STEP);
   setActiveSwatch(initialSwatch);
   syncBrushSize();
-  syncToolToggle();
+  syncPrimaryActionMode();
   redraw();
 
   return {

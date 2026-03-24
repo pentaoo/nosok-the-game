@@ -6,6 +6,9 @@ const MODEL_BY_ITEM_ID = {
   ushanka: "models/USHANKA.glb",
   vans: "models/vans.glb",
   trasher_old: "models/trasher_old.glb",
+  uggi: "models/uggi.glb",
+  jeans: "models/jeans.glb",
+  sumka: "models/sumka.glb",
 };
 
 function loadGLTF(loader, url) {
@@ -14,37 +17,30 @@ function loadGLTF(loader, url) {
   });
 }
 
-function createSpoolModel() {
+function createFallbackModel() {
   const group = new THREE.Group();
-  const coreMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffdce8,
-    roughness: 0.52,
-    metalness: 0.04,
+  const shellMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffe600,
+    roughness: 0.46,
+    metalness: 0.05,
   });
-  const threadMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfe4aae,
-    roughness: 0.44,
-    metalness: 0.06,
+  const frameMaterial = new THREE.MeshStandardMaterial({
+    color: 0x202735,
+    roughness: 0.56,
+    metalness: 0.08,
   });
 
-  const topDisc = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.4, 0.4, 0.08, 24),
-    coreMaterial
-  );
-  const bottomDisc = topDisc.clone();
-  const core = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.15, 0.15, 0.9, 24),
-    coreMaterial
-  );
-  const thread = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.31, 0.31, 0.78, 32, 1, true),
-    threadMaterial
-  );
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.72, 0.48), shellMaterial);
+  const flap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.18, 0.32), frameMaterial);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 12, 40), frameMaterial);
 
-  topDisc.position.y = 0.52;
-  bottomDisc.position.y = -0.52;
-  group.add(topDisc, bottomDisc, core, thread);
-  group.rotation.z = -0.22;
+  body.position.y = 0.2;
+  flap.position.set(0, 0.56, 0.08);
+  flap.rotation.x = 0.3;
+  strap.position.set(0, 0.8, 0);
+  strap.rotation.x = Math.PI / 2;
+
+  group.add(body, flap, strap);
   return group;
 }
 
@@ -244,9 +240,8 @@ export function createItemViewer({ mountEl }) {
   };
 
   const getItemModel = async (itemId) => {
-    if (itemId === "spool") return createSpoolModel();
     const modelPath = MODEL_BY_ITEM_ID[itemId];
-    if (!modelPath) return createSpoolModel();
+    if (!modelPath) return createFallbackModel();
 
     let sourceScene = sourceCache.get(modelPath);
     if (!sourceScene) {

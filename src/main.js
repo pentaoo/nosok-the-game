@@ -230,6 +230,7 @@ async function main() {
         quests,
         onDocOpen: openDocById,
         onItemFound: markItemFound,
+        onWorldEvent: (title, options) => hud.notify(title, options),
       })
     );
 

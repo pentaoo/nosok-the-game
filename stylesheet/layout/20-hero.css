@@ -6,9 +6,9 @@
 }
 
 :is(.home-hero, .home-game, .home-recycler, .home-designer, .home-footer) {
-  border-left: 3px solid var(--black);
-  border-right: 3px solid var(--black);
-  border-bottom: 3px solid var(--black);
+  border-left: var(--border-frame);
+  border-right: var(--border-frame);
+  border-bottom: var(--border-frame);
   background: transparent;
   position: relative;
   z-index: 2;
@@ -31,16 +31,16 @@
 }
 
 .home-hero {
-  border-top: 3px solid var(--black);
+  border-top: var(--border-frame);
   min-height: 1080px;
   background: transparent;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .hero-header {
   height: 80px;
-  border-bottom: 3px solid var(--black);
+  border-bottom: var(--border-frame);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -50,17 +50,13 @@
 }
 
 .hero-label {
-  margin: 0;
-  font-size: 24px;
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.03em;
 }
 
 .hero-chip {
   width: 30px;
   height: 30px;
-  border: 2px solid var(--black);
+  border: var(--border-ui);
   background: var(--pink);
   display: inline-flex;
   align-items: center;
@@ -70,12 +66,12 @@
 }
 
 .hero-sock-field {
-  position: fixed;
-  inset: 0;
-  height: 100dvh;
+  position: absolute;
+  inset: 80px 0 0 0;
+  height: auto;
   overflow: hidden;
   cursor: grab;
-  z-index: 0;
+  z-index: 1;
 }
 
 .hero-sock {
@@ -107,7 +103,7 @@
 }
 
 .badge {
-  border: 2px solid var(--black);
+  border: var(--border-ui);
   background: var(--yellow);
   padding: 6px 12px 4px;
   font-size: 12px;

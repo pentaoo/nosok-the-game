@@ -1,18 +1,18 @@
 @media (max-width: 1400px) {
   .game-grid {
-    min-height: 980px;
+    height: 840px;
   }
 
   .game-column--left {
-    grid-template-rows: minmax(0, 680px) minmax(0, 300px);
+    grid-template-rows: 661px 179px;
   }
 
   .game-column--right {
-    grid-template-rows: minmax(0, 430px) minmax(0, 550px);
+    grid-template-rows: 250.3333px 589.6667px;
   }
 
   .cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .recycler-shell {
@@ -58,11 +58,11 @@
 
   .game-grid {
     grid-template-columns: 1fr;
-    height: auto;
+    height: 2295.9944px;
   }
 
   .game-column {
-    grid-template-rows: auto;
+    display: block;
   }
 
   .game-column--left {
@@ -73,19 +73,42 @@
   .game-panel--docs,
   .game-panel--tasks,
   .game-panel--cards {
-    border-bottom: 2px solid var(--black);
+    border-bottom: 3px solid var(--black);
+  }
+
+  .game-panel--play {
+    height: 777px;
+  }
+
+  .game-panel--docs {
+    height: 303px;
+  }
+
+  .game-panel--tasks {
+    height: 480px;
+  }
+
+  .game-panel--cards {
+    height: 735.9944px;
+    border-bottom: 0;
   }
 
   .header {
-    padding: 18px 16px 12px;
+    min-height: 66px;
+    padding: 24px 24px 16px 21px;
   }
 
   .header h2 {
-    font-size: 22px;
+    font-size: 24px;
+  }
+
+  .game-panel--play > .header {
+    min-height: 72px;
+    padding: 32px 16px 16px 24px;
   }
 
   .game-shell {
-    padding: 8px 16px 16px;
+    padding: 0 24px 24px;
   }
 
   .hud-panel {
@@ -93,27 +116,32 @@
     box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.9);
   }
 
+  .game-key-hints {
+    display: none;
+  }
+
   #game-wrap {
-    min-height: 320px;
-    height: clamp(400px, 64vh, 620px);
+    min-height: 681px;
+    height: 681px;
   }
 
   .task-list,
   .doc-list,
   .cards-grid {
-    padding: 8px 16px 16px;
+    padding: 0 24px 24px;
   }
 
   .task_card h4 {
-    font-size: 21px;
+    font-size: 24px;
   }
 
   .task_card p {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .doc-panel {
@@ -127,6 +155,64 @@
 
   #ITEM {
     z-index: 21;
+  }
+
+  #game {
+    flex: 1 1 auto;
+    min-height: 455px;
+  }
+
+  #touch-controls {
+    --btn: 48px;
+    --btn-gap: 12px;
+    --action-btn: auto;
+    flex: 0 0 226px;
+    height: 226px;
+    gap: 24px;
+    padding: 24px;
+    background: var(--green);
+    border-top: 2px solid var(--black);
+    border-bottom: 0;
+    box-shadow: none;
+  }
+
+  .touch-pad,
+  .touch-actions {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .touch-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .touch-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 0;
+    box-shadow: 3px 3px 0 var(--black);
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 12px;
+  }
+
+  .touch-btn.action,
+  .touch-btn.jump {
+    width: auto;
+    min-width: 78px;
+    height: 48px;
+    font-size: 24px;
+    line-height: 1;
+    padding: 8px 12px;
+  }
+
+  .touch-btn.jump {
+    min-width: 114px;
   }
 
   .home-recycler {
@@ -196,6 +282,21 @@
   .recycler-hp-label {
     writing-mode: horizontal-tb;
     font-size: clamp(17px, 4.8vw, 24px);
+  }
+
+  .recycler-life-bar::after {
+    top: 0;
+    bottom: 0;
+    left: calc(var(--hp-edge-x, 100%) - 5.5%);
+    right: auto;
+    width: 11%;
+    height: auto;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.88) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
   }
 
   .recycler-meta {
@@ -299,16 +400,44 @@
   }
 
   .header {
-    padding: 16px 14px 10px;
+    padding: 24px 24px 16px 21px;
   }
 
   .header h2 {
-    font-size: 20px;
+    font-size: 24px;
+  }
+
+  .game-grid {
+    height: 1954px;
+  }
+
+  .game-panel--play {
+    height: 605px;
+  }
+
+  .game-panel--docs {
+    height: 303px;
+  }
+
+  .game-panel--tasks {
+    height: 484px;
+  }
+
+  .game-panel--cards {
+    height: 562px;
+  }
+
+  .game-panel--play > .header {
+    display: none;
+  }
+
+  .game-shell {
+    padding: 0;
   }
 
   #game-wrap {
-    min-height: 290px;
-    height: clamp(350px, 56vh, 480px);
+    min-height: 605px;
+    height: 605px;
   }
 
   .hud-panel {
@@ -319,36 +448,95 @@
   .task-list,
   .doc-list,
   .cards-grid {
-    padding: 8px 14px 14px;
-    gap: 12px;
+    padding: 0 24px 24px;
+    gap: 16px;
   }
 
   .task_card {
-    padding: 14px;
+    padding: 18px 16px;
   }
 
   .task_card h4 {
-    font-size: 19px;
+    font-size: 24px;
   }
 
   .task_card p {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .cards-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 152px);
+    justify-content: start;
+    gap: 8px;
   }
 
   .doc-card {
-    padding: 12px 10px 10px;
+    min-height: 68px;
+    padding: 16px;
   }
 
   .doc-card .doc-title {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .doc-meta {
-    font-size: 11px;
+    font-size: 12px;
+  }
+
+  #game {
+    flex: 0 0 389px;
+    min-height: 389px;
+  }
+
+  #touch-controls {
+    flex: 0 0 216px;
+    height: 216px;
+    gap: 22px;
+    padding: 22px 21px;
+  }
+
+  .touch-pad {
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(3, 48px);
+    gap: 12px;
+  }
+
+  .touch-actions {
+    gap: 16px;
+  }
+
+  .touch-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .touch-btn.action {
+    min-width: 77px;
+  }
+
+  .touch-btn.jump {
+    min-width: 114px;
+  }
+
+  .card__media {
+    padding: 14px 34px;
+  }
+
+  .card__image {
+    width: 84px;
+  }
+
+  .card__footer {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+
+  .card__title {
+    font-size: 16px;
+  }
+
+  .card__arrow {
+    font-size: 20px;
   }
 
   .recycler-stage {
@@ -361,6 +549,11 @@
 
   .recycler-target {
     width: min(92vw, 340px);
+  }
+
+  .recycler-target-hint {
+    font-size: 12px;
+    bottom: 2px;
   }
 
   .recycler-drop {
@@ -426,21 +619,18 @@
     font-size: 9px;
   }
 
-  .designer-header {
+  .designer-stage-column > .header,
+  .designer-panel > .header {
     padding: 0 12px;
   }
 
-  .designer-header h2 {
+  .designer-stage-column > .header h2,
+  .designer-panel > .header h2 {
     font-size: 20px;
   }
 
   .designer-stage-column .sock-stage {
     padding: 10px;
-  }
-
-  .designer-controls h3 {
-    padding: 18px 12px 10px;
-    font-size: 20px;
   }
 
   .designer-palette,
@@ -461,24 +651,21 @@
 
 @media (max-width: 480px) {
   #touch-controls {
-    --btn: 42px;
-    --action-btn: 62px;
-    --btn-gap: 6px;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 18px;
+    padding: 20px 16px;
   }
 
   .touch-actions {
-    gap: 6px;
+    gap: 12px;
   }
 
   .touch-btn {
-    font-size: 13px;
+    font-size: 24px;
   }
 
   .touch-btn.action,
   .touch-btn.jump {
-    font-size: 14px;
+    font-size: 24px;
   }
 }
 
@@ -527,7 +714,8 @@
   }
 
   .hero-sock-field {
-    height: calc(640px - 56px);
+    inset: 56px 0 0 0;
+    height: auto;
   }
 
   .hero-label {
@@ -559,7 +747,7 @@
     border-bottom: 2px solid var(--black);
   }
 
-  .stain-header {
+  .stain-panel > .header {
     height: 56px;
     border-bottom-width: 2px;
   }
@@ -593,7 +781,8 @@
   }
 
   .hero-sock-field {
-    height: calc(520px - 52px);
+    inset: 52px 0 0 0;
+    height: auto;
   }
 
   .hero-chip {
@@ -617,7 +806,7 @@
     padding: 6px 8px 4px;
   }
 
-  .stain-header h3 {
+  .stain-panel > .header h2 {
     font-size: 20px;
   }
 
@@ -652,5 +841,156 @@
 
   .footer-block:nth-last-child(-n + 2) {
     border-bottom: 0;
+  }
+}
+
+@media (max-width: 1400px) {
+  .designer-layout {
+    min-height: 1483px;
+  }
+
+  .designer-main {
+    grid-template-rows: 756px minmax(0, 727px);
+  }
+
+  .designer-top {
+    min-height: 756px;
+  }
+
+  .stain-stage {
+    min-height: calc(727px - 64px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .designer-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .designer-main {
+    grid-template-rows: auto auto;
+  }
+
+  .designer-top {
+    grid-template-columns: 1fr;
+    min-height: 1341px;
+  }
+
+  .designer-stage-column {
+    grid-template-rows: 64px 905px;
+    border-right: 0;
+    border-bottom: 2px solid var(--black);
+  }
+
+  .designer-stage-column .sock-stage {
+    min-height: 905px;
+    padding: 0 24px;
+  }
+
+  .designer-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    min-height: 372px;
+  }
+
+  .designer-panel--palette {
+    border-right: 2px solid var(--black);
+  }
+
+  .designer-panel > .header {
+    padding: 0 24px;
+  }
+
+  .designer-palette {
+    padding: 0 24px 24px;
+    gap: 12px;
+  }
+
+  .designer-swatch {
+    min-height: 136px;
+  }
+
+  .designer-slider {
+    padding: 0 16px;
+  }
+
+  .designer-slider-scale {
+    min-height: 24px;
+  }
+
+  .designer-slider-size--small {
+    width: 8px;
+    height: 8px;
+  }
+
+  .designer-slider-size--medium {
+    width: 16px;
+    height: 16px;
+  }
+
+  .designer-slider-size--large {
+    width: 24px;
+    height: 24px;
+  }
+
+  .designer-actions {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .designer-top {
+    min-height: 1080px;
+  }
+
+  .designer-stage-column > .header,
+  .designer-panel > .header {
+    padding: 0 16px;
+  }
+
+  .designer-stage-column > .header h2,
+  .designer-panel > .header h2 {
+    font-size: 24px;
+  }
+
+  .designer-stage-column {
+    grid-template-rows: 64px 414px;
+  }
+
+  .designer-stage-column .sock-stage {
+    min-height: 414px;
+    padding: 0 16px;
+  }
+
+  .designer-stage-column .sock-designer-surface {
+    width: min(100%, 307px);
+  }
+
+  .designer-controls {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 602px;
+  }
+
+  .designer-panel--palette {
+    border-right: 0;
+  }
+
+  .designer-palette {
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .designer-swatch {
+    min-height: 81px;
+  }
+
+  .designer-slider {
+    padding: 0 16px;
+  }
+
+  .designer-actions {
+    padding: 24px 16px;
   }
 }

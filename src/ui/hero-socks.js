@@ -3,8 +3,7 @@ const SOCK_ASSETS = Object.values(
 );
 
 const MAX_DT_SEC = 0.05;
-const GRAVITY = 920;
-const DRAG = 0.985;
+const GRAVITY = 250;
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
@@ -24,8 +23,13 @@ function createSockState(index, assets) {
     y: 0,
     vx: 0,
     vy: 0,
+    drift: 0,
     rotation: 0,
     spin: 0,
+    chaos: 0,
+    chaosFreq: 0,
+    chaosPhase: 0,
+    chaosJitter: 0,
     size: 72,
     dragging: false,
     pointerId: null,
@@ -37,14 +41,49 @@ function createSockState(index, assets) {
   };
 }
 
-function respawnSock(sock, width, height, { fromTop = true } = {}) {
+function respawnSock(sock, width, height, { initial = false } = {}) {
   sock.size = randomBetween(44, 148);
-  sock.x = randomBetween(-sock.size * 0.2, width - sock.size * 0.8);
-  sock.y = fromTop ? randomBetween(-height * 0.8, -sock.size * 1.2) : randomBetween(0, height);
-  sock.vx = randomBetween(-22, 22);
-  sock.vy = randomBetween(42, 130);
-  sock.rotation = randomBetween(-28, 28);
-  sock.spin = randomBetween(-22, 22);
+
+  // Эмиттер в нижнем левом углу экрана hero.
+  sock.x = randomBetween(-sock.size * 0.35, sock.size * 0.16);
+  sock.y = height - randomBetween(sock.size * 0.15, sock.size * 0.85);
+
+  // Полет в верх/право с разлетом: носки уходят за правую рамку секции.
+  const angleDeg = randomBetween(-72, -12);
+  const angleRad = (angleDeg * Math.PI) / 180;
+  const speed = randomBetween(460, 1040);
+
+  sock.vx = Math.cos(angleRad) * speed;
+  sock.vy = Math.sin(angleRad) * speed;
+  sock.drift = randomBetween(-10, 55);
+
+  // Хаотичность: индивидуальная синусоида + микро-джиттер по X.
+  sock.chaos = randomBetween(46, 128);
+  sock.chaosFreq = randomBetween(1.2, 3.8);
+  sock.chaosPhase = randomBetween(0, Math.PI * 2);
+  sock.chaosJitter = randomBetween(18, 54);
+
+  sock.rotation = randomBetween(-36, 36);
+  sock.spin = randomBetween(-44, 44);
+
+  // Стартовый джиттер, чтобы поле сразу не выглядело пустым.
+  if (initial) {
+    const age = randomBetween(0, 1.2);
+    sock.x += sock.vx * age;
+    sock.y += sock.vy * age + 0.5 * GRAVITY * age * age;
+    sock.vy += GRAVITY * age;
+    sock.rotation += sock.spin * age;
+
+    const outOfBounds =
+      sock.x < -sock.size * 1.6 ||
+      sock.x > width + sock.size * 1.6 ||
+      sock.y < -sock.size * 1.6 ||
+      sock.y > height + sock.size * 1.8;
+
+    if (outOfBounds) {
+      respawnSock(sock, width, height, { initial: false });
+    }
+  }
 }
 
 function applySockTransform(sock) {
@@ -66,12 +105,12 @@ export function initHeroSocks() {
     height: Math.max(1, field.clientHeight),
   };
 
-  const sockCount = Math.max(14, Math.min(28, Math.round(bounds.width / 86)));
+  const sockCount = Math.max(12, Math.min(28, Math.round(bounds.width / 94)));
   const socks = [];
 
   for (let index = 0; index < sockCount; index += 1) {
     const sock = createSockState(index, SOCK_ASSETS);
-    respawnSock(sock, bounds.width, bounds.height, { fromTop: false });
+    respawnSock(sock, bounds.width, bounds.height, { initial: true });
     applySockTransform(sock);
     field.append(sock.el);
     socks.push(sock);
@@ -169,21 +208,27 @@ export function initHeroSocks() {
   const tick = (ts) => {
     const dt = Math.min(MAX_DT_SEC, (ts - prevTs) / 1000 || 0.016);
     prevTs = ts;
+    const t = ts / 1000;
 
     for (const sock of socks) {
       if (sock.dragging) continue;
 
-      sock.vy = Math.min(sock.vy + GRAVITY * dt, 540);
-      sock.vx *= DRAG;
-      sock.x += sock.vx * dt * 60;
+      const wave = Math.sin(t * sock.chaosFreq + sock.chaosPhase) * sock.chaos;
+      const jitter = randomBetween(-sock.chaosJitter, sock.chaosJitter);
+      sock.vx += (sock.drift + wave + jitter) * dt;
+      sock.vy += GRAVITY * dt;
+      sock.x += sock.vx * dt;
       sock.y += sock.vy * dt;
       sock.rotation += sock.spin * dt;
 
-      if (sock.x < -sock.size * 1.3) sock.x = bounds.width + sock.size * 0.3;
-      if (sock.x > bounds.width + sock.size * 1.3) sock.x = -sock.size * 0.3;
+      const outOfBounds =
+        sock.x < -sock.size * 1.8 ||
+        sock.x > bounds.width + sock.size * 1.8 ||
+        sock.y < -sock.size * 1.8 ||
+        sock.y > bounds.height + sock.size * 2;
 
-      if (sock.y > bounds.height + sock.size * 1.4) {
-        respawnSock(sock, bounds.width, bounds.height, { fromTop: true });
+      if (outOfBounds) {
+        respawnSock(sock, bounds.width, bounds.height, { initial: false });
       }
 
       applySockTransform(sock);
