@@ -1,11 +1,5 @@
 import * as THREE from "three";
 
-function styleGridMaterial(material) {
-  material.opacity = 0.25;
-  material.transparent = true;
-  material.depthWrite = false;
-}
-
 export function setupEnvironment({ scene, isLowPower }) {
   scene.background = new THREE.Color(0x7fd8ff);
 
@@ -52,13 +46,4 @@ export function setupEnvironment({ scene, isLowPower }) {
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
-
-  const grid = new THREE.GridHelper(500, 500, 0x9fd6ff, 0xc9ecff);
-  grid.position.y = 0.001;
-  if (Array.isArray(grid.material)) {
-    grid.material.forEach(styleGridMaterial);
-  } else {
-    styleGridMaterial(grid.material);
-  }
-  scene.add(grid);
 }

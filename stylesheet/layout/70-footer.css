@@ -1,7 +1,8 @@
 .home-footer {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  min-height: 1226px;
+  min-height: 705px;
+  height: 705px;
   border-top: none;
 }
 
@@ -11,6 +12,7 @@
   display: grid;
   place-items: center;
   overflow: hidden;
+  color: rgba(0, 0, 0, 0.12);
 }
 
 .footer-block:last-child {
@@ -34,12 +36,13 @@
 }
 
 .footer-sock {
-  width: 160px;
-  height: 160px;
-  opacity: 0.1;
-  transform: rotate(-18deg);
-  background: #000;
-  clip-path: polygon(26% 3%, 50% 3%, 53% 12%, 62% 12%, 62% 56%, 56% 56%, 56% 72%, 45% 84%, 14% 84%, 14% 66%, 8% 66%, 8% 40%, 21% 40%, 21% 12%, 26% 12%);
+  width: 180px;
+  height: 183px;
+  opacity: 1;
+  transform: rotate(21.37deg);
+  background: currentColor;
+  mask: url("../../src/img/nosok.svg") center / contain no-repeat;
+  -webkit-mask: url("../../src/img/nosok.svg") center / contain no-repeat;
 }
 
 .footer-block:hover .footer-sock {
@@ -48,12 +51,12 @@
 
 @keyframes footerSockFloat {
   0% {
-    transform: rotate(-18deg) translateY(0);
+    transform: rotate(21.37deg) translateY(0);
   }
   50% {
-    transform: rotate(-18deg) translateY(-10px);
+    transform: rotate(21.37deg) translateY(-10px);
   }
   100% {
-    transform: rotate(-18deg) translateY(0);
+    transform: rotate(21.37deg) translateY(0);
   }
 }

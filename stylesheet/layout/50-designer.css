@@ -2,12 +2,14 @@
   border-top: none;
   padding: 0;
   background: transparent;
+  min-height: 1483px;
 }
 
 .designer-layout {
   display: grid;
   grid-template-columns: minmax(0, 33.3854%) minmax(0, 66.6146%);
   min-height: 1483px;
+  height: 1483px;
 }
 
 .seam-column {
@@ -132,15 +134,16 @@
 
 .designer-main {
   display: grid;
-  grid-template-rows: 756px minmax(0, 727px);
+  grid-template-rows: minmax(0, 727px) 756px;
   min-height: 100%;
 }
 
 .designer-top {
   display: grid;
   grid-template-columns: minmax(0, 62.5489%) minmax(0, 37.4511%);
-  border-bottom: var(--border-frame);
+  border-top: var(--border-frame);
   min-height: 756px;
+  order: 2;
 }
 
 .designer-stage-column {
@@ -510,6 +513,10 @@
   gap: 8px;
   padding: 0 16px;
   color: var(--white);
+}
+
+.stain-panel {
+  order: 1;
 }
 
 #stain-status {

@@ -399,6 +399,17 @@ export function initSockDesigner() {
     if (!exportCtx) return "";
 
     if (state.imageReady) {
+      const maskedPaintCanvas = document.createElement("canvas");
+      maskedPaintCanvas.width = canvas.width;
+      maskedPaintCanvas.height = canvas.height;
+      const maskedPaintCtx = maskedPaintCanvas.getContext("2d");
+      if (!maskedPaintCtx) return "";
+
+      maskedPaintCtx.drawImage(paintLayer, 0, 0);
+      maskedPaintCtx.globalCompositeOperation = "destination-in";
+      maskedPaintCtx.drawImage(maskLayer, 0, 0);
+      maskedPaintCtx.globalCompositeOperation = "source-over";
+
       exportCtx.drawImage(
         baseImage,
         state.imageRect.x,
@@ -406,9 +417,7 @@ export function initSockDesigner() {
         state.imageRect.width,
         state.imageRect.height
       );
-      exportCtx.globalCompositeOperation = "source-atop";
-      exportCtx.drawImage(paintLayer, 0, 0);
-      exportCtx.globalCompositeOperation = "source-over";
+      exportCtx.drawImage(maskedPaintCanvas, 0, 0);
     } else {
       exportCtx.drawImage(paintLayer, 0, 0);
     }

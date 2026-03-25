@@ -1,6 +1,7 @@
 const STORY_WIDTH = 1080;
 const STORY_HEIGHT = 1920;
 const SHARE_TEXT = "Я собрал свой Nosok-дизайн";
+const SHARE_URL = "https://pentaoo.github.io/nosok-the-game/";
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -92,16 +93,8 @@ function canvasToBlob(canvas) {
 }
 
 function drawBackplate(ctx) {
-  const gradient = ctx.createLinearGradient(0, 0, STORY_WIDTH, STORY_HEIGHT);
-  gradient.addColorStop(0, "#7e5bff");
-  gradient.addColorStop(0.33, "#fe4aae");
-  gradient.addColorStop(0.66, "#b4ff3b");
-  gradient.addColorStop(1, "#ffe600");
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, STORY_WIDTH, STORY_HEIGHT);
-
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.clearRect(0, 0, STORY_WIDTH, STORY_HEIGHT);
+  ctx.fillStyle = "#fffdf6";
   ctx.fillRect(64, 74, STORY_WIDTH - 128, STORY_HEIGHT - 148);
 
   ctx.strokeStyle = "#000";
@@ -165,21 +158,14 @@ async function buildStoryCanvas(snapshot) {
 
   const qrSize = 230;
   const qrX = STORY_WIDTH - qrSize - 112;
-  const qrY = STORY_HEIGHT - qrSize - 186;
-  const qrUrl = snapshot.shareUrl || window.location.href;
+  const qrY = STORY_HEIGHT - qrSize - 114;
+  const qrUrl = snapshot.shareUrl || SHARE_URL;
 
   await drawQr(ctx, qrUrl, qrX, qrY, qrSize);
-
-  ctx.strokeStyle = "#000";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(qrX, qrY, qrSize, qrSize);
 
   ctx.fillStyle = "#111";
   ctx.font = "600 28px 'Mabry Pro', 'Arial Black', sans-serif";
   ctx.fillText("Открой Nosok", qrX - 2, qrY - 22);
-
-  ctx.font = "500 20px 'Mabry Pro', 'Arial Black', sans-serif";
-  ctx.fillText("qr url / ratio будут уточнены позже", 104, STORY_HEIGHT - 106);
 
   return canvas;
 }
@@ -221,7 +207,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
     try {
       const snapshot = {
         ...(typeof getSnapshot === "function" ? getSnapshot() : null),
-        shareUrl: window.location.href,
+        shareUrl: SHARE_URL,
       };
 
       const storyCanvas = await buildStoryCanvas(snapshot);
@@ -238,7 +224,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
           title: "Nosok",
           text: SHARE_TEXT,
           files: [file],
-          url: snapshot.shareUrl,
+          url: SHARE_URL,
         });
         sendNotice("Сторис готова: поделились успешно.");
       } else {

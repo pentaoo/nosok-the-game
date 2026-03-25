@@ -40,6 +40,11 @@ export function createBoxMeshFactory({ scene, world }) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
     mesh.position.set(x, y, z);
     applyToyMaterials(mesh);
+    if (material?.transparent && material.opacity <= 0.02) {
+      mesh.visible = false;
+      mesh.castShadow = false;
+      mesh.receiveShadow = false;
+    }
     scene.add(mesh);
     if (collision) trackCollisionMesh(world, mesh, collision);
     return mesh;

@@ -28,7 +28,7 @@ function disposeSceneGraph(root) {
 
 export function createGameScene(
   mountEl,
-  { quests = null, onDocOpen = null, onItemFound = null, onWorldEvent = null } = {}
+  { quests = null, onDocOpen = null, onItemFound = null } = {}
 ) {
   const scene = new THREE.Scene();
   const isLowPower = isLowPowerDevice();
@@ -51,7 +51,7 @@ export function createGameScene(
   mountEl.appendChild(renderer.domElement);
 
   const camera = new THREE.PerspectiveCamera(80, 1, 0.1, 200);
-  camera.position.set(0, 10, 10);
+  camera.position.set(0, 12.2, 12.5);
   camera.lookAt(0, 0, 0);
 
   const cameraController = createCameraController({ camera, domElement: renderer.domElement });
@@ -82,7 +82,7 @@ export function createGameScene(
   setupEnvironment({ scene, isLowPower });
 
   const addBoxMesh = createBoxMeshFactory({ scene, world });
-  const roomMeta = buildLaundryRoom({
+  buildLaundryRoom({
     scene,
     isLowPower,
     addBoxMesh,
@@ -101,8 +101,6 @@ export function createGameScene(
     isLowPower,
     onDocOpen,
     onItemFound,
-    onWorldEvent,
-    roomMeta,
     lifecycle,
   });
 

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { applyToyMaterials, createFrontInteractionAnchor } from "./object-utils.js";
+import { applyToyMaterials } from "./object-utils.js";
 
 export const PLATFORM_TOPS = {
   stepA: 1.15,
@@ -9,7 +9,6 @@ export const PLATFORM_TOPS = {
   midCenter: 3.35,
   shelfLeftLow: 3.55,
   shelfLeftHigh: 5.2,
-  bridgeMid: 4.1,
   loftLeft: 5.75,
   topCenter: 5.55,
   centerLedge: 6.25,
@@ -21,6 +20,120 @@ export const PLATFORM_TOPS = {
   backRightDeck: 6.05,
 };
 
+const DOC_DISPLAY_HEIGHT = 0.12;
+const ITEM_DISPLAY_HEIGHT = 0.28;
+
+export const DISPLAY_STANDS = {
+  docs: {
+    "care-temp": {
+      x: -20.4,
+      z: 13.7,
+      topY: DOC_DISPLAY_HEIGHT,
+      height: DOC_DISPLAY_HEIGHT,
+      width: 2.2,
+      depth: 1.5,
+      rotation: Math.PI * 0.08,
+      radius: 1.4,
+    },
+    "care-sort": {
+      x: -7.8,
+      z: 5.6,
+      topY: PLATFORM_TOPS.midCenter + DOC_DISPLAY_HEIGHT,
+      height: DOC_DISPLAY_HEIGHT,
+      width: 2.1,
+      depth: 1.45,
+      rotation: Math.PI * -0.14,
+      radius: 1.35,
+    },
+    "history-denim": {
+      x: -23.15,
+      z: -13.55,
+      topY: PLATFORM_TOPS.loftLeft + DOC_DISPLAY_HEIGHT,
+      height: DOC_DISPLAY_HEIGHT,
+      width: 1.9,
+      depth: 1.35,
+      rotation: Math.PI * -0.11,
+      radius: 1.25,
+    },
+    "history-nylon": {
+      x: 21.85,
+      z: -8.35,
+      topY: PLATFORM_TOPS.rightBalcony + DOC_DISPLAY_HEIGHT,
+      height: DOC_DISPLAY_HEIGHT,
+      width: 1.9,
+      depth: 1.35,
+      rotation: Math.PI * 0.1,
+      radius: 1.3,
+    },
+    "note-missing": {
+      x: 5.15,
+      z: -10.45,
+      topY: PLATFORM_TOPS.centerLedge + DOC_DISPLAY_HEIGHT,
+      height: DOC_DISPLAY_HEIGHT,
+      width: 2.05,
+      depth: 1.4,
+      rotation: Math.PI * -0.06,
+      radius: 1.25,
+    },
+  },
+  items: {
+    vans: {
+      x: -21.6,
+      z: -12.55,
+      topY: PLATFORM_TOPS.loftLeft + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 2.2,
+      depth: 1.9,
+      rotation: 0,
+    },
+    ushanka: {
+      x: 23.8,
+      z: -12.7,
+      topY: PLATFORM_TOPS.backRightDeck + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 2,
+      depth: 1.7,
+      rotation: 0,
+    },
+    trasher_old: {
+      x: 1.4,
+      z: -3.7,
+      topY: PLATFORM_TOPS.topCenter + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 2.4,
+      depth: 2,
+      rotation: 0,
+    },
+    uggi: {
+      x: 24.1,
+      z: -8.0,
+      topY: PLATFORM_TOPS.rightBalcony + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 2.1,
+      depth: 1.8,
+      rotation: 0,
+    },
+    jeans: {
+      x: 8.15,
+      z: -10.2,
+      topY: PLATFORM_TOPS.centerLedge + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 2.1,
+      depth: 1.7,
+      rotation: 0,
+    },
+    sumka: {
+      x: -2.4,
+      z: 13.4,
+      topY: PLATFORM_TOPS.frontCenter + ITEM_DISPLAY_HEIGHT,
+      height: ITEM_DISPLAY_HEIGHT,
+      width: 1.9,
+      depth: 1.7,
+      rotation: 0,
+    },
+  },
+};
+
 export function buildLaundryRoom({
   scene,
   isLowPower,
@@ -28,7 +141,6 @@ export function buildLaundryRoom({
   world,
   platformTops = PLATFORM_TOPS,
 }) {
-  const roomMeta = { mapSwitches: [] };
   const materials = {
     shellBounds: new THREE.MeshStandardMaterial({
       color: 0xffffff,
@@ -90,6 +202,11 @@ export function buildLaundryRoom({
       emissive: 0x71bb00,
       emissiveIntensity: 0.05,
     }),
+    displayStand: new THREE.MeshStandardMaterial({
+      color: 0xf7f4ea,
+      roughness: 0.86,
+      metalness: 0.01,
+    }),
   };
 
   const makePlatform = ({ x, z, width, depth, topY, material }) =>
@@ -104,112 +221,47 @@ export function buildLaundryRoom({
       collision: { pad: -0.04, preserveMinY: true },
     });
 
-  const makeConsoleSwitch = ({
-    x,
-    z,
-    platformY,
-    label,
-    description,
-    activeText,
-    inactiveText,
-    targets = [],
-    activeColor = 0xb4ff3b,
-    inactiveColor = 0xfe4aae,
-    startsActive = false,
-  }) => {
-    const pedestalHeight = 0.82;
-    const pedestal = addBoxMesh({
+  const makeDisplayStand = ({ x, z, width, depth, topY, height, material }) =>
+    addBoxMesh({
       x,
-      y: platformY + pedestalHeight * 0.5,
+      y: topY - height * 0.5,
       z,
-      width: 0.9,
-      height: pedestalHeight,
-      depth: 0.9,
-      material: materials.frameDark,
-      collision: { pad: -0.08, preserveMinY: true, maxY: platformY + pedestalHeight },
+      width,
+      height,
+      depth,
+      material,
+      collision: null,
     });
-
-    const buttonMaterial = new THREE.MeshStandardMaterial({
-      color: startsActive ? activeColor : inactiveColor,
-      roughness: 0.42,
-      metalness: 0.08,
-      emissive: startsActive ? activeColor : inactiveColor,
-      emissiveIntensity: startsActive ? 0.16 : 0.08,
-    });
-
-    const button = addBoxMesh({
-      x,
-      y: platformY + pedestalHeight + 0.19,
-      z,
-      width: 0.74,
-      height: 0.22,
-      depth: 0.74,
-      material: buttonMaterial,
-      collision: { pad: -0.14, preserveMinY: true, maxY: platformY + pedestalHeight + 0.22 },
-    });
-
-    const anchor = createFrontInteractionAnchor(button, {
-      frontInset: 0.22,
-      heightFromBase: 0.24,
-    });
-
-    const state = { active: false };
-    const setActive = (active) => {
-      state.active = active;
-      button.material.color.setHex(active ? activeColor : inactiveColor);
-      button.material.emissive.setHex(active ? activeColor : inactiveColor);
-      button.material.emissiveIntensity = active ? 0.16 : 0.08;
-      targets.forEach((mesh) => {
-        if (!mesh) return;
-        mesh.visible = active;
-      });
-    };
-
-    setActive(startsActive);
-
-    roomMeta.mapSwitches.push({
-      mesh: pedestal,
-      interactionTarget: anchor,
-      label: () => label,
-      description: () => description,
-      onInteract: () => {
-        setActive(!state.active);
-        return state.active;
-      },
-      activeText,
-      inactiveText,
-    });
-  };
 
   addBoxMesh({
     x: 0,
-    y: 6.8,
-    z: -15.2,
-    width: 50.4,
-    height: 13.6,
+    y: 7.4,
+    z: -18.8,
+    width: 62,
+    height: 14.8,
     depth: 0.8,
     material: materials.shellBounds,
     collision: { pad: 0, preserveMinY: false },
   });
 
   addBoxMesh({
-    x: -24.4,
-    y: 6.4,
-    z: -1,
+    x: -30.2,
+    y: 6.9,
+    z: 0.1,
     width: 0.8,
-    height: 12.8,
-    depth: 34.8,
+    height: 13.8,
+    depth: 42.4,
     material: materials.shellBounds,
     collision: { pad: 0.02, preserveMinY: false },
   });
 
   addBoxMesh({
-    x: 24.4,
-    y: 6.4,
-    z: -1,
+    x: 30.2,
+    y: 6.9,
+    z: 0.1,
     width: 0.8,
-    height: 12.8,
-    depth: 34.8,
+    height: 13.8,
+    depth: 42.4,
     material: materials.shellBounds,
     collision: { pad: 0.02, preserveMinY: false },
   });
@@ -217,8 +269,8 @@ export function buildLaundryRoom({
   addBoxMesh({
     x: 0,
     y: 0.35,
-    z: 16.2,
-    width: 50.4,
+    z: 20.9,
+    width: 62,
     height: 0.7,
     depth: 1,
     material: materials.shellBounds,
@@ -227,88 +279,18 @@ export function buildLaundryRoom({
 
   addBoxMesh({
     x: 0,
-    y: 12.4,
-    z: -1,
-    width: 49.4,
+    y: 13.5,
+    z: 0,
+    width: 61,
     height: 0.25,
-    depth: 34,
+    depth: 42,
     material: materials.shellBounds,
-  });
-
-  [
-    { x: -11.2, y: 11.5, z: -6.2, r: Math.PI / 2, len: 12.4 },
-    { x: 13.4, y: 11.1, z: -4.8, r: Math.PI / 2, len: 10.8 },
-    { x: 0.8, y: 10.9, z: -10.4, r: Math.PI / 2, len: 8.8 },
-  ].forEach((pipe) => {
-    const mesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.11, 0.11, pipe.len, 12),
-      materials.frameDark
-    );
-    mesh.position.set(pipe.x, pipe.y, pipe.z);
-    mesh.rotation.z = pipe.r;
-    applyToyMaterials(mesh);
-    scene.add(mesh);
-  });
-
-  [
-    { x: 0, z: 4.8, w: 32, d: 0.35, m: materials.stripeWhite },
-    { x: 0, z: 3.7, w: 32, d: 0.2, m: materials.stripePink },
-    { x: 0, z: 2.95, w: 32, d: 0.18, m: materials.stripeGreen },
-    { x: -13.8, z: 11.5, w: 8.4, d: 0.25, m: materials.stripePink },
-    { x: 13.8, z: 11.5, w: 8.4, d: 0.25, m: materials.stripeGreen },
-    { x: 0.6, z: -10.8, w: 10.8, d: 0.18, m: materials.stripeWhite },
-  ].forEach((stripe) => {
-    addBoxMesh({
-      x: stripe.x,
-      y: 0.03,
-      z: stripe.z,
-      width: stripe.w,
-      height: 0.04,
-      depth: stripe.d,
-      material: stripe.m,
-    });
-  });
-
-  addBoxMesh({
-    x: -12.2,
-    y: 8.4,
-    z: -14.45,
-    width: 5.8,
-    height: 1.4,
-    depth: 0.06,
-    material: new THREE.MeshStandardMaterial({
-      color: 0xfee7f4,
-      roughness: 0.42,
-      metalness: 0.06,
-      emissive: 0xfe4aae,
-      emissiveIntensity: 0.2,
-      transparent: true,
-      opacity: 0.86,
-    }),
-  });
-
-  addBoxMesh({
-    x: 12.3,
-    y: 7.7,
-    z: -14.45,
-    width: 6.2,
-    height: 1.35,
-    depth: 0.06,
-    material: new THREE.MeshStandardMaterial({
-      color: 0xf2ffd8,
-      roughness: 0.42,
-      metalness: 0.06,
-      emissive: 0xb4ff3b,
-      emissiveIntensity: 0.18,
-      transparent: true,
-      opacity: 0.86,
-    }),
   });
 
   // Broad, simple blocks to keep the route readable and spacious.
   makePlatform({
-    x: -13.0,
-    z: 7.8,
+    x: -19.6,
+    z: 12.3,
     width: 4.2,
     depth: 4.2,
     topY: platformTops.stepA,
@@ -316,98 +298,89 @@ export function buildLaundryRoom({
   });
 
   makePlatform({
-    x: -6.5,
-    z: 8.8,
-    width: 4.8,
-    depth: 3.2,
+    x: -12.6,
+    z: 13.8,
+    width: 5.4,
+    depth: 3.6,
     topY: platformTops.frontLeftRun,
     material: materials.blockGreen,
   });
 
   makePlatform({
-    x: 0.4,
-    z: 9.4,
-    width: 5.4,
+    x: -2.4,
+    z: 13.4,
+    width: 6.2,
     depth: 4,
     topY: platformTops.frontCenter,
     material: materials.blockYellow,
   });
 
   makePlatform({
-    x: -9.6,
-    z: 3.2,
-    width: 5.1,
-    depth: 4.8,
+    x: -17.0,
+    z: 5.2,
+    width: 5.6,
+    depth: 5.2,
     topY: platformTops.stepB,
     material: materials.blockPink,
   });
 
   makePlatform({
-    x: 0.8,
-    z: 4.7,
-    width: 4.8,
-    depth: 3.2,
+    x: -6.6,
+    z: 6.0,
+    width: 5.4,
+    depth: 3.8,
     topY: platformTops.midCenter,
     material: materials.blockPink,
   });
 
   makePlatform({
-    x: -11.2,
-    z: -1.2,
-    width: 6.8,
-    depth: 3.6,
+    x: -19.8,
+    z: -1.3,
+    width: 7.4,
+    depth: 4,
     topY: platformTops.shelfLeftLow,
     material: materials.blockYellow,
   });
 
   makePlatform({
-    x: -11.2,
-    z: -6.0,
-    width: 5.8,
-    depth: 3.2,
+    x: -20.4,
+    z: -7.5,
+    width: 6.2,
+    depth: 3.4,
     topY: platformTops.shelfLeftHigh,
     material: materials.blockPink,
   });
 
   makePlatform({
-    x: -4.2,
-    z: -4.4,
-    width: 5.6,
-    depth: 2.8,
-    topY: platformTops.bridgeMid,
-    material: materials.blockPurple,
-  });
-
-  makePlatform({
-    x: -15.2,
-    z: -10.2,
-    width: 4.8,
-    depth: 2.8,
+    x: -22.4,
+    z: -13.4,
+    width: 5.4,
+    depth: 3.2,
     topY: platformTops.loftLeft,
     material: materials.blockYellow,
   });
 
   makePlatform({
-    x: 4.8,
-    z: -5.7,
-    width: 10.6,
-    depth: 4.4,
+    x: 1.2,
+    z: -3.6,
+    width: 8.2,
+    depth: 4.6,
     topY: platformTops.topCenter,
     material: materials.blockPurple,
   });
 
   makePlatform({
-    x: 0.8,
-    z: -12.1,
-    width: 6,
-    depth: 2.2,
+    x: 6.6,
+    z: -10.4,
+    width: 7,
+    depth: 3.6,
     topY: platformTops.centerLedge,
     material: materials.blockGreen,
   });
 
   makePlatform({
-    x: 12.0,
-    z: 7.5,
+    x: 16.6,
+    z: 11.5,
     width: 4,
     depth: 4,
     topY: platformTops.stepC,
@@ -415,101 +388,81 @@ export function buildLaundryRoom({
   });
 
   makePlatform({
-    x: 15.5,
-    z: 4.4,
-    width: 4.2,
-    depth: 3.4,
+    x: 21.2,
+    z: 6.3,
+    width: 4.6,
+    depth: 3.8,
     topY: platformTops.rightMid,
     material: materials.blockYellow,
   });
 
   makePlatform({
-    x: 11.0,
-    z: 1.9,
-    width: 6.4,
-    depth: 3.8,
+    x: 17.8,
+    z: 1.6,
+    width: 7.2,
+    depth: 4.2,
     topY: platformTops.shelfRightLow,
     material: materials.blockGreen,
   });
 
   makePlatform({
-    x: 11.1,
-    z: -2.8,
-    width: 5.8,
-    depth: 3.2,
+    x: 19.2,
+    z: -4.2,
+    width: 6.2,
+    depth: 3.4,
     topY: platformTops.shelfRightHigh,
     material: materials.blockYellow,
   });
 
   makePlatform({
-    x: 16.0,
-    z: -4.2,
-    width: 4.6,
-    depth: 3,
+    x: 23.0,
+    z: -8.3,
+    width: 5,
+    depth: 3.2,
     topY: platformTops.rightBalcony,
     material: materials.blockPink,
   });
 
   makePlatform({
-    x: 15.6,
-    z: -9.0,
-    width: 5.2,
-    depth: 3,
+    x: 23.8,
+    z: -12.8,
+    width: 5.8,
+    depth: 3.6,
     topY: platformTops.backRightDeck,
     material: materials.blockPurple,
   });
 
   makePlatform({
-    x: -0.4,
-    z: 7.0,
-    width: 5.8,
-    depth: 3.2,
+    x: 6.2,
+    z: 10.1,
+    width: 6.2,
+    depth: 3.6,
     topY: 1.3,
     material: materials.blockGreen,
   });
 
-  const rainbowBridge = addBoxMesh({
-    x: 10.1,
-    y: 5.15 - 0.18,
-    z: -7.2,
-    width: 8.4,
-    height: 0.36,
-    depth: 1.2,
-    material: materials.stripeWhite,
-    collision: { pad: -0.06, preserveMinY: true },
+  Object.values(DISPLAY_STANDS.docs).forEach((stand) => {
+    makeDisplayStand({
+      x: stand.x,
+      z: stand.z,
+      width: stand.width,
+      depth: stand.depth,
+      topY: stand.topY,
+      height: stand.height,
+      material: materials.displayStand,
+    });
   });
 
-  const serviceBridge = addBoxMesh({
-    x: -2.1,
-    y: 4.95 - 0.18,
-    z: -9.9,
-    width: 8.4,
-    height: 0.36,
-    depth: 1.2,
-    material: materials.stripeGreen,
-    collision: { pad: -0.06, preserveMinY: true },
-  });
-
-  makeConsoleSwitch({
-    x: 1.9,
-    z: 7.6,
-    platformY: platformTops.frontCenter,
-    label: "переключить радужный мост",
-    description: "Откроет короткий путь к правой верхней секции.",
-    activeText: "Радужный мост выдвинулся",
-    inactiveText: "Радужный мост убран",
-    targets: [rainbowBridge],
-  });
-
-  makeConsoleSwitch({
-    x: -9.7,
-    z: -4.7,
-    platformY: platformTops.shelfLeftHigh,
-    label: "открыть сервисный проход",
-    description: "Соединит левую полку с центральным верхним маршрутом.",
-    activeText: "Сервисный проход открыт",
-    inactiveText: "Сервисный проход закрыт",
-    targets: [serviceBridge],
+  Object.values(DISPLAY_STANDS.items).forEach((stand) => {
+    makeDisplayStand({
+      x: stand.x,
+      z: stand.z,
+      width: stand.width,
+      depth: stand.depth,
+      topY: stand.topY,
+      height: stand.height,
+      material: materials.displayStand,
+    });
   });
 
   if (!isLowPower) {
@@ -527,6 +480,4 @@ export function buildLaundryRoom({
 
     scene.add(accentPink, accentGreen, accentYellow, accentBlue);
   }
-
-  return roomMeta;
 }

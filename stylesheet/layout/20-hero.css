@@ -3,6 +3,8 @@
   margin: 0 auto;
   background: transparent;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 :is(.home-hero, .home-game, .home-recycler, .home-designer, .home-footer) {
@@ -19,23 +21,32 @@
 }
 
 .home-game {
-  contain-intrinsic-size: 1080px;
+  contain-intrinsic-size: 840px;
+  order: 2;
 }
 
 .home-recycler {
-  contain-intrinsic-size: 801px;
+  contain-intrinsic-size: 800px;
+  order: 3;
 }
 
 .home-designer {
   contain-intrinsic-size: 1483px;
+  order: 4;
+}
+
+.home-footer {
+  order: 5;
 }
 
 .home-hero {
   border-top: var(--border-frame);
-  min-height: 1080px;
+  height: 800px;
+  min-height: 800px;
   background: transparent;
   position: relative;
   overflow: hidden;
+  order: 1;
 }
 
 .hero-header {
@@ -44,25 +55,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px 0 12px;
+  padding: 0 16px 0 21px;
   position: relative;
   z-index: 2;
 }
 
 .hero-label {
-  font-weight: 500;
+  font-weight: 700;
+  letter-spacing: var(--type-title-track);
 }
 
 .hero-chip {
-  width: 30px;
-  height: 30px;
-  border: var(--border-ui);
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  display: block;
+}
+
+.hero-chip-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 51px;
+  height: 51px;
   background: var(--pink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
+}
+
+.hero-chip-icon {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  width: 45px;
+  height: 47px;
+  display: block;
+  transform: rotate(4.5deg);
 }
 
 .hero-sock-field {

@@ -103,8 +103,9 @@
   }
 
   .game-panel--play > .header {
-    min-height: 72px;
-    padding: 32px 16px 16px 24px;
+    min-height: 66px;
+    align-items: flex-end;
+    padding: 24px 24px 16px 21px;
   }
 
   .game-shell {
@@ -141,7 +142,9 @@
 
   .cards-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 12px;
+    padding: 24px;
   }
 
   .doc-panel {
@@ -465,9 +468,11 @@
   }
 
   .cards-grid {
-    grid-template-columns: repeat(2, 152px);
-    justify-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
     gap: 8px;
+    padding: 24px;
   }
 
   .doc-card {
@@ -671,11 +676,12 @@
 
 @media (max-width: 1400px) {
   .home-hero {
-    min-height: 860px;
+    height: 720px;
+    min-height: 720px;
   }
 
   .hero-sock-field {
-    height: calc(860px - 80px);
+    height: calc(720px - 80px);
   }
 
   .designer-layout {
@@ -692,7 +698,8 @@
   }
 
   .home-footer {
-    min-height: 860px;
+    min-height: 560px;
+    height: 560px;
   }
 }
 
@@ -705,6 +712,7 @@
 
   .home-hero {
     border-top-width: 2px;
+    height: auto;
     min-height: 640px;
   }
 
@@ -758,6 +766,7 @@
 
   .home-footer {
     min-height: 540px;
+    height: auto;
   }
 
   .footer-block {
@@ -772,6 +781,7 @@
 
 @media (max-width: 640px) {
   .home-hero {
+    height: auto;
     min-height: 520px;
   }
 
@@ -786,9 +796,19 @@
   }
 
   .hero-chip {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .hero-chip-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .hero-chip-icon {
+    width: 30px;
+    height: 31px;
   }
 
   .seam-column {
@@ -827,6 +847,7 @@
   .home-footer {
     grid-template-columns: 1fr 1fr;
     min-height: 440px;
+    height: auto;
   }
 
   .footer-block {
@@ -850,7 +871,7 @@
   }
 
   .designer-main {
-    grid-template-rows: 756px minmax(0, 727px);
+    grid-template-rows: minmax(0, 727px) 756px;
   }
 
   .designer-top {
@@ -875,6 +896,7 @@
   .designer-top {
     grid-template-columns: 1fr;
     min-height: 1341px;
+    border-top: var(--border-frame);
   }
 
   .designer-stage-column {

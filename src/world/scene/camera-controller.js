@@ -79,9 +79,9 @@ export function createCameraController({ camera, domElement }) {
     yaw = dampAngle(yaw, targetYaw, yawDamp, dt);
 
     const desired = new THREE.Vector3(
-      cameraTarget.x + Math.sin(yaw) * 10,
-      cameraTarget.y + 10,
-      cameraTarget.z + Math.cos(yaw) * 10
+      cameraTarget.x + Math.sin(yaw) * 12.5,
+      cameraTarget.y + 12.2,
+      cameraTarget.z + Math.cos(yaw) * 12.5
     );
 
     camera.position.lerp(desired, 1 - Math.pow(0.01, dt));
