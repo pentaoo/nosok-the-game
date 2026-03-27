@@ -786,13 +786,81 @@
     height: auto;
   }
 
-  .footer-block {
+  .home-footer.has-active .footer-panel.is-active {
+    flex: 6 1 0;
+  }
+
+  .footer-panel {
     border-right-width: 2px;
+  }
+
+  .footer-panel__header {
+    min-height: 52px;
+    padding: 18px 16px 12px 4px;
+  }
+
+  .footer-panel__title {
+    font-size: 20px;
+  }
+
+  .footer-panel__body {
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .footer-card {
+    padding: 24px;
+  }
+
+  .footer-person__name {
+    font-size: clamp(28px, 4vw, 48px);
+  }
+
+  .footer-entry {
+    font-size: clamp(22px, 3vw, 34px);
+  }
+
+  .footer-photo-shell {
+    flex-basis: min(34vw, 280px);
+    width: min(34vw, 280px);
+  }
+
+  .footer-projects__controls {
+    right: 0;
+  }
+
+  .footer-projects__control {
+    width: 44px;
+    height: 44px;
+    box-shadow: 2px 2px 0 var(--black);
+  }
+
+  .footer-projects__track {
+    gap: 20px;
+    padding-right: 60px;
+  }
+
+  .footer-project-card {
+    flex-basis: min(520px, 78vw);
+    width: min(520px, 78vw);
+    min-width: min(520px, 78vw);
+  }
+
+  .footer-project-card__label {
+    font-size: 18px;
+  }
+
+  .footer-project-card__mosaic-copy {
+    font-size: 13px;
+  }
+
+  .footer-project-card__web-sheet p {
+    font-size: clamp(28px, 4vw, 48px);
   }
 
   .footer-sock {
     width: 110px;
-    height: 110px;
+    height: 112px;
   }
 }
 
@@ -862,23 +930,80 @@
   }
 
   .home-footer {
-    grid-template-columns: 1fr 1fr;
-    min-height: 440px;
+    flex-direction: column;
+    min-height: 0;
     height: auto;
   }
 
-  .footer-block {
-    min-height: 220px;
-    border-right-width: 2px;
+  .home-footer.has-active .footer-panel.is-active {
+    flex: 1 1 auto;
+  }
+
+  .footer-panel {
+    min-height: 140px;
+    border-right: 0;
     border-bottom: 2px solid var(--black);
   }
 
-  .footer-block:nth-child(2n) {
-    border-right: 0;
+  .footer-panel.is-active {
+    min-height: 580px;
   }
 
-  .footer-block:nth-last-child(-n + 2) {
+  .footer-panel:last-child {
     border-bottom: 0;
+  }
+
+  .footer-panel__body {
+    flex-direction: column;
+    padding: 20px 16px 24px;
+  }
+
+  .footer-card {
+    padding: 20px;
+  }
+
+  .footer-person__name {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  .footer-entry {
+    font-size: clamp(21px, 6vw, 28px);
+  }
+
+  .footer-photo-shell {
+    width: 100%;
+    max-width: 320px;
+    flex-basis: auto;
+  }
+
+  .footer-projects {
+    min-height: 0;
+  }
+
+  .footer-projects__controls {
+    position: static;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+
+  .footer-projects__track {
+    gap: 16px;
+    padding-right: 24px;
+  }
+
+  .footer-project-card {
+    flex-basis: calc(100vw - 56px);
+    width: calc(100vw - 56px);
+    min-width: calc(100vw - 56px);
+  }
+
+  .footer-project-card__mosaic-copy {
+    font-size: 12px;
+  }
+
+  .footer-project-card__mini-sock {
+    width: 48px;
+    height: 56px;
   }
 }
 

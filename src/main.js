@@ -19,6 +19,7 @@ import { initSeamDesigner } from "./ui/seam-designer.js";
 import { initStainCleaner } from "./ui/stain-cleaner.js";
 import { createStoryShare } from "./ui/story-share.js";
 import { createQuestController } from "./ui/quests.js";
+import { initFooter } from "./ui/footer.js";
 import { isLowPowerDevice } from "./world/scene/device-profile.js";
 
 function updateWorldObstacles(world, collisionWorld, dt) {
@@ -208,6 +209,11 @@ async function main() {
 
     const hud = createHUD();
     const quests = createQuestController({ hud, totalDocs: DOCS.length });
+    register(
+      initFooter({
+        notify: (text, options) => hud.notify(text, options),
+      })
+    );
 
     register(
       createStoryShare({
