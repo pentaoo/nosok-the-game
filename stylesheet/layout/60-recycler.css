@@ -605,10 +605,6 @@
 }
 
 .recycler-tools-grid .recycler-tool[data-tool-id="sandpaper"] {
-  --tool-surface: var(--purple);
-  --tool-pattern-color: #7553f4;
-  --tool-ink: var(--white);
-  --tool-meta-color: rgba(255, 255, 255, 0.72);
   --tool-pattern-image: url("../../src/img/recycler/sandpaper-mask.svg");
 }
 
@@ -642,10 +638,6 @@
 }
 
 .recycler-tools-grid .recycler-tool[data-tool-id="turbine"] {
-  --tool-surface: var(--purple);
-  --tool-pattern-color: #7553f4;
-  --tool-ink: var(--white);
-  --tool-meta-color: rgba(255, 255, 255, 0.72);
   --tool-pattern-image: url("../../src/img/recycler/shredder-mask.svg");
 }
 

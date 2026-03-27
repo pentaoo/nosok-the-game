@@ -4,9 +4,59 @@ const SOCK_ASSETS = Object.values(
 
 const MAX_DT_SEC = 0.05;
 const GRAVITY = 250;
+const HERO_BREAKPOINTS = {
+  mobile: 640,
+  tablet: 1024,
+};
+const HERO_PROFILES = {
+  mobile: {
+    count: { min: 5, max: 7, divisor: 105 },
+    size: [42, 112],
+    speed: [360, 760],
+    drift: [-8, 28],
+    chaos: [18, 52],
+    chaosFreq: [1.1, 2.3],
+    chaosJitter: [8, 18],
+    spin: [-22, 22],
+    initialAge: [0, 0.35],
+  },
+  tablet: {
+    count: { min: 7, max: 10, divisor: 98 },
+    size: [44, 132],
+    speed: [420, 900],
+    drift: [-10, 42],
+    chaos: [28, 84],
+    chaosFreq: [1.2, 3.1],
+    chaosJitter: [12, 30],
+    spin: [-32, 32],
+    initialAge: [0, 0.7],
+  },
+  desktop: {
+    count: { min: 12, max: 28, divisor: 94 },
+    size: [44, 148],
+    speed: [460, 1040],
+    drift: [-10, 55],
+    chaos: [46, 128],
+    chaosFreq: [1.2, 3.8],
+    chaosJitter: [18, 54],
+    spin: [-44, 44],
+    initialAge: [0, 1.2],
+  },
+};
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
+}
+
+function getHeroProfile(width) {
+  if (width <= HERO_BREAKPOINTS.mobile) return HERO_PROFILES.mobile;
+  if (width <= HERO_BREAKPOINTS.tablet) return HERO_PROFILES.tablet;
+  return HERO_PROFILES.desktop;
+}
+
+function getSockCount(width, profile) {
+  const estimated = Math.round(width / profile.count.divisor);
+  return Math.max(profile.count.min, Math.min(profile.count.max, estimated));
 }
 
 function createSockState(index, assets) {
@@ -41,8 +91,8 @@ function createSockState(index, assets) {
   };
 }
 
-function respawnSock(sock, width, height, { initial = false } = {}) {
-  sock.size = randomBetween(44, 148);
+function respawnSock(sock, width, height, profile, { initial = false } = {}) {
+  sock.size = randomBetween(...profile.size);
 
   // Эмиттер в нижнем левом углу экрана hero.
   sock.x = randomBetween(-sock.size * 0.35, sock.size * 0.16);
@@ -51,24 +101,24 @@ function respawnSock(sock, width, height, { initial = false } = {}) {
   // Полет в верх/право с разлетом: носки уходят за правую рамку секции.
   const angleDeg = randomBetween(-72, -12);
   const angleRad = (angleDeg * Math.PI) / 180;
-  const speed = randomBetween(460, 1040);
+  const speed = randomBetween(...profile.speed);
 
   sock.vx = Math.cos(angleRad) * speed;
   sock.vy = Math.sin(angleRad) * speed;
-  sock.drift = randomBetween(-10, 55);
+  sock.drift = randomBetween(...profile.drift);
 
   // Хаотичность: индивидуальная синусоида + микро-джиттер по X.
-  sock.chaos = randomBetween(46, 128);
-  sock.chaosFreq = randomBetween(1.2, 3.8);
+  sock.chaos = randomBetween(...profile.chaos);
+  sock.chaosFreq = randomBetween(...profile.chaosFreq);
   sock.chaosPhase = randomBetween(0, Math.PI * 2);
-  sock.chaosJitter = randomBetween(18, 54);
+  sock.chaosJitter = randomBetween(...profile.chaosJitter);
 
   sock.rotation = randomBetween(-36, 36);
-  sock.spin = randomBetween(-44, 44);
+  sock.spin = randomBetween(...profile.spin);
 
   // Стартовый джиттер, чтобы поле сразу не выглядело пустым.
   if (initial) {
-    const age = randomBetween(0, 1.2);
+    const age = randomBetween(...profile.initialAge);
     sock.x += sock.vx * age;
     sock.y += sock.vy * age + 0.5 * GRAVITY * age * age;
     sock.vy += GRAVITY * age;
@@ -81,7 +131,7 @@ function respawnSock(sock, width, height, { initial = false } = {}) {
       sock.y > height + sock.size * 1.8;
 
     if (outOfBounds) {
-      respawnSock(sock, width, height, { initial: false });
+      respawnSock(sock, width, height, profile, { initial: false });
     }
   }
 }
@@ -105,20 +155,52 @@ export function initHeroSocks() {
     height: Math.max(1, field.clientHeight),
   };
 
-  const sockCount = Math.max(12, Math.min(28, Math.round(bounds.width / 94)));
   const socks = [];
+  let currentProfile = getHeroProfile(bounds.width);
+  let nextSockIndex = 0;
 
-  for (let index = 0; index < sockCount; index += 1) {
-    const sock = createSockState(index, SOCK_ASSETS);
-    respawnSock(sock, bounds.width, bounds.height, { initial: true });
+  const createAndMountSock = ({ initial = true } = {}) => {
+    const sock = createSockState(nextSockIndex, SOCK_ASSETS);
+    nextSockIndex += 1;
+    respawnSock(sock, bounds.width, bounds.height, currentProfile, { initial });
     applySockTransform(sock);
     field.append(sock.el);
     socks.push(sock);
-  }
+    return sock;
+  };
+
+  const removeSock = (sock) => {
+    const index = socks.indexOf(sock);
+    if (index >= 0) socks.splice(index, 1);
+    if (pointerState.sock === sock) pointerState.sock = null;
+    sock.el.remove();
+  };
+
+  const syncSockPool = () => {
+    currentProfile = getHeroProfile(bounds.width);
+    const targetCount = getSockCount(bounds.width, currentProfile);
+
+    while (socks.length < targetCount) {
+      createAndMountSock({ initial: true });
+    }
+
+    while (socks.length > targetCount) {
+      const removable = [...socks].reverse().find((sock) => !sock.dragging) ?? socks.at(-1);
+      if (!removable) break;
+      removeSock(removable);
+    }
+  };
+
+  const pointerState = {
+    sock: null,
+  };
+
+  syncSockPool();
 
   const onResize = () => {
     bounds.width = Math.max(1, field.clientWidth);
     bounds.height = Math.max(1, field.clientHeight);
+    syncSockPool();
   };
 
   const resizeObserver =
@@ -130,10 +212,6 @@ export function initHeroSocks() {
 
   resizeObserver?.observe(field);
   window.addEventListener("resize", onResize);
-
-  const pointerState = {
-    sock: null,
-  };
 
   const getFieldPoint = (event) => {
     const rect = field.getBoundingClientRect();
@@ -228,7 +306,7 @@ export function initHeroSocks() {
         sock.y > bounds.height + sock.size * 2;
 
       if (outOfBounds) {
-        respawnSock(sock, bounds.width, bounds.height, { initial: false });
+        respawnSock(sock, bounds.width, bounds.height, currentProfile, { initial: false });
       }
 
       applySockTransform(sock);
