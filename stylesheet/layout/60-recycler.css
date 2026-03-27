@@ -356,7 +356,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    180deg,
+    270deg,
     #fff6a0 0%,
     #edf8a0 26%,
     #bff2cd 44%,
@@ -374,7 +374,7 @@
   height: 100%;
   clip-path: inset(0 0 0 0);
   background: linear-gradient(
-    180deg,
+    270deg,
     #ffe600 0%,
     #d0ff2e 26%,
     #4be976 44%,
@@ -548,23 +548,105 @@
 }
 
 .recycler-tools-grid .recycler-tool {
-  min-height: 280.5px;
+  --tool-surface: var(--yellow);
+  --tool-pattern-color: #eed915;
+  --tool-ink: var(--black);
+  --tool-meta-color: rgba(17, 17, 17, 0.58);
+  --tool-pattern-image: none;
+  --tool-pattern-position: center;
+  --tool-pattern-size: 100% 100%;
+  --tool-pattern-repeat: no-repeat;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 1 / 1;
   border: 0;
   border-right: var(--border-frame);
   border-bottom: var(--border-frame);
   margin: 0;
-  background: var(--yellow);
+  background: var(--tool-surface);
+  color: var(--tool-ink);
   border-radius: 0;
   box-shadow: none;
   transform: none;
   text-transform: lowercase;
   padding: 16px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
   text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.recycler-tools-grid .recycler-tool::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--tool-pattern-color);
+  opacity: 0.9;
+  pointer-events: none;
+  -webkit-mask-image: var(--tool-pattern-image);
+  mask-image: var(--tool-pattern-image);
+  -webkit-mask-position: var(--tool-pattern-position);
+  mask-position: var(--tool-pattern-position);
+  -webkit-mask-size: var(--tool-pattern-size);
+  mask-size: var(--tool-pattern-size);
+  -webkit-mask-repeat: var(--tool-pattern-repeat);
+  mask-repeat: var(--tool-pattern-repeat);
+}
+
+.recycler-tools-grid .recycler-tool > * {
+  position: relative;
+  z-index: 1;
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="sandpaper"] {
+  --tool-surface: var(--purple);
+  --tool-pattern-color: #7553f4;
+  --tool-ink: var(--white);
+  --tool-meta-color: rgba(255, 255, 255, 0.72);
+  --tool-pattern-image: url("../../src/img/recycler/sandpaper-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="scissors"] {
+  --tool-pattern-image: url("../../src/img/recycler/scissors-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="cutters"] {
+  --tool-pattern-image: url("../../src/img/recycler/knife-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="shredder"] {
+  --tool-pattern-image: url("../../src/img/recycler/laser-cutter-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="flamethrower"] {
+  --tool-pattern-image:
+    url("../../src/img/recycler/press-top-mask.svg"),
+    url("../../src/img/recycler/press-bottom-mask.svg");
+  --tool-pattern-position: center top, center bottom;
+  --tool-pattern-size: 100% auto, 100% auto;
+  --tool-pattern-repeat: no-repeat, no-repeat;
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="overlock"] {
+  --tool-pattern-image: url("../../src/img/recycler/robot-arm-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="press"] {
+  --tool-pattern-image: url("../../src/img/recycler/flamethrower-mask.svg");
+}
+
+.recycler-tools-grid .recycler-tool[data-tool-id="turbine"] {
+  --tool-surface: var(--purple);
+  --tool-pattern-color: #7553f4;
+  --tool-ink: var(--white);
+  --tool-meta-color: rgba(255, 255, 255, 0.72);
+  --tool-pattern-image: url("../../src/img/recycler/shredder-mask.svg");
 }
 
 .recycler-tools-grid .recycler-tool:nth-child(2n) {
@@ -593,16 +675,18 @@
 
 .recycler-tool-rate {
   font-size: clamp(16px, 1.08vw, 20px);
-  opacity: 0.55;
+  color: var(--tool-meta-color);
+  opacity: 1;
   letter-spacing: 0;
   font-weight: 700;
 }
 
 .recycler-tool-meta {
   font-size: clamp(16px, 1.08vw, 20px);
+  color: var(--tool-meta-color);
   letter-spacing: 0;
   text-transform: lowercase;
-  opacity: 0.55;
+  opacity: 1;
   font-weight: 700;
 }
 
@@ -627,36 +711,24 @@
 }
 
 .recycler-tool.is-locked {
-  background: var(--yellow);
-  color: var(--black);
   filter: none;
   opacity: 1;
 }
 
 .recycler-tool.is-ready {
-  background: var(--green);
-  color: var(--black);
+  --tool-surface: var(--green);
+  --tool-pattern-color: #8cd723;
+  --tool-ink: var(--black);
+  --tool-meta-color: rgba(17, 17, 17, 0.58);
   filter: none;
   opacity: 1;
 }
 
 .recycler-tool.is-bought {
-  background: var(--purple) !important;
-  color: var(--white);
-  opacity: 1;
-}
-
-.recycler-tool.is-locked .recycler-tool-rate,
-.recycler-tool.is-locked .recycler-tool-meta,
-.recycler-tool.is-ready .recycler-tool-rate,
-.recycler-tool.is-ready .recycler-tool-meta {
-  color: rgba(17, 17, 17, 0.5);
-  opacity: 1;
-}
-
-.recycler-tool.is-bought .recycler-tool-rate,
-.recycler-tool.is-bought .recycler-tool-meta {
-  color: rgba(255, 255, 255, 0.65);
+  --tool-surface: var(--purple);
+  --tool-pattern-color: #7553f4;
+  --tool-ink: var(--white);
+  --tool-meta-color: rgba(255, 255, 255, 0.72);
   opacity: 1;
 }
 

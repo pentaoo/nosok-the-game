@@ -40,8 +40,26 @@ function cacheEls() {
     docsList: document.getElementById("docs-list"),
     docsCountTag: document.getElementById("docs-count-tag"),
     gameGrid: document.querySelector(".game-grid"),
+    cardsPanel: document.querySelector(".game-panel--cards"),
   });
   els.docCloseBtn = els.doc?.querySelector(".doc-close") ?? null;
+}
+
+function isMobileCardsOverlayLayout() {
+  return window.innerWidth <= 1024;
+}
+
+function syncItemPanelMount() {
+  if (!els.item || !els.gameGrid) return;
+
+  const targetParent =
+    isMobileCardsOverlayLayout() && els.cardsPanel instanceof HTMLElement
+      ? els.cardsPanel
+      : els.gameGrid;
+
+  if (els.item.parentElement !== targetParent) {
+    targetParent.append(els.item);
+  }
 }
 
 function clearNode(node) {
@@ -298,6 +316,7 @@ function openItemById(itemId) {
   const item = ITEM_BY_ID.get(itemId);
   if (!item || !state.foundItems.has(itemId)) return;
   clearActiveFocus();
+  syncItemPanelMount();
   hideDOC();
   setItemContent(item);
   showITEM();
@@ -340,6 +359,7 @@ export function initDOCControls() {
 
   state.isBound = true;
   cacheEls();
+  syncItemPanelMount();
   updateProgress();
   updateItemsProgress();
   renderDocsList();
@@ -393,6 +413,10 @@ export function initDOCControls() {
   };
   document.addEventListener("keydown", onKeyDown);
   cleanupFns.push(() => document.removeEventListener("keydown", onKeyDown));
+
+  const onResize = () => syncItemPanelMount();
+  window.addEventListener("resize", onResize);
+  cleanupFns.push(() => window.removeEventListener("resize", onResize));
 
   state.cleanupFns = cleanupFns;
 

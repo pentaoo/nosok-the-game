@@ -33,6 +33,10 @@
   background: var(--surface-base);
 }
 
+.game-panel--cards {
+  position: relative;
+}
+
 .game-panel--play,
 .game-panel--tasks {
   border-bottom: var(--border-frame);
