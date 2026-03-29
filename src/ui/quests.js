@@ -13,7 +13,7 @@ const QUEST_ORDER = [
 const QUEST_TITLE = {
   [QUEST_IDS.COLLECT_ITEMS]: "Собрать все вещи",
   [QUEST_IDS.COLLECT_DOCS]: "Прочтите потерянные документы",
-  [QUEST_IDS.WASH_ITEMS]: "Почините стиралку",
+  [QUEST_IDS.WASH_ITEMS]: "Постирайте вещи",
 };
 
 export function createQuestController({ hud = null, totalDocs = 0, washDurationMs = 3200 } = {}) {
