@@ -1,11 +1,11 @@
-import { ITEM_PREVIEW_URL } from "../core/assets.js";
+import { ITEM_IMAGE_URLS } from "../core/assets.js";
 
 export const ITEMS = [
   {
     id: "ushanka",
     title: "Шапка-ушанка",
     hint: "Пахнет морозом и приключениями.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.ushanka,
     scienceLead:
       "Ушанка работает как маленький термос: снаружи холодно, а внутри держится тёплая прослойка воздуха.",
     scienceFacts: [
@@ -18,7 +18,7 @@ export const ITEMS = [
     id: "vans",
     title: "Кеды Vans",
     hint: "Те самые, в которых убегают от рутины.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.vans,
     scienceLead:
       "Классические кеды Vans популярны не только из-за вида: их конструкция хорошо распределяет нагрузку при ходьбе.",
     scienceFacts: [
@@ -31,7 +31,7 @@ export const ITEMS = [
     id: "trasher_old",
     title: "Старый трешер",
     hint: "Проверенный временем любимчик.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.trasherOld,
     scienceLead:
       "Старый свитшот становится мягче не случайно: волокна постепенно разрыхляются и лучше удерживают воздух.",
     scienceFacts: [
@@ -44,7 +44,7 @@ export const ITEMS = [
     id: "uggi",
     title: "Угги",
     hint: "Мягкий ход по холодному полу.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.uggi,
     scienceLead:
       "Угги хорошо держат тепло за счёт плотного ворса внутри: он удерживает воздух и замедляет охлаждение стопы.",
     scienceFacts: [
@@ -57,7 +57,7 @@ export const ITEMS = [
     id: "jeans",
     title: "Джинсы",
     hint: "Плотный деним с характером.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.jeans,
     scienceLead:
       "Джинсы из денима долго держат форму благодаря плотному саржевому плетению: диагональная структура ткани лучше переносит ежедневную нагрузку.",
     scienceFacts: [
@@ -70,7 +70,7 @@ export const ITEMS = [
     id: "sumka",
     title: "Мини-сумка",
     hint: "Компактная, но держит форму и всё самое нужное.",
-    image: ITEM_PREVIEW_URL,
+    image: ITEM_IMAGE_URLS.sumka,
     scienceLead:
       "Мини-сумка держит форму не магией: ей помогают плотные слои материала, жёсткие швы и распределение нагрузки по ручке и корпусу.",
     scienceFacts: [

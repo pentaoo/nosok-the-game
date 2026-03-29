@@ -6,7 +6,14 @@ function resolvePublicAsset(relativePath) {
   return new URL(`../../public/${relativePath}`, import.meta.url).href;
 }
 
-export const ITEM_PREVIEW_URL = resolveSourceAsset("../img/image 20.png");
+export const ITEM_IMAGE_URLS = {
+  ushanka: resolveSourceAsset("../img/items/ushanka.png"),
+  vans: resolveSourceAsset("../img/items/vans.png"),
+  trasherOld: resolveSourceAsset("../img/items/trasher_old.png"),
+  uggi: resolveSourceAsset("../img/items/uggi.png"),
+  jeans: resolveSourceAsset("../img/items/jeans.png"),
+  sumka: resolveSourceAsset("../img/items/sumka.png"),
+};
 
 export const FOOTER_IMAGE_URLS = {
   author: resolveSourceAsset("../img/footer/author-aleksey.jpg"),
