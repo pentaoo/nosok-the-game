@@ -10,8 +10,10 @@ export const ITEM_PREVIEW_URL = resolveSourceAsset("../img/image 20.png");
 
 export const FOOTER_IMAGE_URLS = {
   author: resolveSourceAsset("../img/footer/author-aleksey.jpg"),
-  curator: resolveSourceAsset("../img/footer/curator-nikolay.jpg"),
-  technologist: resolveSourceAsset("../img/footer/technologist-anna.jpg"),
+  curator: resolveSourceAsset("../img/footer/curator-nikolay.png"),
+  technologist: resolveSourceAsset("../img/footer/technologist-anna.png"),
+  posters: resolveSourceAsset("../img/footer/project-posters.png"),
+  webPoster: resolveSourceAsset("../img/footer/project-web-poster.png"),
   zineCoverA: resolveSourceAsset("../img/footer/project-zine-cover-a.png"),
   zineCoverB: resolveSourceAsset("../img/footer/project-zine-cover-b.png"),
 };

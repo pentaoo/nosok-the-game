@@ -140,42 +140,15 @@ function renderProjectPreview(kind) {
 
   if (kind === "web") {
     return `
-      <div class="footer-project-card__web">
-        <div class="footer-project-card__web-sheet footer-project-card__web-sheet--back">
-          <p>Вторая жизнь твоих вещей</p>
-        </div>
-        <div class="footer-project-card__web-sheet footer-project-card__web-sheet--front">
-          <p>Вторая жизнь твоих вещей</p>
-        </div>
+      <div class="footer-project-card__poster">
+        <img src="${FOOTER_IMAGE_URLS.webPoster}" alt="" loading="lazy" />
       </div>
     `;
   }
 
   return `
-    <div class="footer-project-card__mosaic" aria-hidden="true">
-      <div class="footer-project-card__mosaic-logo">NOSOK</div>
-      <div class="footer-project-card__mosaic-cell footer-project-card__mosaic-cell--yellow">
-        <span class="footer-project-card__mini-sock footer-project-card__mini-sock--green"></span>
-      </div>
-      <div class="footer-project-card__mosaic-cell footer-project-card__mosaic-cell--pink">
-        <span class="footer-project-card__mini-sock footer-project-card__mini-sock--red"></span>
-      </div>
-      <div class="footer-project-card__mosaic-cell footer-project-card__mosaic-cell--black">
-        <span class="footer-project-card__mini-sock footer-project-card__mini-sock--white"></span>
-      </div>
-      <div class="footer-project-card__mosaic-cell footer-project-card__mosaic-cell--green">
-        <span class="footer-project-card__mini-sock footer-project-card__mini-sock--pink"></span>
-      </div>
-      <div class="footer-project-card__mosaic-cell footer-project-card__mosaic-cell--cream">
-        <span class="footer-project-card__mosaic-copy">Автор: Гудков Алексей<br />Куратор: Цветников Николай</span>
-      </div>
-      <div class="footer-project-card__ticker">
-        <span>научись</span>
-        <span>читать</span>
-        <span>этикетки</span>
-        <span>научись</span>
-        <span>читать</span>
-      </div>
+    <div class="footer-project-card__poster">
+      <img src="${FOOTER_IMAGE_URLS.posters}" alt="" loading="lazy" />
     </div>
   `;
 }
