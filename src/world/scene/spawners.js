@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { FLIPBOOK_TEXTURE_URLS, MODEL_URLS } from "../../core/assets.js";
 import { createFlipbookPlane } from "../flipbook_animations.js";
 import { DOCS, DOC_TYPES } from "../../data/docs.js";
 import { ITEMS } from "../../data/items.js";
@@ -42,7 +43,7 @@ async function createAnimatedWasher(gltf, washerScale, isAlive) {
   washerCenter.position.copy(washerFront);
 
   const flipbook = await createFlipbookPlane({
-    textureUrl: "flipbook_animations/FBA_WM_1.png",
+    textureUrl: FLIPBOOK_TEXTURE_URLS.washer,
     frameCols: 1,
     frameRows: 5,
     fps: 8,
@@ -110,7 +111,7 @@ export function spawnWorldContent({
     return mesh;
   };
 
-  loader.load("models/WM_err.glb", (gltf) => {
+  loader.load(MODEL_URLS.washerErr, (gltf) => {
     if (!isAlive()) return;
 
     const washerErr = placeWasher(gltf.scene, 0.2, 0, -15.0, {
@@ -139,7 +140,7 @@ export function spawnWorldContent({
     });
   });
 
-  loader.load("models/WM_1.glb", async (gltf) => {
+  loader.load(MODEL_URLS.washerOn, async (gltf) => {
     if (!isAlive()) return;
 
     const washerA = await createAnimatedWasher(gltf, washerScale, isAlive);
@@ -157,7 +158,7 @@ export function spawnWorldContent({
     }
   });
 
-  loader.load("models/WM_off.glb", (gltf) => {
+  loader.load(MODEL_URLS.washerOff, (gltf) => {
     if (!isAlive()) return;
 
     placeWasher(gltf.scene, 12.4, 0, -15.2, {
@@ -167,7 +168,7 @@ export function spawnWorldContent({
     });
   });
 
-  loader.load("models/DOC.glb", (gltf) => {
+  loader.load(MODEL_URLS.doc, (gltf) => {
     if (!isAlive()) return;
 
     const baseDocMesh = gltf.scene;
@@ -215,7 +216,7 @@ export function spawnWorldContent({
 
   const collectibleConfigs = [
     {
-      path: "models/vans.glb",
+      path: MODEL_URLS.vans,
       itemId: "vans",
       radius: 2.1,
       highlight: { intensity: 0.24, distance: 4.4, yOffset: 1.3 },
@@ -232,7 +233,7 @@ export function spawnWorldContent({
       },
     },
     {
-      path: "models/USHANKA.glb",
+      path: MODEL_URLS.ushanka,
       itemId: "ushanka",
       radius: 2.0,
       highlight: { intensity: 0.26, distance: 4.6, yOffset: 1.0 },
@@ -249,7 +250,7 @@ export function spawnWorldContent({
       },
     },
     {
-      path: "models/trasher_old.glb",
+      path: MODEL_URLS.trasherOld,
       itemId: "trasher_old",
       radius: 2.4,
       highlight: { intensity: 0.24, distance: 4.2, yOffset: 1.1 },
@@ -270,7 +271,7 @@ export function spawnWorldContent({
       },
     },
     {
-      path: "models/uggi.glb",
+      path: MODEL_URLS.uggi,
       itemId: "uggi",
       radius: 2.1,
       highlight: { intensity: 0.25, distance: 4.3, yOffset: 0.95 },
@@ -291,7 +292,7 @@ export function spawnWorldContent({
       },
     },
     {
-      path: "models/jeans.glb",
+      path: MODEL_URLS.jeans,
       itemId: "jeans",
       radius: 2.25,
       highlight: { intensity: 0.24, distance: 4.4, yOffset: 1.05 },
@@ -312,7 +313,7 @@ export function spawnWorldContent({
       },
     },
     {
-      path: "models/sumka.glb",
+      path: MODEL_URLS.sumka,
       itemId: "sumka",
       radius: 2.1,
       highlight: { intensity: 0.22, distance: 4.1, yOffset: 0.95 },

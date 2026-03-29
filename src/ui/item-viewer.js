@@ -1,14 +1,15 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { MODEL_URLS } from "../core/assets.js";
 
 const MODEL_BY_ITEM_ID = {
-  ushanka: "models/USHANKA.glb",
-  vans: "models/vans.glb",
-  trasher_old: "models/trasher_old.glb",
-  uggi: "models/uggi.glb",
-  jeans: "models/jeans.glb",
-  sumka: "models/sumka.glb",
+  ushanka: MODEL_URLS.ushanka,
+  vans: MODEL_URLS.vans,
+  trasher_old: MODEL_URLS.trasherOld,
+  uggi: MODEL_URLS.uggi,
+  jeans: MODEL_URLS.jeans,
+  sumka: MODEL_URLS.sumka,
 };
 
 function loadGLTF(loader, url) {

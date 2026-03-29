@@ -1,8 +1,4 @@
-import authorImage from "../img/footer/author-aleksey.jpg";
-import curatorImage from "../img/footer/curator-nikolay.jpg";
-import technologistImage from "../img/footer/technologist-anna.jpg";
-import zineCoverA from "../img/footer/project-zine-cover-a.png";
-import zineCoverB from "../img/footer/project-zine-cover-b.png";
+import { FOOTER_IMAGE_URLS } from "../core/assets.js";
 
 const PANEL_DATA = [
   {
@@ -10,7 +6,7 @@ const PANEL_DATA = [
     theme: "purple",
     title: "Автор",
     name: "Гудков Алексей",
-    photo: authorImage,
+    photo: FOOTER_IMAGE_URLS.author,
     entries: [
       { type: "link", label: "tg: pentao", href: "https://t.me/pentao" },
       {
@@ -27,7 +23,7 @@ const PANEL_DATA = [
     theme: "pink",
     title: "Куратор",
     name: "Цветников Николай",
-    photo: curatorImage,
+    photo: FOOTER_IMAGE_URLS.curator,
     entries: [
       {
         type: "link",
@@ -42,7 +38,7 @@ const PANEL_DATA = [
     theme: "green",
     title: "Технолог",
     name: "Комкова Анна",
-    photo: technologistImage,
+    photo: FOOTER_IMAGE_URLS.technologist,
     entries: [
       {
         type: "link",
@@ -133,10 +129,10 @@ function renderProjectPreview(kind) {
     return `
       <div class="footer-project-card__stack footer-project-card__stack--zine">
         <div class="footer-project-card__cover footer-project-card__cover--back">
-          <img src="${zineCoverA}" alt="" loading="lazy" />
+          <img src="${FOOTER_IMAGE_URLS.zineCoverA}" alt="" loading="lazy" />
         </div>
         <div class="footer-project-card__cover footer-project-card__cover--front">
-          <img src="${zineCoverB}" alt="" loading="lazy" />
+          <img src="${FOOTER_IMAGE_URLS.zineCoverB}" alt="" loading="lazy" />
         </div>
       </div>
     `;

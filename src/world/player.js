@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { MODEL_URLS } from "../core/assets.js";
 
 const SETTINGS = {
   radius: 0.45,
@@ -106,7 +107,7 @@ export function createPlayer(scene) {
 
   const loader = new GLTFLoader();
   loader.load(
-    "models/player.glb",
+    MODEL_URLS.player,
     (gltf) => {
       const model = gltf.scene;
       model.scale.setScalar(0.05);
@@ -140,7 +141,7 @@ export function createPlayer(scene) {
     },
     undefined,
     (error) => {
-      console.error("Failed to load /models/player.glb", error);
+      console.error("Failed to load player model", error);
     }
   );
 

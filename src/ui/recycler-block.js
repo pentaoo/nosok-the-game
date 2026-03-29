@@ -1,6 +1,6 @@
-const TARGET_SOCK_ASSETS = Object.values(
-  import.meta.glob("../img/socks/*.svg", { eager: true, import: "default" })
-);
+import { SOCK_ASSET_URLS } from "../core/assets.js";
+
+const TARGET_SOCK_ASSETS = [...SOCK_ASSET_URLS];
 
 const DEFAULT_TARGET_ASSET = TARGET_SOCK_ASSETS[0] ?? "";
 
