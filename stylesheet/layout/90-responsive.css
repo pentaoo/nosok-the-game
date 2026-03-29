@@ -288,6 +288,30 @@
     border-bottom: 2px solid var(--black);
   }
 
+  .recycler-life {
+    background: linear-gradient(
+      270deg,
+      #fff6a0 0%,
+      #edf8a0 26%,
+      #bff2cd 44%,
+      #cec0ff 58%,
+      #f7b7d6 76%,
+      #f7b1b5 100%
+    );
+  }
+
+  .recycler-life-bar {
+    background: linear-gradient(
+      270deg,
+      #ffe600 0%,
+      #d0ff2e 26%,
+      #4be976 44%,
+      #7e5bff 58%,
+      #fe4aae 76%,
+      #ed3f48 100%
+    );
+  }
+
   .recycler-hp-label {
     writing-mode: horizontal-tb;
     font-size: clamp(17px, 4.8vw, 24px);
