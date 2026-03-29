@@ -3,6 +3,7 @@ name: Deploy static site to GitHub Pages
 on:
   push:
     branches:
+      - codex-github-pages-no-vite
       - master
       - main
   workflow_dispatch:
