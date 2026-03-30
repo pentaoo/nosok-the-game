@@ -297,7 +297,7 @@ export function initRecyclerBlock() {
       toolButton.setAttribute("aria-label", `Купить ${upgrade.label} ${upgrade.rate}`);
 
       const meta = toolButton.querySelector(".recycler-tool-meta");
-      if (meta) meta.textContent = isBought ? "" : `${upgrade.cost} сырья`;
+      if (meta) meta.textContent = isBought ? "" : `${upgrade.cost} $`;
     });
   };
 
