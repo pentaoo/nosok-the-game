@@ -177,8 +177,8 @@ function createDisposerRegistry() {
       const destroy = stack.pop();
       try {
         destroy?.();
-      } catch (error) {
-        console.error("Cleanup failed", error);
+      } catch {
+        // Ignore cleanup failures during teardown.
       }
     }
   };
@@ -284,7 +284,6 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  alert("Ошибка запуска. Смотрите консоль.");
+main().catch(() => {
+  alert("Ошибка запуска. Перезагрузите страницу.");
 });

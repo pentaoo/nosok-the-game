@@ -140,9 +140,7 @@ export function createPlayer(scene) {
       }
     },
     undefined,
-    (error) => {
-      console.error("Failed to load player model", error);
-    }
+    () => {}
   );
 
   const updateVerticalMovement = ({ dt, input, collisionWorld }) => {

@@ -370,8 +370,7 @@ export function initFooter({ notify } = {}) {
       try {
         await copyText(value);
         sendFeedback(feedback);
-      } catch (error) {
-        console.error("Copy failed", error);
+      } catch {
         sendFeedback("Не удалось скопировать юзернейм", "danger");
       }
     };

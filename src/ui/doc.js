@@ -433,8 +433,8 @@ export function initDOCControls() {
       const cleanup = state.cleanupFns.pop();
       try {
         cleanup?.();
-      } catch (error) {
-        console.error("DOC controls cleanup failed", error);
+      } catch {
+        // Ignore cleanup failures while closing overlays.
       }
     }
 

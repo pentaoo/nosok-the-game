@@ -195,9 +195,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
   const sendNotice = (text, tone = "success") => {
     if (typeof notify === "function") {
       notify(text, { tone, duration: 2600 });
-      return;
     }
-    console.info(text);
   };
 
   const onClick = async () => {
@@ -231,8 +229,7 @@ export function createStoryShare({ getSnapshot, notify } = {}) {
         downloadBlob(storyBlob, fileName);
         sendNotice("Сторис готова: PNG сохранён на устройство.");
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       sendNotice("Не удалось собрать сторис. Попробуйте ещё раз.", "warning");
     } finally {
       setBusyState(false);

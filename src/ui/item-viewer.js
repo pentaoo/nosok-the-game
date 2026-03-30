@@ -272,10 +272,9 @@ export function createItemViewer({ mountEl }) {
       mountEl.dataset.state = "ready";
       resize();
       start();
-    } catch (error) {
+    } catch {
       if (version !== state.loadVersion) return;
       mountEl.dataset.state = "error";
-      console.error("Не удалось загрузить модель предмета:", error);
     }
   };
 
