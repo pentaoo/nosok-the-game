@@ -43,6 +43,11 @@
   border-bottom: 0;
 }
 
+.seam-column > .header,
+.stain-panel > .header {
+  border-bottom: 0;
+}
+
 .seam-stage {
   position: relative;
   min-height: 0;
@@ -506,7 +511,6 @@
 
 .stain-panel > .header {
   height: 64px;
-  border-bottom: var(--border-frame);
   display: flex;
   align-items: center;
   justify-content: space-between;
